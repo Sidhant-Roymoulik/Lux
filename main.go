@@ -1,9 +1,11 @@
 package main
 
 import (
-	"fmt"
+	"Lux/dragontoothmg"
+	"Lux/engine"
 )
 
 func main() {
-	fmt.Println("hello world")
+	dragontoothmg.Init()
+	engine.RunEngine()
 }
