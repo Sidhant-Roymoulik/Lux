@@ -1,4 +1,4 @@
-BINARY_NAME=lux-1.0
+BINARY_NAME=lux-0.0
 
 build:
 	GOARCH=amd64 GOAMD64=v1 go build -o ${BINARY_NAME}-default main.go

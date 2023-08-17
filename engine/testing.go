@@ -6,5 +6,5 @@ func RunEngine() {
 
 func run_uci() {
 	uci_engine := &UCIEngine{}
-	uci_engine.loop()
+	uci_engine.UCILoop()
 }

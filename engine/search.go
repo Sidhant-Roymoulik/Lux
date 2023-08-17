@@ -9,7 +9,7 @@ import (
 const (
 	CHECKMATE_VALUE int16 = 20000
 	MATE_CUTOFF     int16 = CHECKMATE_VALUE / 2
-	MAX_DEPTH             = 100
+	MAX_DEPTH       int16 = 100
 )
 
 type Search struct {
@@ -24,27 +24,35 @@ func (search *Search) Run() (best_move dragontoothmg.Move) {
 	pv := PV_Line{}
 	search.nodes = 0
 	start_time := time.Now()
+	search.timer.Start(search.board.Fullmoveno * 2)
 
-	score := search.Negamax(5, 0, &pv)
+	for depth := int16(1); depth < MAX_DEPTH; depth++ {
 
-	total_time := time.Since(start_time).Milliseconds() + 1
+		score := search.Negamax(depth, 0, &pv)
 
-	fmt.Printf(
-		"info depth %d score %s nodes %d nps %d time %d pv %s\n",
-		5,
-		getMateOrCPScore(score),
-		search.nodes,
-		int64(search.nodes*1000)/total_time,
-		total_time,
-		pv,
-	)
+		if search.timer.Stop {
+			break
+		}
+
+		total_time := time.Since(start_time).Milliseconds() + 1
+
+		fmt.Printf(
+			"info depth %d score %s nodes %d nps %d time %d pv %s\n",
+			depth,
+			getMateOrCPScore(score),
+			search.nodes,
+			int64(search.nodes*1000)/total_time,
+			total_time,
+			pv,
+		)
+	}
 
 	return pv.GetPVMove()
 }
 
 func (search *Search) Negamax(depth int16, ply int16, pv *PV_Line) int16 {
 
-	search.nodes = search.nodes + 1
+	search.nodes++
 
 	// println(search.nodes)
 
@@ -58,12 +66,12 @@ func (search *Search) Negamax(depth int16, ply int16, pv *PV_Line) int16 {
 	}
 
 	if search.nodes >= search.timer.MaxNodeCount {
-		search.timer.ForceStop()
+		search.timer.Stop = true
 	}
-	if (search.nodes & 2047) == 0 {
-		search.timer.CheckIfTimeIsUp()
+	if (search.nodes & 0x7FF) == 0 {
+		search.timer.Check()
 	}
-	if search.timer.IsStopped() {
+	if search.timer.Stop && ply > 0 {
 		return 0
 	}
 

@@ -14,18 +14,17 @@ type UCIEngine struct {
 	Search Search
 }
 
-func (e *UCIEngine) reset() {
+func (e *UCIEngine) Reset() {
 	*e = UCIEngine{}
 }
 
-func (e *UCIEngine) uci() {
+func (e *UCIEngine) uciCommandResponse() {
 	fmt.Printf("id name %v\n", ENGINE_NAME)
 	fmt.Printf("id author %v\n", ENGINE_AUTHOR)
 
 	fmt.Print("\nAvailable UCI commands:\n")
 
 	fmt.Print("    * uci\n    * isready\n    * ucinewgame")
-	fmt.Print("\n    * setoption name <NAME> value <VALUE>")
 	fmt.Print("\n    * position")
 	fmt.Print("\n\t* fen <FEN>")
 	fmt.Print("\n\t* startpos")
@@ -39,7 +38,7 @@ func (e *UCIEngine) uci() {
 	fmt.Printf("uciok\n")
 }
 
-func (e *UCIEngine) setOption(command string) {
+func (e *UCIEngine) setOptionCommandResponse(command string) {
 	fields := strings.Fields(command)
 	var option, value string
 	parsingWhat := ""
@@ -60,7 +59,7 @@ func (e *UCIEngine) setOption(command string) {
 	value = strings.TrimSuffix(value, " ")
 }
 
-func (e *UCIEngine) position(command string) {
+func (e *UCIEngine) positionCommandResponse(command string) {
 	// parse position and moves from args
 	// set position in engine
 	args := strings.TrimPrefix(command, "position ")
@@ -92,7 +91,7 @@ func (e *UCIEngine) position(command string) {
 	}
 }
 
-func (e *UCIEngine) Go(command string) {
+func (e *UCIEngine) goCommandResponse(command string) {
 
 	command = strings.TrimPrefix(command, "go")
 	command = strings.TrimPrefix(command, " ")
@@ -131,7 +130,7 @@ func (e *UCIEngine) Go(command string) {
 		int64(increment),
 		int64(moveTime),
 		int16(movesToGo),
-		int8(maxDepth),
+		uint8(maxDepth),
 		maxNodeCount,
 	)
 
@@ -140,41 +139,38 @@ func (e *UCIEngine) Go(command string) {
 	fmt.Printf("bestmove %v\n", best_move.String())
 }
 
-func (e *UCIEngine) quit() {
+func (e *UCIEngine) quitCommandResponse() {
 	// e.engine.uninitializeTT()
 }
 
-func (e *UCIEngine) loop() {
+func (e *UCIEngine) UCILoop() {
 	reader := bufio.NewReader(os.Stdin)
 
-	e.uci()
-	e.reset()
+	e.uciCommandResponse()
+	e.Reset()
 
-	// e.engine.resizeTT(DefaultTTSize, SearchEntrySize)
+	e.Search.board = dragontoothmg.ParseFen(dragontoothmg.Startpos)
 
 	for {
-		command, err := reader.ReadString('\n')
-		if err != nil {
-			panic(err)
-		}
+		command, _ := reader.ReadString('\n')
 		command = strings.Replace(command, "\r\n", "\n", -1)
 
 		if command == "uci\n" {
-			e.uci()
+			e.uciCommandResponse()
 		} else if command == "isready\n" {
-			print("readyok")
+			fmt.Printf("readyok\n")
 		} else if strings.HasPrefix(command, "setoption") {
-			e.setOption(command)
+			e.setOptionCommandResponse(command)
 		} else if strings.HasPrefix(command, "ucinewgame") {
-			e.reset()
+			e.Search = Search{}
 		} else if strings.HasPrefix(command, "position") {
-			e.position(command)
+			e.positionCommandResponse(command)
 		} else if strings.HasPrefix(command, "go") {
-			go e.Go(command)
+			go e.goCommandResponse(command)
 		} else if strings.HasPrefix(command, "stop") {
-			e.Search.timer.ForceStop()
+			e.Search.timer.Stop = true
 		} else if command == "quit\n" {
-			e.quit()
+			e.quitCommandResponse()
 			break
 		}
 	}
