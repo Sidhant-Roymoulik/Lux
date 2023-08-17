@@ -12,13 +12,13 @@ UCI-Compatible Chess Engine Built in Golang
  - [x] Negamax
  - [x] Iterative Deepening
 
-### S-Tier Upgrades
+### Search Upgrades
 
-### A-Tier Upgrades
+### Eval Upgrades
 
-### B-Tier Upgrades
+ - [x] Piece Square Tables from PeSTO
 
-### C-Tier Upgrades
+### Move Ordering Upgrades
 
 ---
 
