@@ -4,7 +4,9 @@ import (
 	"Lux/dragontoothmg"
 	"bufio"
 	"fmt"
+	"math"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -90,52 +92,48 @@ func (e *UCIEngine) position(command string) {
 	}
 }
 
-func (e *UCIEngine) search(command string) {
+func (e *UCIEngine) Go(command string) {
 
-	// command = strings.TrimPrefix(command, "go")
-	// command = strings.TrimPrefix(command, " ")
-	// fields := strings.Fields(command)
+	command = strings.TrimPrefix(command, "go")
+	command = strings.TrimPrefix(command, " ")
+	fields := strings.Fields(command)
 
-	// colorPrefix := "b"
-	// if e.game.Position().Turn() == chess.White {
-	// 	colorPrefix = "w"
-	// }
+	colorPrefix := "b"
+	if e.Search.board.Wtomove {
+		colorPrefix = "w"
+	}
 
-	// // Parse the go command arguments.
-	// timeLeft := int(InfiniteTime)
-	// increment := int(NoValue)
-	// movesToGo := int(NoValue)
-	// maxDepth := uint64(MAX_DEPTH)
-	// maxNodeCount := uint64(math.MaxUint64)
-	// moveTime := uint64(NoValue)
+	// Parse the go command arguments.
+	timeLeft, increment, movesToGo := int(InfiniteTime), int(NoValue), int(NoValue)
+	maxDepth, maxNodeCount, moveTime := uint64(MAX_DEPTH), uint64(math.MaxUint64), uint64(NoValue)
 
-	// for index, field := range fields {
-	// 	if strings.HasPrefix(field, colorPrefix) {
-	// 		if strings.HasSuffix(field, "time") {
-	// 			timeLeft, _ = strconv.Atoi(fields[index+1])
-	// 		} else if strings.HasSuffix(field, "inc") {
-	// 			increment, _ = strconv.Atoi(fields[index+1])
-	// 		}
-	// 	} else if field == "movestogo" {
-	// 		movesToGo, _ = strconv.Atoi(fields[index+1])
-	// 	} else if field == "depth" {
-	// 		maxDepth, _ = strconv.ParseUint(fields[index+1], 10, 8)
-	// 	} else if field == "nodes" {
-	// 		maxNodeCount, _ = strconv.ParseUint(fields[index+1], 10, 64)
-	// 	} else if field == "movetime" {
-	// 		moveTime, _ = strconv.ParseUint(fields[index+1], 10, 64)
-	// 	}
-	// }
+	for index, field := range fields {
+		if strings.HasPrefix(field, colorPrefix) {
+			if strings.HasSuffix(field, "time") {
+				timeLeft, _ = strconv.Atoi(fields[index+1])
+			} else if strings.HasSuffix(field, "inc") {
+				increment, _ = strconv.Atoi(fields[index+1])
+			}
+		} else if field == "movestogo" {
+			movesToGo, _ = strconv.Atoi(fields[index+1])
+		} else if field == "depth" {
+			maxDepth, _ = strconv.ParseUint(fields[index+1], 10, 8)
+		} else if field == "nodes" {
+			maxNodeCount, _ = strconv.ParseUint(fields[index+1], 10, 64)
+		} else if field == "movetime" {
+			moveTime, _ = strconv.ParseUint(fields[index+1], 10, 64)
+		}
+	}
 
-	// // Setup the timer with the go command time control information.
-	// e.engine.timer.Setup(
-	// 	int64(timeLeft),
-	// 	int64(increment),
-	// 	int64(moveTime),
-	// 	int16(movesToGo),
-	// 	uint8(maxDepth),
-	// 	maxNodeCount,
-	// )
+	// Setup the timer with the go command time control information.
+	e.Search.timer.Setup(
+		int64(timeLeft),
+		int64(increment),
+		int64(moveTime),
+		int16(movesToGo),
+		int8(maxDepth),
+		maxNodeCount,
+	)
 
 	// Report the best move found by the engine to the GUI.
 	_, best_move := e.Search.run()
@@ -172,9 +170,9 @@ func (e *UCIEngine) loop() {
 		} else if strings.HasPrefix(command, "position") {
 			e.position(command)
 		} else if strings.HasPrefix(command, "go") {
-			go e.search(command)
+			go e.Go(command)
 		} else if strings.HasPrefix(command, "stop") {
-			// e.engine.timer.ForceStop()
+			e.Search.timer.ForceStop()
 		} else if command == "quit\n" {
 			e.quit()
 			break

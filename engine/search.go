@@ -10,6 +10,7 @@ const (
 
 type Search struct {
 	board dragontoothmg.Board
+	timer TimeManager
 }
 
 func (search Search) run() (score int, best_move dragontoothmg.Move) {
