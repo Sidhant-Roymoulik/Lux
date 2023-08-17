@@ -14,7 +14,7 @@ UCI-Compatible Chess Engine Built in Golang
 
 ### Search Upgrades
 
- - [x] Alpha-Beta Pruning (+340 elo)
+ - [x] Alpha-Beta Pruning (+240 elo)
 
 ### Eval Upgrades
 
