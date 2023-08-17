@@ -1,9 +1,7 @@
 package main
 
-import (
-	"fmt"
-)
+import "Lux/engine"
 
 func main() {
-	fmt.Println("hello world")
+	engine.RunEngine()
 }
