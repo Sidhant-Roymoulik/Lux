@@ -16,7 +16,7 @@ UCI-Compatible Chess Engine Built in Golang
 
 ### Eval Upgrades
 
- - [x] Piece Square Tables from PeSTO
+ - [x] Piece Square Tables from PeSTO (+300 elo)
 
 ### Move Ordering Upgrades
 

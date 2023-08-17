@@ -22,6 +22,7 @@ type Search struct {
 func (search *Search) Run() (best_move dragontoothmg.Move) {
 
 	pv := PV_Line{}
+	best_pv := PV_Line{}
 	search.nodes = 0
 	start_time := time.Now()
 	search.timer.Start(search.board.Fullmoveno * 2)
@@ -36,6 +37,7 @@ func (search *Search) Run() (best_move dragontoothmg.Move) {
 			break
 		}
 
+		best_pv = pv
 		total_time := time.Since(start_time).Milliseconds() + 1
 
 		fmt.Printf(
@@ -45,11 +47,11 @@ func (search *Search) Run() (best_move dragontoothmg.Move) {
 			search.nodes,
 			int64(search.nodes*1000)/total_time,
 			total_time,
-			pv,
+			best_pv,
 		)
 	}
 
-	return pv.GetPVMove()
+	return best_pv.GetPVMove()
 }
 
 func (search *Search) Negamax(depth int16, ply int16, pv *PV_Line) int16 {
@@ -76,7 +78,6 @@ func (search *Search) Negamax(depth int16, ply int16, pv *PV_Line) int16 {
 
 	child_pv := PV_Line{}
 	best_score := -CHECKMATE_VALUE
-	// best_move := moves[0]
 
 	for _, move := range moves {
 
@@ -86,7 +87,6 @@ func (search *Search) Negamax(depth int16, ply int16, pv *PV_Line) int16 {
 
 		if score > best_score {
 			best_score = score
-			// best_move = move
 
 			pv.Update(move, child_pv)
 		}
