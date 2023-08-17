@@ -1,11 +1,7 @@
 package main
 
-import (
-	"Lux/dragontoothmg"
-	"Lux/engine"
-)
+import "Lux/engine"
 
 func main() {
-	dragontoothmg.Init()
 	engine.RunEngine()
 }
