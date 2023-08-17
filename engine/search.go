@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	CHECKMATE_VALUE int16 = 20000
+	CHECKMATE_VALUE int16 = 10000
 	MATE_CUTOFF     int16 = CHECKMATE_VALUE / 2
 	MAX_DEPTH       int16 = 100
 )
@@ -31,7 +31,7 @@ func (search *Search) Run() (best_move dragontoothmg.Move) {
 		depth <= int16(search.timer.MaxDepth) &&
 		search.timer.MaxNodeCount > 0; depth++ {
 
-		score := search.Negamax(depth, 0, &pv)
+		score := search.Negamax(depth, 0, -2*CHECKMATE_VALUE, 2*CHECKMATE_VALUE, &pv)
 
 		if search.timer.IsStopped() {
 			break
@@ -54,7 +54,7 @@ func (search *Search) Run() (best_move dragontoothmg.Move) {
 	return best_pv.GetPVMove()
 }
 
-func (search *Search) Negamax(depth int16, ply int16, pv *PV_Line) int16 {
+func (search *Search) Negamax(depth int16, ply int16, alpha int16, beta int16, pv *PV_Line) int16 {
 
 	search.nodes++
 
@@ -82,11 +82,19 @@ func (search *Search) Negamax(depth int16, ply int16, pv *PV_Line) int16 {
 	for _, move := range moves {
 
 		Unapply := search.board.Apply(move)
-		score := -search.Negamax(depth-1, ply+1, &child_pv)
+		score := -search.Negamax(depth-1, ply+1, -beta, -alpha, &child_pv)
 		Unapply()
 
 		if score > best_score {
 			best_score = score
+		}
+
+		if best_score >= beta {
+			break
+		}
+
+		if best_score > alpha {
+			alpha = best_score
 
 			pv.Update(move, child_pv)
 		}
