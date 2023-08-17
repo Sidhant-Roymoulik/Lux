@@ -8,8 +8,8 @@ UCI-Compatible Chess Engine Built in Golang
 ### Basic Requirements
 
  - [x] UCI Protocol
- - [ ] Time Management
- - [ ] Negamax
+ - [x] Time Management
+ - [x] Negamax
  - [ ] Iterative Deepening
 
 ### S-Tier Upgrades

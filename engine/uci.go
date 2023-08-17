@@ -136,7 +136,7 @@ func (e *UCIEngine) Go(command string) {
 	)
 
 	// Report the best move found by the engine to the GUI.
-	_, best_move := e.Search.run()
+	best_move := e.Search.Run()
 	fmt.Printf("bestmove %v\n", best_move.String())
 }
 
