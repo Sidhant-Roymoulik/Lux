@@ -14,6 +14,8 @@ UCI-Compatible Chess Engine Built in Golang
 
 ### Search Upgrades
 
+ - [x] Alpha-Beta Pruning (+340 elo)
+
 ### Eval Upgrades
 
  - [x] Piece Square Tables from PeSTO (+300 elo)
