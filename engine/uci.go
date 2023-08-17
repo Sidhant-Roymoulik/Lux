@@ -124,13 +124,12 @@ func (e *UCIEngine) goCommandResponse(command string) {
 		}
 	}
 
-	// Setup the timer with the go command time control information.
 	e.Search.timer.Setup(
 		int64(timeLeft),
 		int64(increment),
 		int64(moveTime),
 		int16(movesToGo),
-		uint8(maxDepth),
+		int8(maxDepth),
 		maxNodeCount,
 	)
 
@@ -162,13 +161,13 @@ func (e *UCIEngine) UCILoop() {
 		} else if strings.HasPrefix(command, "setoption") {
 			e.setOptionCommandResponse(command)
 		} else if strings.HasPrefix(command, "ucinewgame") {
-			e.Search = Search{}
+			e.Reset()
 		} else if strings.HasPrefix(command, "position") {
 			e.positionCommandResponse(command)
 		} else if strings.HasPrefix(command, "go") {
 			go e.goCommandResponse(command)
 		} else if strings.HasPrefix(command, "stop") {
-			e.Search.timer.Stop = true
+			e.Search.timer.ForceStop()
 		} else if command == "quit\n" {
 			e.quitCommandResponse()
 			break

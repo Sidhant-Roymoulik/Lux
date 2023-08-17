@@ -26,11 +26,13 @@ func (search *Search) Run() (best_move dragontoothmg.Move) {
 	start_time := time.Now()
 	search.timer.Start(search.board.Fullmoveno * 2)
 
-	for depth := int16(1); depth < MAX_DEPTH; depth++ {
+	for depth := int16(1); depth <= MAX_DEPTH &&
+		depth <= int16(search.timer.MaxDepth) &&
+		search.timer.MaxNodeCount > 0; depth++ {
 
 		score := search.Negamax(depth, 0, &pv)
 
-		if search.timer.Stop {
+		if search.timer.IsStopped() {
 			break
 		}
 
@@ -54,8 +56,6 @@ func (search *Search) Negamax(depth int16, ply int16, pv *PV_Line) int16 {
 
 	search.nodes++
 
-	// println(search.nodes)
-
 	if ply == int16(search.timer.MaxDepth) {
 		return Evaluate(&search.board)
 	}
@@ -66,13 +66,10 @@ func (search *Search) Negamax(depth int16, ply int16, pv *PV_Line) int16 {
 	}
 
 	if search.nodes >= search.timer.MaxNodeCount {
-		search.timer.Stop = true
+		search.timer.ForceStop()
 	}
 	if (search.nodes & 0x7FF) == 0 {
-		search.timer.Check()
-	}
-	if search.timer.Stop && ply > 0 {
-		return 0
+		search.timer.CheckIfTimeIsUp()
 	}
 
 	moves := search.board.GenerateLegalMoves()
@@ -95,6 +92,10 @@ func (search *Search) Negamax(depth int16, ply int16, pv *PV_Line) int16 {
 		}
 
 		child_pv.Clear()
+
+		if search.timer.IsStopped() {
+			return 0
+		}
 	}
 
 	if len(moves) == 0 {
