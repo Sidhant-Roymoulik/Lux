@@ -20,24 +20,28 @@ Surely never been done before
 
 ### Move Ordering Upgrades
 
-### Benchmarking Results
+---
+
+## Benchmarking Results
 
 ---
 
-### Resources
+## Resources
 
 [Chessprogramming wiki](https://www.chessprogramming.org/Main_Page) is the chess engine dev's Library of Alexandria. Definitely go check it out.
-
-### Other Engine Insiprations
-
-[antikythera](https://github.com/0hq/antikythera)
-[Bit-Genie](https://github.com/Aryan1508/Bit-Genie)
-[Blunder](https://github.com/algerbrex/blunder)
-[Rice](https://github.com/rafid-dev/rice)
-And of course, [Stockfish](https://github.com/official-stockfish/Stockfish)
-
----
 
 ### Libraries 
 
 Chess package for C++: https://github.com/Disservin/chess-library
+
+### Other Engine Insiprations
+
+[antikythera](https://github.com/0hq/antikythera)
+
+[Bit-Genie](https://github.com/Aryan1508/Bit-Genie)
+
+[Blunder](https://github.com/algerbrex/blunder)
+
+[Rice](https://github.com/rafid-dev/rice)
+
+And of course, [Stockfish](https://github.com/official-stockfish/Stockfish)
