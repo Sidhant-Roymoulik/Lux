@@ -1,5 +1,7 @@
 # Lux
-UCI-Compatible Chess Engine Built in Golang
+UCI-Compatible Chess Engine Built in C++
+
+Surely never been done before
 
 ---
 
@@ -7,20 +9,18 @@ UCI-Compatible Chess Engine Built in Golang
 
 ### Basic Requirements
 
- - [x] UCI Protocol
- - [x] Time Management
- - [x] Negamax
- - [x] Iterative Deepening
+ - [ ] UCI Protocol
+ - [ ] Time Management
+ - [ ] Negamax
+ - [ ] Iterative Deepening
 
 ### Search Upgrades
 
- - [x] Alpha-Beta Pruning (+240 elo)
-
 ### Eval Upgrades
 
- - [x] Piece Square Tables from PeSTO (+300 elo)
-
 ### Move Ordering Upgrades
+
+### Benchmarking Results
 
 ---
 
@@ -28,8 +28,16 @@ UCI-Compatible Chess Engine Built in Golang
 
 [Chessprogramming wiki](https://www.chessprogramming.org/Main_Page) is the chess engine dev's Library of Alexandria. Definitely go check it out.
 
+### Other Engine Insiprations
+
+[antikythera](https://github.com/0hq/antikythera)
+[Bit-Genie](https://github.com/Aryan1508/Bit-Genie)
+[Blunder](https://github.com/algerbrex/blunder)
+[Rice](https://github.com/rafid-dev/rice)
+And of course, [Stockfish](https://github.com/official-stockfish/Stockfish)
+
 ---
 
 ### Libraries 
 
-Chess package for Go: https://github.com/dylhunn/dragontoothmg
+Chess package for C++: https://github.com/Disservin/chess-library
