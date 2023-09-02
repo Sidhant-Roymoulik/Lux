@@ -1,0 +1,16 @@
+.vscode
+
+*.d
+*.o
+*.obj
+*.exe
+*.bat
+*.out
+*.app
+*.stackdump
+*.epd
+*.json
+*.pgn
+*.txt
+*.json
+*.sh
