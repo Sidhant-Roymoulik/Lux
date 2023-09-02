@@ -10,7 +10,7 @@ Surely never been done before
 ### Basic Requirements
 
  - [ ] UCI Protocol
- - [ ] Time Management
+ - [x] Time Management
  - [ ] Negamax
  - [ ] Iterative Deepening
 
