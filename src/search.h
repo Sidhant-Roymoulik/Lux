@@ -8,7 +8,7 @@
 
 using namespace chess;
 
-struct Search_Info {
+struct SearchInfo {
     int score           = 0;
     Ply depth           = 0;
     uint64_t node_limit = 0;
@@ -19,21 +19,21 @@ struct Search_Info {
     bool nodes_set = false;
 };
 
-struct Search_Stack {
+struct SearchStack {
     Ply ply{};
     Score static_eval{};
 };
 
-struct Search_Thread {
+struct SearchThread {
     Board board;
     Time_Manager tm;
-    Search_Info& info;
+    SearchInfo& info;
 
     uint64_t nodes = 0;
 
     Move bestmove = Move::NO_MOVE;
 
-    Search_Thread(Search_Info& i) : info(i), board(STARTPOS) { clear(); }
+    SearchThread(SearchInfo& i) : info(i), board(STARTPOS) { clear(); }
 
     inline void clear() { nodes = 0; }
     inline void initialize() {
@@ -51,9 +51,16 @@ struct Search_Thread {
 
     inline void applyFen(std::string fen) { board.setFen(fen); }
 
+    inline bool stop_early() { return info.time_set && (tm.check_time() || info.stopped); }
     void check_time() {
         if ((info.time_set && tm.check_time()) || (info.nodes_set && nodes >= info.node_limit)) {
             info.stopped = true;
         }
     }
 };
+
+template <bool print_info>
+void iterative_deepening(SearchThread& st);
+
+int aspiration_window(int prevEval, int depth, SearchThread& st, Move& bestmove);
+int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss);

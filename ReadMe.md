@@ -24,8 +24,8 @@
 
  - [x] UCI Protocol
  - [x] Time Management
- - [ ] Negamax
- - [ ] Iterative Deepening
+ - [x] Negamax
+ - [x] Iterative Deepening
 
 ### Search Upgrades
 

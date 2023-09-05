@@ -10,8 +10,10 @@ using namespace chess;
 using Ply  = int16_t;
 using Hash = uint64_t;
 
-constexpr Ply MAX_DEPTH = 100;
-constexpr Ply MAX_PLY   = 100;
+constexpr Ply MAX_DEPTH   = 100;
+constexpr Ply MAX_PLY     = 100;
+constexpr int CHECKMATE   = 100000;
+constexpr int MATE_CUTOFF = 50000;
 
 struct Score {
     int mg = 0;

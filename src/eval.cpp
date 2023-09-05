@@ -9,11 +9,8 @@
 
 using namespace chess;
 
-Score score[2] = {Score(), Score()};
-
-int evaluate(Search_Thread& st) {
-    score[0] = Score();
-    score[1] = Score();
+int evaluate(SearchThread& st) {
+    Score score[2];
 
     int gamephase = 0;
     int turn      = (int)st.board.sideToMove();

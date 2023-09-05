@@ -9,6 +9,7 @@
 #include "chess.hpp"
 #include "eval.h"
 #include "search.h"
+#include "thread.h"
 #include "types.h"
 
 using namespace chess;
@@ -27,9 +28,10 @@ bool IsUci = false;
 void uci_loop() {
     std::cout << NAME << " Copyright (C) 2023 " << AUTHOR << std::endl;
 
-    Search_Info info;
+    SearchInfo info;
+    ThreadHandler threadHandle;
 
-    auto searchThread = std::make_unique<Search_Thread>(info);
+    auto searchThread = std::make_unique<SearchThread>(info);
 
     std::string command;
     std::string token;
@@ -42,9 +44,11 @@ void uci_loop() {
 
         if (token == "stop") {
             info.stopped = true;
+            threadHandle.stop();
 
         } else if (token == "quit") {
             info.stopped = true;
+            threadHandle.stop();
             break;
 
         } else if (token == "isready") {
@@ -197,6 +201,8 @@ void uci_loop() {
 
             info.stopped   = false;
             info.print_uci = IsUci;
+
+            threadHandle.start(*searchThread);
         }
 
         /* Debugging Commands */

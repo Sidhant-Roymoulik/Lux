@@ -2,4 +2,4 @@
 
 #include "search.h"
 
-int evaluate(Search_Thread& st);
+int evaluate(SearchThread& st);
