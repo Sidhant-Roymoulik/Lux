@@ -1,8 +1,11 @@
+#pragma once
+
 #include <chrono>
 #include <iostream>
 #include <sstream>
 
 #include "chess.hpp"
+#include "eval.h"
 #include "search.h"
 #include "types.h"
 
@@ -193,6 +196,36 @@ void uci_loop() {
 
             info.stopped   = false;
             info.print_uci = IsUci;
+        }
+
+        /* Debugging Commands */
+        else if (token == "print") {
+            std::cout << searchThread->board << std::endl;
+            continue;
+        } else if (token == "bencheval") {
+            long long samples = 1000000000;
+            long long timeSum = 0;
+            int output;
+            for (int i = 0; i < samples; i++) {
+                auto start = std::chrono::high_resolution_clock::now();
+                output     = evaluate(*searchThread);
+                auto stop  = std::chrono::high_resolution_clock::now();
+                timeSum += std::chrono::duration_cast<std::chrono::nanoseconds>(
+                               stop - start)
+                               .count();
+            }
+            auto timeAvg = (double)timeSum / samples;
+            std::cout << "Output: " << output
+                      << " , Eval/s: " << 1000000000 * samples / timeSum
+                      << " , Time: " << timeAvg << "ns" << std::endl;
+
+            continue;
+
+        } else if (token == "eval") {
+            std::cout << "Eval: " << evaluate(*searchThread) << std::endl;
+
+        } else if (token == "repetition") {
+            std::cout << searchThread->board.isRepetition() << std::endl;
         }
     }
 

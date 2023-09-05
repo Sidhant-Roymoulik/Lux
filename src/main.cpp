@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "uci.cpp"
+#include "uci.h"
 
 int main() {
     uci_loop();

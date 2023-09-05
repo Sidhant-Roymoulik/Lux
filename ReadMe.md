@@ -22,7 +22,7 @@
 
 ### Basic Requirements
 
- - [ ] UCI Protocol
+ - [x] UCI Protocol
  - [x] Time Management
  - [ ] Negamax
  - [ ] Iterative Deepening
