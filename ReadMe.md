@@ -29,7 +29,12 @@
 
 ### Search Upgrades
 
+ - [x] AlphaBeta Negamax
+
 ### Eval Upgrades
+
+ - [x] Material Score
+ - [x] Piece-Square Tables
 
 ### Move Ordering Upgrades
 
