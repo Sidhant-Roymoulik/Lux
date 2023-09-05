@@ -9,7 +9,7 @@
 using namespace chess;
 
 struct Search_Info {
-    Score score         = 0;
+    int score           = 0;
     Ply depth           = 0;
     uint64_t node_limit = 0;
 
@@ -46,16 +46,13 @@ struct Search_Thread {
     inline Time start_time() { return tm.start_time; }
 
     inline void makeMove(Move& move) { board.makeMove(move); }
-    inline void makeMove(std::string move_uci) {
-        board.makeMove(uci::uciToMove(board, move_uci));
-    }
+    inline void makeMove(std::string move_uci) { board.makeMove(uci::uciToMove(board, move_uci)); }
     inline void unmakeMove(Move& move) { board.unmakeMove(move); }
 
     inline void applyFen(std::string fen) { board.setFen(fen); }
 
     void check_time() {
-        if ((info.time_set && tm.check_time()) ||
-            (info.nodes_set && nodes >= info.node_limit)) {
+        if ((info.time_set && tm.check_time()) || (info.nodes_set && nodes >= info.node_limit)) {
             info.stopped = true;
         }
     }

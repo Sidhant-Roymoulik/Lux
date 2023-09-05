@@ -185,8 +185,7 @@ void uci_loop() {
             }
 
             info.depth = depth;
-            if (searchThread->tm.wtime != -1 || searchThread->tm.btime != -1 ||
-                searchThread->tm.movetime != -1) {
+            if (searchThread->tm.wtime != -1 || searchThread->tm.btime != -1 || searchThread->tm.movetime != -1) {
                 info.time_set = true;
             }
 
@@ -210,13 +209,10 @@ void uci_loop() {
                 auto start = std::chrono::high_resolution_clock::now();
                 output     = evaluate(*searchThread);
                 auto stop  = std::chrono::high_resolution_clock::now();
-                timeSum += std::chrono::duration_cast<std::chrono::nanoseconds>(
-                               stop - start)
-                               .count();
+                timeSum += std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start).count();
             }
             auto timeAvg = (double)timeSum / samples;
-            std::cout << "Output: " << output
-                      << " , Eval/s: " << 1000000000 * samples / timeSum
+            std::cout << "Output: " << output << " , Eval/s: " << 1000000000 * samples / timeSum
                       << " , Time: " << timeAvg << "ns" << std::endl;
 
             continue;

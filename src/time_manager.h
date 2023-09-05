@@ -10,8 +10,7 @@ using namespace chess;
 using Time = std::chrono::milliseconds::rep;  // A value in milliseconds
 static_assert(sizeof(Time) == sizeof(int64_t), "Time should be 64 bits");
 inline Time now() {
-    return std::chrono::duration_cast<std::chrono::milliseconds>(
-               std::chrono::steady_clock::now().time_since_epoch())
+    return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch())
         .count();
 }
 
