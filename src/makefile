@@ -94,7 +94,7 @@ EXE     := $(NAME)$(SUFFIX)
 
 Lux: $(TARGET)
 clean:
-	rm -rf *.o $(DEPENDS)
+	del *.o $(DEPENDS)
 
 $(TARGET): $(OBJECTS)
 	$(CXX) -o $(EXE) $^ $(CXXFLAGS) $(NATIVE) $(INSTRUCTIONS) $(FLAGS) -flto

@@ -1,14 +1,12 @@
 #pragma once
 
-#include "chess.hpp"
-#include "search.h"
 #include "types.h"
 
 #define S Score
 
 int GAMEPHASE[6] = {0, 1, 1, 2, 4, 0};
 
-Score PIECE_VALUES[6] = {S(82, 94), S(337, 281), S(365, 297), S(477, 512), S(1025, 936), S(20000, 20000)};
+Score PIECE_VALUES[6] = {S(111, 80), S(416, 307), S(402, 306), S(533, 565), S(1293, 944), S(20000, 20000)};
 
 Score PST[6][64] = {
     // Pawn PSTS
