@@ -1,7 +1,11 @@
+#pragma once
 
 #include <cmath>
 
+#include "chess.hpp"
 #include "types.h"
+
+using namespace chess;
 
 using Time = std::chrono::milliseconds::rep;  // A value in milliseconds
 static_assert(sizeof(Time) == sizeof(int64_t), "Time should be 64 bits");

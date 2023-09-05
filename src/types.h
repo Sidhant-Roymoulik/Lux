@@ -1,4 +1,4 @@
-#include <chrono>
+#pragma once
 
 #include "chess.hpp"
 
@@ -11,5 +11,5 @@ using Ply   = int16_t;
 using Score = int32_t;
 using Hash  = uint64_t;
 
-constexpr Ply MAX_DEPTH = 100;
-constexpr Ply MAX_PLY   = 100;
+const Ply MAX_DEPTH = 100;
+const Ply MAX_PLY   = 100;

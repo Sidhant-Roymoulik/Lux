@@ -2,8 +2,11 @@
 #include <iostream>
 #include <sstream>
 
+#include "chess.hpp"
 #include "search.h"
 #include "types.h"
+
+using namespace chess;
 
 bool TUNING = false;
 
@@ -17,7 +20,7 @@ static void uci_send_id() {
 bool IsUci = false;
 
 void uci_loop() {
-    std::cout << "Lux Copyright (C) 2023 Sidhant Roymoulik" << std::endl;
+    std::cout << NAME << " Copyright (C) 2023 " << AUTHOR << std::endl;
 
     Search_Info info;
 
@@ -191,51 +194,7 @@ void uci_loop() {
             info.stopped   = false;
             info.print_uci = IsUci;
         }
-
-        /* Debugging Commands */
-        else if (token == "print") {
-            std::cout << searchThread->board << std::endl;
-            continue;
-        } else if (token == "bencheval") {
-            // long samples      = 1000000000;
-            // long long timeSum = 0;
-            // int output;
-            // for (int i = 0; i < samples; i++) {
-            //     auto start = std::chrono::high_resolution_clock::now();
-            //     output     = evaluate(*searchThread);
-            //     auto stop  = std::chrono::high_resolution_clock::now();
-            //     timeSum +=
-            //     std::chrono::duration_cast<std::chrono::nanoseconds>(
-            //                    stop - start)
-            //                    .count();
-            // }
-            // auto timeAvg = (double)timeSum / samples;
-            // std::cout << "Output: " << output << " , Time: " << timeAvg <<
-            // "ns"
-            //           << std::endl;
-            // continue;
-
-        } else if (token == "eval") {
-            // std::cout << "Eval: " << evaluate(*searchThread) << std::endl;
-
-        } else if (token == "repetition") {
-            std::cout << searchThread->board.isRepetition() << std::endl;
-
-        } else if (token == "side") {
-            std::cout << (searchThread->board.sideToMove() == Color::WHITE
-                              ? "White"
-                              : "Black")
-                      << std::endl;
-
-        } else if (token == "bench") {
-            info.depth    = 13;
-            info.time_set = false;
-            // StartBenchmark(*searchThread);
-        }
     }
 
     std::cout << std::endl;
-    if (!info.print_uci) {
-        std::cout << "\u001b[0m";
-    }
 }

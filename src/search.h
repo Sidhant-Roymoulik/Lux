@@ -1,5 +1,8 @@
+#pragma once
+
 #include <memory>
 
+#include "chess.hpp"
 #include "time_manager.h"
 #include "types.h"
 
@@ -57,9 +60,3 @@ struct Search_Thread {
         }
     }
 };
-
-// template <bool print_info>
-// void iterative_deepening(Search_Thread& st);
-
-// int negamax(int alpha, int beta, int depth, Search_Thread& st,
-//             Search_Stack* ss);
