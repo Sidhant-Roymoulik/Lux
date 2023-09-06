@@ -30,6 +30,7 @@
 ### Search Upgrades
 
  - [x] AlphaBeta Negamax
+ - [x] Quiesence Search
 
 ### Eval Upgrades
 

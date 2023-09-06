@@ -106,26 +106,26 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
     if (st.info.stopped) return 0;
     // Ply cap to prevent endless search
     if (ss->ply > MAX_PLY - 1) return evaluate(st);
-    if (depth <= 0) return evaluate(st);
+    if (depth <= 0) {
+        st.nodes--;
+        return q_search(alpha, beta, st, ss);
+        // return evaluate(st);
+    }
 
-    Board& board  = st.board;
     bool root     = (ss->ply == 0);
-    bool in_check = board.inCheck();
+    bool in_check = st.board.inCheck();
 
     if (!root) {
-        if (board.isRepetition()) {
-            return 0;
-        }
+        if (st.board.isRepetition()) return 0;
     }
 
     int start_alpha = alpha;
     int best_score  = -2 * CHECKMATE;
     int new_score   = 0;
     int move_count  = 0;
-    Move bestmove   = Move::NO_MOVE;
 
     Movelist moves;
-    movegen::legalmoves(moves, board);
+    movegen::legalmoves(moves, st.board);
 
     for (auto& move : moves) {
         st.makeMove(move);
@@ -139,7 +139,6 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
 
         if (new_score > best_score) {
             best_score = new_score;
-            bestmove   = move;
 
             if (root) st.bestmove = move;
 
@@ -150,7 +149,54 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
         }
     }
 
-    if (move_count == 0) in_check ? ss->ply - CHECKMATE : 0;
+    if (move_count == 0) best_score = in_check ? ss->ply - CHECKMATE : 0;
+
+    return best_score;
+}
+
+int q_search(int alpha, int beta, SearchThread& st, SearchStack* ss) {
+    // Increment total nodes
+    st.nodes++;
+
+    // Check for time up every 2048 nodes
+    if ((st.nodes & 2047) == 0) st.check_time();
+    // Exit search if time over
+    if (st.info.stopped) return 0;
+
+    if (st.board.isRepetition()) return 0;
+    // Ply cap to prevent endless search
+    if (ss->ply > MAX_PLY - 1) return evaluate(st);
+
+    // Delta Pruning
+    int best_score = evaluate(st);
+    alpha          = std::max(alpha, best_score);
+    if (alpha >= beta) return beta;
+
+    int new_score  = 0;
+    int move_count = 0;
+
+    Movelist moves;
+    movegen::legalmoves<MoveGenType::CAPTURE>(moves, st.board);
+
+    for (auto& move : moves) {
+        st.makeMove(move);
+
+        (ss + 1)->ply = ss->ply + 1;
+        move_count++;
+
+        new_score = -q_search(-beta, -alpha, st, ss + 1);
+
+        st.unmakeMove(move);
+
+        if (new_score > best_score) {
+            best_score = new_score;
+
+            alpha = std::max(alpha, best_score);
+            if (alpha >= beta) {
+                break;
+            }
+        }
+    }
 
     return best_score;
 }

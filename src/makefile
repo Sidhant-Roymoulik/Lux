@@ -6,7 +6,7 @@ CXXFLAGS  :=  -Wall -Wcast-qual -fno-exceptions -std=c++17 -pedantic -Wextra -Wd
 NATIVE     = -march=native
 
 # engine name
-NAME      := Lux
+NAME      := Lux-0.2
 
 # Detect Windows
 ifeq ($(OS), Windows_NT)
