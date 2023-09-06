@@ -6,6 +6,7 @@
 #include <iostream>
 #include <sstream>
 
+#include "bench.h"
 #include "chess.hpp"
 #include "eval.h"
 #include "search.h"
@@ -209,6 +210,7 @@ void uci_loop() {
         else if (token == "print") {
             std::cout << searchThread->board << std::endl;
             continue;
+
         } else if (token == "bencheval") {
             long long samples = 1000000000;
             long long timeSum = 0;
@@ -230,6 +232,8 @@ void uci_loop() {
 
         } else if (token == "repetition") {
             std::cout << searchThread->board.isRepetition() << std::endl;
+        } else if (token == "bench") {
+            StartBenchmark(*searchThread);
         }
     }
 

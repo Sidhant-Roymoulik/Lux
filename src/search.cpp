@@ -111,6 +111,16 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
     bool is_root  = (ss->ply == 0);
     bool in_check = board.inCheck();
 
+    if (!is_root) {
+        if (ss->ply > MAX_PLY - 1) {
+            return evaluate(st);
+        }
+
+        if (board.isRepetition()) {
+            return 0;
+        }
+    }
+
     int bestscore  = -CHECKMATE;
     int move_count = 0;
     int oldAlpha   = alpha;
