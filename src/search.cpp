@@ -97,81 +97,60 @@ int aspiration_window(int prevEval, int depth, SearchThread& st, Move& bestmove)
 }
 
 int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
+    // Increment total nodes
     st.nodes++;
 
-    if (depth <= 0) {
-        return evaluate(st);
-    }
-
-    if ((st.nodes & 2047) == 0) {
-        st.check_time();
-    }
+    // Check for time up every 2048 nodes
+    if ((st.nodes & 2047) == 0) st.check_time();
+    // Exit search if time over
+    if (st.info.stopped) return 0;
+    // Ply cap to prevent endless search
+    if (ss->ply > MAX_PLY - 1) return evaluate(st);
+    if (depth <= 0) return evaluate(st);
 
     Board& board  = st.board;
-    bool is_root  = (ss->ply == 0);
+    bool root     = (ss->ply == 0);
     bool in_check = board.inCheck();
 
-    if (!is_root) {
-        if (ss->ply > MAX_PLY - 1) {
-            return evaluate(st);
-        }
-
+    if (!root) {
         if (board.isRepetition()) {
             return 0;
         }
     }
 
-    int bestscore  = -CHECKMATE;
-    int move_count = 0;
-    int oldAlpha   = alpha;
-    Move bestmove  = Move::NO_MOVE;
+    int start_alpha = alpha;
+    int best_score  = -2 * CHECKMATE;
+    int new_score   = 0;
+    int move_count  = 0;
+    Move bestmove   = Move::NO_MOVE;
 
     Movelist moves;
-    movegen::legalmoves(moves, st.board);
+    movegen::legalmoves(moves, board);
 
     for (auto& move : moves) {
         st.makeMove(move);
 
         (ss + 1)->ply = ss->ply + 1;
-
-        st.nodes++;
         move_count++;
 
-        if (is_root && depth == 1 && move_count == 1) {
-            st.bestmove = move;
-        }
-
-        int score = -negamax(-beta, -alpha, depth - 1, st, ss + 1);
+        new_score = -negamax(-beta, -alpha, depth - 1, st, ss + 1);
 
         st.unmakeMove(move);
 
-        if (st.info.stopped && !is_root) {
-            return 0;
-        }
+        if (new_score > best_score) {
+            best_score = new_score;
+            bestmove   = move;
 
-        if (score > bestscore) {
-            bestscore = score;
+            if (root) st.bestmove = move;
 
-            if (score > alpha) {
-                alpha    = score;
-                bestmove = move;
-
-                if (score >= beta) {
-                    break;
-                }
+            alpha = std::max(alpha, best_score);
+            if (alpha >= beta) {
+                break;
             }
         }
-
-        if (st.info.stopped && is_root && st.bestmove != Move::NO_MOVE) {
-            break;
-        }
     }
 
-    if (move_count == 0) bestscore = in_check ? ss->ply - CHECKMATE : 0;
+    if (move_count == 0) in_check ? ss->ply - CHECKMATE : 0;
 
-    if (alpha != oldAlpha) {
-        st.bestmove = bestmove;
-    }
-
-    return bestscore;
+    return best_score;
 }
