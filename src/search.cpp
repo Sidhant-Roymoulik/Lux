@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "eval.h"
+#include "move_score.h"
 #include "types.h"
 
 // Explicit template instantiation
@@ -122,16 +123,18 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
     int start_alpha = alpha;
     int best_score  = -2 * CHECKMATE;
     int new_score   = 0;
-    int move_count  = 0;
 
     Movelist moves;
     movegen::legalmoves(moves, st.board);
+    score_moves(st, moves);
 
-    for (auto& move : moves) {
+    for (int i = 0; i < moves.size(); i++) {
+        moves.sort(i);
+        Move move = moves[i];
+
         st.makeMove(move);
 
         (ss + 1)->ply = ss->ply + 1;
-        move_count++;
 
         new_score = -negamax(-beta, -alpha, depth - 1, st, ss + 1);
 
@@ -149,7 +152,7 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
         }
     }
 
-    if (move_count == 0) best_score = in_check ? ss->ply - CHECKMATE : 0;
+    if (moves.size() == 0) best_score = in_check ? ss->ply - CHECKMATE : 0;
 
     return best_score;
 }
@@ -172,17 +175,19 @@ int q_search(int alpha, int beta, SearchThread& st, SearchStack* ss) {
     alpha          = std::max(alpha, best_score);
     if (alpha >= beta) return beta;
 
-    int new_score  = 0;
-    int move_count = 0;
+    int new_score = 0;
 
     Movelist moves;
     movegen::legalmoves<MoveGenType::CAPTURE>(moves, st.board);
+    score_moves(st, moves);
 
-    for (auto& move : moves) {
+    for (int i = 0; i < moves.size(); i++) {
+        moves.sort(i);
+        Move move = moves[i];
+
         st.makeMove(move);
 
         (ss + 1)->ply = ss->ply + 1;
-        move_count++;
 
         new_score = -q_search(-beta, -alpha, st, ss + 1);
 

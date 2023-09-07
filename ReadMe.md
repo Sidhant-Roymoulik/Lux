@@ -39,6 +39,8 @@
 
 ### Move Ordering Upgrades
 
+ - [x] MVV-LVA
+
 ---
 
 ## Benchmarking Results
@@ -64,6 +66,7 @@ Chess package for C++: https://github.com/Disservin/chess-library
 [Rice](https://github.com/rafid-dev/rice)
 
 And of course, [Stockfish](https://github.com/official-stockfish/Stockfish)
+
 
 [downloads-badge]:https://img.shields.io/github/downloads/Sidhant-Roymoulik/Lux/total?color=success&style=for-the-badge
 
