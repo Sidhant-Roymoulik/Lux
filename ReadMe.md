@@ -102,7 +102,7 @@ Finished: nodes                              671255865 nps 4157052
 
 ## Resources
 
-[Chessprogramming wiki](https://www.chessprogramming.org/Main_Page) is the chess engine dev's Library of Alexandria. Definitely go check it out.
+[Chessprogramming wiki](https://www.chessprogramming.org/Main_Page) has a lot of information but can be outdated and can lack pseudocode.
 
 ### Libraries 
 
