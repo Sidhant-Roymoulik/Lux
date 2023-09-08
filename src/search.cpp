@@ -105,22 +105,29 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
     if ((st.nodes & 2047) == 0) st.check_time();
     // Exit search if time over
     if (st.info.stopped) return 0;
-    // Ply cap to prevent endless search
-    if (ss->ply >= MAX_PLY) return evaluate(st);
     // If you reach 0-depth drop into q-search
     if (depth <= 0) {
         st.nodes--;
         return q_search(alpha, beta, st, ss);
     }
 
-    bool root     = (ss->ply == 0);
-    bool in_check = st.board.inCheck();
+    bool root = (ss->ply == 0);
 
     if (!root) {
+        // Ply cap to prevent endless search
+        if (ss->ply >= MAX_PLY) return evaluate(st);
+
         // Check for draw by repetition
         if (st.board.isRepetition()) return 0;
+
+        alpha = std::max(alpha, -CHECKMATE + ss->ply);
+        beta  = std::min(beta, CHECKMATE - ss->ply - 1);
+        if (alpha >= beta) {
+            return alpha;
+        }
     }
 
+    bool in_check  = st.board.inCheck();
     int best_score = -2 * CHECKMATE;
     int new_score  = 0;
 
