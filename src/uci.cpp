@@ -21,18 +21,25 @@ static void uci_send_id() {
     std::cout << "id name " << NAME << std::endl;
     std::cout << "id author " << AUTHOR << std::endl;
 
+    std::cout << "option name Threads type spin default 1 min 1 max 1" << std::endl;
+
     std::cout << "uciok" << std::endl;
 }
 
 bool IsUci = false;
 
-void uci_loop() {
+void uci_loop(int argv, char **argc) {
     std::cout << NAME << " Copyright (C) 2023 " << AUTHOR << std::endl;
 
     SearchInfo info;
     ThreadHandler threadHandle;
 
     auto searchThread = std::make_unique<SearchThread>(info);
+
+    if (argv > 1 && std::string{argc[1]} == "bench") {
+        StartBenchmark(*searchThread);
+        exit(0);
+    }
 
     std::string command;
     std::string token;

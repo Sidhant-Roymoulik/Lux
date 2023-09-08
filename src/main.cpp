@@ -2,8 +2,8 @@
 
 #include "uci.h"
 
-int main() {
-    uci_loop();
+int main(int argv, char **argc) {
+    uci_loop(argv, argc);
 
     return 0;
 }
