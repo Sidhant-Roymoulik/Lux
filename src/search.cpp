@@ -106,23 +106,23 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
     // Exit search if time over
     if (st.info.stopped) return 0;
     // Ply cap to prevent endless search
-    if (ss->ply > MAX_PLY - 1) return evaluate(st);
+    if (ss->ply >= MAX_PLY) return evaluate(st);
+    // If you reach 0-depth drop into q-search
     if (depth <= 0) {
         st.nodes--;
         return q_search(alpha, beta, st, ss);
-        // return evaluate(st);
     }
 
     bool root     = (ss->ply == 0);
     bool in_check = st.board.inCheck();
 
     if (!root) {
+        // Check for draw by repetition
         if (st.board.isRepetition()) return 0;
     }
 
-    int start_alpha = alpha;
-    int best_score  = -2 * CHECKMATE;
-    int new_score   = 0;
+    int best_score = -2 * CHECKMATE;
+    int new_score  = 0;
 
     Movelist moves;
     movegen::legalmoves(moves, st.board);
@@ -166,9 +166,10 @@ int q_search(int alpha, int beta, SearchThread& st, SearchStack* ss) {
     // Exit search if time over
     if (st.info.stopped) return 0;
 
-    if (st.board.isRepetition()) return 0;
     // Ply cap to prevent endless search
     if (ss->ply > MAX_PLY - 1) return evaluate(st);
+    // Check for draw by repetition
+    if (st.board.isRepetition()) return 0;
 
     // Delta Pruning
     int best_score = evaluate(st);
