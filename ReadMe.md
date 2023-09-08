@@ -44,6 +44,8 @@
 ---
 
 ## Benchmarking Results
+CPU: 11th Gen Intel(R) Core(TM) i3-1115G4 @ 3.00GHz
+
 Depth = 7
 ```
 Position [ 1] -> cp    71 move     O-O    19634037 nodes 4283167 nps
