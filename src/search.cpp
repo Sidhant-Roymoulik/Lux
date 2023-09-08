@@ -25,7 +25,7 @@ void iterative_deepening(SearchThread& st) {
     Move bestmove = Move::NO_MOVE;
 
     for (int current_depth = 1; current_depth <= info.depth; current_depth++) {
-        score = aspiration_window(score, current_depth, st, bestmove);
+        score = aspiration_window(score, current_depth, st);
 
         if (st.info.stopped || st.stop_early()) {
             break;
@@ -88,7 +88,7 @@ void iterative_deepening(SearchThread& st) {
     }
 }
 
-int aspiration_window(int prevEval, int depth, SearchThread& st, Move& bestmove) {
+int aspiration_window(int prevEval, int depth, SearchThread& st) {
     SearchStack stack[MAX_PLY + 10], *ss = stack + 7;
 
     int alpha = -CHECKMATE;
@@ -120,6 +120,7 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
         // Check for draw by repetition
         if (st.board.isRepetition()) return 0;
 
+        // Mate Distance Pruning
         alpha = std::max(alpha, -CHECKMATE + ss->ply);
         beta  = std::min(beta, CHECKMATE - ss->ply - 1);
         if (alpha >= beta) {
