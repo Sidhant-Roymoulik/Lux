@@ -3,7 +3,7 @@
 void StartBenchmark(SearchThread& st) {
     SearchInfo& info = st.info;
 
-    info.depth    = 5;
+    info.depth    = 7;
     info.time_set = false;
 
     uint64_t nodes        = 0;
@@ -23,13 +23,13 @@ void StartBenchmark(SearchThread& st) {
         nodes += st.nodes;
         time_elapsed += (end - start);
 
-        printf("Position [%2d] -> cp %5d move %5s %11lld nodes %d nps", int(count), int(info.score),
+        printf("Position [%2d] -> cp %5d move %7s %11lld nodes %d nps", int(count), int(info.score),
                uci::moveToSan(st.board, st.bestmove).c_str(), nodes,
                static_cast<int>(1000.0f * nodes / (time_elapsed + 1)));
         std::cout << std::endl;
     }
 
-    printf("Finished: %38lld nodes %d nps\n", static_cast<uint64_t>(nodes),
+    printf("Finished: %40lld nodes %d nps\n", static_cast<uint64_t>(nodes),
            static_cast<int>(1000.0f * nodes / (time_elapsed + 1)));
     std::cout << std::flush;
 }
