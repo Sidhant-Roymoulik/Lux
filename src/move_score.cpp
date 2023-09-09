@@ -8,8 +8,13 @@
 
 using namespace chess;
 
-void score_moves(SearchThread& st, Movelist& moves) {
+void score_moves(SearchThread& st, Movelist& moves, Move tt_move) {
     for (int i = 0; i < moves.size(); i++) {
+        if (moves[i] == tt_move) {
+            moves[i].setScore(30000);
+            continue;
+        }
+
         int victim   = (int)st.board.at<PieceType>(moves[i].to());
         int attacker = (int)st.board.at<PieceType>(moves[i].from());
 

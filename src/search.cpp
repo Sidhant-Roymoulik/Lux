@@ -146,7 +146,7 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
 
     Movelist moves;
     movegen::legalmoves(moves, st.board);
-    score_moves(st, moves);
+    score_moves(st, moves, tte.move);
 
     for (int i = 0; i < moves.size(); i++) {
         moves.sort(i);
@@ -219,7 +219,7 @@ int q_search(int alpha, int beta, SearchThread& st, SearchStack* ss) {
 
     Movelist moves;
     movegen::legalmoves<MoveGenType::CAPTURE>(moves, st.board);
-    score_moves(st, moves);
+    score_moves(st, moves, tte.move);
 
     for (int i = 0; i < moves.size(); i++) {
         moves.sort(i);

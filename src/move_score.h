@@ -11,4 +11,4 @@ constexpr int16_t mvv_lva[6][6] = {
     {4006, 4005, 4004, 4003, 4002, 4001}, {5006, 5005, 5004, 5003, 5002, 5001}, {6006, 6005, 6004, 6003, 6002, 6001},
 };
 
-void score_moves(SearchThread& st, Movelist& moves);
+void score_moves(SearchThread& st, Movelist& moves, Move tt_move);
