@@ -9,6 +9,50 @@
 #include "tt.h"
 #include "types.h"
 
+static inline bool moveExists(Board& board, Move move) {
+    Movelist list;
+    movegen::legalmoves(list, board);
+
+    if (list.find(move) > -1) {
+        return true;
+    }
+
+    return false;
+}
+
+static void getPvLines(SearchThread& st, std::vector<U64>& positions, Move bestmove = Move::NO_MOVE) {
+    if (positions.size() >= MAX_PLY) {
+        return;
+    }
+
+    if (bestmove != Move::NO_MOVE) {
+        std::cout << " " << uci::moveToUci(bestmove);
+        positions.push_back(st.board.hash());
+        st.makeMove(bestmove);
+        getPvLines(st, positions);
+        st.unmakeMove(bestmove);
+
+        return;
+    }
+
+    auto pvMove = table->probe_move(st.board.hash());
+
+    if (pvMove != Move::NO_MOVE && moveExists(st.board, pvMove)) {
+        for (auto& pos : positions) {
+            if (pos == st.board.hash()) {
+                return;
+            }
+        }
+        std::cout << " " << uci::moveToUci(pvMove);
+        positions.push_back(st.board.hash());
+
+        st.makeMove(pvMove);
+        getPvLines(st, positions);
+        st.unmakeMove(pvMove);
+    }
+    return;
+}
+
 // Explicit template instantiation
 template void iterative_deepening<false>(SearchThread& st);
 template void iterative_deepening<true>(SearchThread& st);
@@ -57,10 +101,8 @@ void iterative_deepening(SearchThread& st) {
                 std::cout << " time " << static_cast<uint64_t>(time_elapsed);
                 std::cout << " pv";
 
-                // std::vector<uint64_t> positions;
-                // getPvLines(st, positions, bestmove);
-
-                std::cout << " " << uci::moveToUci(bestmove);
+                std::vector<uint64_t> positions;
+                getPvLines(st, positions, bestmove);
 
                 std::cout << std::endl;
             } else {
@@ -70,10 +112,8 @@ void iterative_deepening(SearchThread& st) {
                        static_cast<float>(score / 100.0f), static_cast<float>(st.nodes / 1000000.0f),
                        static_cast<float>(1000.0f * st.nodes / (time_elapsed + 1)) / 1000000.0f);
 
-                // std::vector<uint64_t> positions;
-                // getPvLines(st, positions, bestmove);
-
-                std::cout << " " << uci::moveToUci(bestmove);
+                std::vector<uint64_t> positions;
+                getPvLines(st, positions, bestmove);
 
                 std::cout << std::endl;
             }
