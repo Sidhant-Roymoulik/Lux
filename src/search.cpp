@@ -121,8 +121,8 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
         if (st.board.isRepetition()) return 0;
 
         // Mate Distance Pruning
-        alpha = std::max(alpha, -CHECKMATE + ss->ply);
-        beta  = std::min(beta, CHECKMATE - ss->ply - 1);
+        alpha = std::max(alpha, mated_in(ss->ply));
+        beta  = std::min(beta, mate_in(ss->ply + 1));
         if (alpha >= beta) {
             return alpha;
         }
@@ -160,7 +160,7 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
         }
     }
 
-    if (moves.size() == 0) best_score = in_check ? ss->ply - CHECKMATE : 0;
+    if (moves.size() == 0) best_score = in_check ? mated_in(ss->ply) : 0;
 
     return best_score;
 }

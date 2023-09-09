@@ -38,3 +38,7 @@ struct Score {
         eg -= x.eg;
     }
 };
+
+constexpr int mate_in(Ply ply) { return CHECKMATE - ply; }
+
+constexpr int mated_in(Ply ply) { return -CHECKMATE + ply; }
