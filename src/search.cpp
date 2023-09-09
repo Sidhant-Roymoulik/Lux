@@ -215,9 +215,10 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
 
     if (moves.size() == 0) best_score = in_check ? mated_in(ss->ply) : 0;
 
-    int flag = best_score >= beta ? FLAG_BETA : (alpha != old_alpha) ? FLAG_EXACT : FLAG_ALPHA;
-
-    table->store(st.board.hash(), flag, best_move, depth, score_to_tt(best_score, ss->ply), ss->static_eval);
+    if (!st.info.stopped) {
+        int flag = best_score >= beta ? FLAG_BETA : (alpha != old_alpha) ? FLAG_EXACT : FLAG_ALPHA;
+        table->store(st.board.hash(), flag, best_move, depth, score_to_tt(best_score, ss->ply), ss->static_eval);
+    }
 
     return best_score;
 }
@@ -284,9 +285,10 @@ int q_search(int alpha, int beta, SearchThread& st, SearchStack* ss) {
         }
     }
 
-    int flag = best_score >= beta ? FLAG_BETA : FLAG_ALPHA;
-
-    table->store(st.board.hash(), flag, best_move, 0, score_to_tt(best_score, ss->ply), static_eval);
+    if (!st.info.stopped) {
+        int flag = best_score >= beta ? FLAG_BETA : FLAG_ALPHA;
+        table->store(st.board.hash(), flag, best_move, 0, score_to_tt(best_score, ss->ply), static_eval);
+    }
 
     return best_score;
 }
