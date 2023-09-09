@@ -11,6 +11,7 @@
 #include "eval.h"
 #include "search.h"
 #include "thread.h"
+#include "tt.h"
 #include "types.h"
 
 using namespace chess;
@@ -22,11 +23,27 @@ static void uci_send_id() {
     std::cout << "id author " << AUTHOR << std::endl;
 
     std::cout << "option name Threads type spin default 1 min 1 max 1" << std::endl;
+    std::cout << "option name Hash type spin default 64 min 4 max " << MAXHASH << std::endl;
 
     std::cout << "uciok" << std::endl;
 }
 
+static void set_option(std::istream &is, std::string &token, std::string name, int &value) {
+    if (token == name) {
+        is >> std::skipws >> token;
+        is >> std::skipws >> token;
+
+        value = std::stoi(token);
+    }
+}
+
+int DefaultHashSize = 64;
+int CurrentHashSize = DefaultHashSize;
+int LastHashSize    = CurrentHashSize;
+
 bool IsUci = false;
+
+TranspositionTable *table;
 
 void uci_loop(int argv, char **argc) {
     std::cout << NAME << " Copyright (C) 2023 " << AUTHOR << std::endl;
@@ -35,6 +52,10 @@ void uci_loop(int argv, char **argc) {
     ThreadHandler threadHandle;
 
     auto searchThread = std::make_unique<SearchThread>(info);
+
+    auto ttable = std::make_unique<TranspositionTable>();
+    table       = ttable.get();
+    table->Initialize(DefaultHashSize);
 
     if (argv > 1 && std::string{argc[1]} == "bench") {
         StartBenchmark(*searchThread);
@@ -64,7 +85,7 @@ void uci_loop(int argv, char **argc) {
             continue;
 
         } else if (token == "ucinewgame") {
-            // table->Initialize(CurrentHashSize);
+            table->Initialize(CurrentHashSize);
             continue;
 
         } else if (token == "uci") {
@@ -213,6 +234,19 @@ void uci_loop(int argv, char **argc) {
             threadHandle.start(*searchThread);
         }
 
+        else if (token == "setoption") {
+            is >> std::skipws >> token;
+            is >> std::skipws >> token;
+
+            set_option(is, token, "Hash", CurrentHashSize);
+
+            if (CurrentHashSize != LastHashSize) {
+                CurrentHashSize = std::min(CurrentHashSize, MAXHASH);
+                LastHashSize    = CurrentHashSize;
+                table->Initialize(CurrentHashSize);
+            }
+        }
+
         /* Debugging Commands */
         else if (token == "print") {
             std::cout << searchThread->board << std::endl;
@@ -243,6 +277,8 @@ void uci_loop(int argv, char **argc) {
             StartBenchmark(*searchThread);
         }
     }
+
+    table->clear();
 
     std::cout << std::endl;
 }

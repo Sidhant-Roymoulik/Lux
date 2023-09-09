@@ -6,6 +6,7 @@
 
 #include "eval.h"
 #include "move_score.h"
+#include "tt.h"
 #include "types.h"
 
 // Explicit template instantiation
@@ -43,14 +44,10 @@ void iterative_deepening(SearchThread& st) {
                 std::cout << " depth " << current_depth;
 
                 std::cout << " score ";
-                if (score > MATE_CUTOFF) {
-                    int pliesToMate = CHECKMATE - score;
-                    int mateInN     = (pliesToMate / 2) + (pliesToMate % 2);
-                    std::cout << "mate " << mateInN;
-                } else if (score < -MATE_CUTOFF) {
-                    int pliesToMate = -CHECKMATE - score;
-                    int mateInN     = (pliesToMate / 2) + (pliesToMate % 2);
-                    std::cout << "mate " << mateInN;
+                if (score >= -CHECKMATE && score <= IS_MATED_IN_MAX_PLY) {
+                    std::cout << "mate " << ((-CHECKMATE - score) / 2);
+                } else if (score <= CHECKMATE && score >= IS_MATE_IN_MAX_PLY) {
+                    std::cout << "mate " << ((CHECKMATE - score) / 2);
                 } else {
                     std::cout << "cp " << score;
                 }
@@ -128,8 +125,23 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
         }
     }
 
+    //  Probe Tranpsosition Table
+    bool ttHit         = false;
+    TTEntry& tte       = table->probe_entry(st.board.hash(), ttHit);
+    const int tt_score = ttHit ? score_from_tt(tte.get_score(), ss->ply) : 0;
+
+    if (!root && ttHit && tte.depth >= depth) {
+        if ((tte.flag == FLAG_ALPHA && tt_score <= alpha) || (tte.flag == FLAG_BETA && tt_score >= beta) ||
+            (tte.flag == FLAG_EXACT))
+            return tt_score;
+    }
+
+    ss->static_eval = ttHit ? tte.get_eval() : evaluate(st);
+
     bool in_check  = st.board.inCheck();
     int best_score = -2 * CHECKMATE;
+    Move best_move = Move::NO_MOVE;
+    int old_alpha  = alpha;
     int new_score  = 0;
 
     Movelist moves;
@@ -150,8 +162,9 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
 
         if (new_score > best_score) {
             best_score = new_score;
+            best_move  = move;
 
-            if (root) st.bestmove = move;
+            if (root) st.bestmove = best_move;
 
             alpha = std::max(alpha, best_score);
             if (alpha >= beta) {
@@ -161,6 +174,10 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
     }
 
     if (moves.size() == 0) best_score = in_check ? mated_in(ss->ply) : 0;
+
+    int flag = best_score >= beta ? FLAG_BETA : (alpha != old_alpha) ? FLAG_EXACT : FLAG_ALPHA;
+
+    table->store(st.board.hash(), flag, best_move, depth, score_to_tt(best_score, ss->ply), ss->static_eval);
 
     return best_score;
 }
@@ -180,11 +197,25 @@ int q_search(int alpha, int beta, SearchThread& st, SearchStack* ss) {
     if (st.board.isRepetition()) return 0;
 
     // Delta Pruning
-    int best_score = evaluate(st);
-    alpha          = std::max(alpha, best_score);
+    int static_eval = evaluate(st);
+    alpha           = std::max(alpha, static_eval);
     if (alpha >= beta) return beta;
 
-    int new_score = 0;
+    //  Probe Tranpsosition Table
+    bool ttHit         = false;
+    TTEntry& tte       = table->probe_entry(st.board.hash(), ttHit);
+    const int tt_score = ttHit ? score_from_tt(tte.get_score(), ss->ply) : 0;
+
+    //  Return TT score if we found a TT entry
+    if (ttHit) {
+        if ((tte.flag == FLAG_ALPHA && tt_score <= alpha) || (tte.flag == FLAG_BETA && tt_score >= beta) ||
+            (tte.flag == FLAG_EXACT))
+            return tt_score;
+    }
+
+    int new_score  = 0;
+    int best_score = static_eval;
+    Move best_move = Move::NO_MOVE;
 
     Movelist moves;
     movegen::legalmoves<MoveGenType::CAPTURE>(moves, st.board);
@@ -204,6 +235,7 @@ int q_search(int alpha, int beta, SearchThread& st, SearchStack* ss) {
 
         if (new_score > best_score) {
             best_score = new_score;
+            best_move  = move;
 
             alpha = std::max(alpha, best_score);
             if (alpha >= beta) {
@@ -211,6 +243,10 @@ int q_search(int alpha, int beta, SearchThread& st, SearchStack* ss) {
             }
         }
     }
+
+    int flag = best_score >= beta ? FLAG_BETA : FLAG_ALPHA;
+
+    table->store(st.board.hash(), flag, best_move, 0, score_to_tt(best_score, ss->ply), static_eval);
 
     return best_score;
 }

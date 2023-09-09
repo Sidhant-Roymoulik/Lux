@@ -4,9 +4,13 @@
 
 #include "chess.hpp"
 #include "time_manager.h"
+#include "tt.h"
 #include "types.h"
 
 using namespace chess;
+
+// Global Transposition Table
+extern TranspositionTable* table;
 
 struct SearchInfo {
     int score           = 0;
@@ -21,7 +25,7 @@ struct SearchInfo {
 
 struct SearchStack {
     Ply ply{};
-    Score static_eval{};
+    int static_eval{};
 };
 
 struct SearchThread {

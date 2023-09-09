@@ -10,10 +10,11 @@ using namespace chess;
 using Ply  = int16_t;
 using Hash = uint64_t;
 
-constexpr Ply MAX_DEPTH   = 100;
-constexpr Ply MAX_PLY     = 100;
-constexpr int CHECKMATE   = 100000;
-constexpr int MATE_CUTOFF = 50000;
+constexpr Ply MAX_DEPTH               = 100;
+constexpr Ply MAX_PLY                 = 100;
+constexpr int16_t CHECKMATE           = 30000;
+constexpr int16_t IS_MATE_IN_MAX_PLY  = CHECKMATE - MAX_PLY;
+constexpr int16_t IS_MATED_IN_MAX_PLY = -IS_MATE_IN_MAX_PLY;
 
 struct Score {
     int mg = 0;
