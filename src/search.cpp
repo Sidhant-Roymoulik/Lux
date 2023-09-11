@@ -165,12 +165,14 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
         }
     }
 
+    bool pv_node = beta - alpha > 1;
+
     //  Probe Tranpsosition Table
     bool ttHit         = false;
     TTEntry& tte       = table->probe_entry(st.board.hash(), ttHit);
     const int tt_score = ttHit ? score_from_tt(tte.get_score(), ss->ply) : 0;
 
-    if (!root && ttHit && tte.depth >= depth) {
+    if (!pv_node && ttHit && tte.depth >= depth) {
         if ((tte.flag == FLAG_ALPHA && tt_score <= alpha) || (tte.flag == FLAG_BETA && tt_score >= beta) ||
             (tte.flag == FLAG_EXACT))
             return tt_score;
@@ -178,7 +180,8 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
 
     ss->static_eval = ttHit ? tte.get_eval() : evaluate(st);
 
-    bool in_check  = st.board.inCheck();
+    bool in_check = st.board.inCheck();
+
     int best_score = -2 * CHECKMATE;
     Move best_move = Move::NO_MOVE;
     int old_alpha  = alpha;
@@ -193,10 +196,18 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
         Move move = moves[i];
 
         st.makeMove(move);
+        table->prefetch_tt(st.board.hash());
 
         (ss + 1)->ply = ss->ply + 1;
 
-        new_score = -negamax(-beta, -alpha, depth - 1, st, ss + 1);
+        if (pv_node && i == 0) {
+            new_score = -negamax(-beta, -alpha, depth - 1, st, ss + 1);
+        } else {
+            new_score = -negamax(-alpha - 1, -alpha, depth - 1, st, ss + 1);
+            if (new_score > alpha && new_score < beta) {
+                new_score = -negamax(-beta, -alpha, depth - 1, st, ss + 1);
+            }
+        }
 
         st.unmakeMove(move);
 
@@ -267,6 +278,7 @@ int q_search(int alpha, int beta, SearchThread& st, SearchStack* ss) {
         Move move = moves[i];
 
         st.makeMove(move);
+        table->prefetch_tt(st.board.hash());
 
         (ss + 1)->ply = ss->ply + 1;
 
