@@ -33,6 +33,7 @@
  - [x] Quiescence Search
  - [x] Transposition Table
  - [x] Principal Variation Search
+ - [x] Reverse Futility Pruning
 
 ### Eval Upgrades
 
@@ -51,57 +52,57 @@ CPU: 11th Gen Intel(R) Core(TM) i3-1115G4 @ 3.00GHz
 
 Depth = 7
 ```
-Position [ 1] -> cp    71 move     O-O     1263283 nodes 3558543 nps
-Position [ 2] -> cp    17 move    Nxd3     2251827 nodes 3734373 nps
-Position [ 3] -> cp    13 move     Bg2     4813083 nodes 3819907 nps
-Position [ 4] -> cp  -266 move    Qf4+     4912551 nodes 3817056 nps
-Position [ 5] -> cp   -23 move      e4     4918784 nodes 3818931 nps
-Position [ 6] -> cp    73 move    Rxf4     6004280 nodes 3727051 nps
-Position [ 7] -> cp   -13 move    cxd5     7334111 nodes 3741893 nps
-Position [ 8] -> cp   -51 move     Kh1     9721591 nodes 3649245 nps
-Position [ 9] -> cp  -221 move     Bb5    10740081 nodes 3663056 nps
-Position [10] -> cp  -118 move   axb4+    10921902 nodes 3665067 nps
-Position [11] -> cp   145 move    Nxd4    11783148 nodes 3682233 nps
-Position [12] -> cp    20 move     Rf8    13788121 nodes 3644758 nps
-Position [13] -> cp  -243 move     Qb6    14707627 nodes 3653161 nps
-Position [14] -> cp   -40 move     Ra5    15317835 nodes 3666308 nps
-Position [15] -> cp    35 move    Bxg7    16171555 nodes 3670348 nps
-Position [16] -> cp    65 move     Kg6    16207329 nodes 3670138 nps
-Position [17] -> cp    19 move    Bxd5    16708798 nodes 3671456 nps
-Position [18] -> cp   131 move     Bg7    19966684 nodes 3654224 nps
-Position [19] -> cp    33 move     Qe6    22529720 nodes 3657422 nps
-Position [20] -> cp    26 move     Qd5    23530595 nodes 3660071 nps
-Position [21] -> cp  -261 move     Ke1    24645790 nodes 3661534 nps
-Position [22] -> cp    -1 move     Bg5    25680524 nodes 3663935 nps
-Position [23] -> cp   133 move      d5    27117446 nodes 3662539 nps
-Position [24] -> cp   -66 move     Qf8    38102369 nodes 3638152 nps
-Position [25] -> cp   124 move      g4    39516940 nodes 3620756 nps
-Position [26] -> cp   197 move    Qg5+    39624410 nodes 3622968 nps
-Position [27] -> cp    82 move    Ngf3    40901218 nodes 3627280 nps
-Position [28] -> cp    53 move     Qb3    42107079 nodes 3633993 nps
-Position [29] -> cp   117 move     Ng5    42692259 nodes 3640199 nps
-Position [30] -> cp   -99 move     Rf6    42807095 nodes 3639749 nps
-Position [31] -> cp   139 move    Rxd6    42919027 nodes 3640290 nps
-Position [32] -> cp   -95 move     Nd4    43146125 nodes 3640101 nps
-Position [33] -> cp   -85 move     Kc6    43322075 nodes 3640204 nps
-Position [34] -> cp   -84 move     Kc6    43590775 nodes 3638932 nps
-Position [35] -> cp   124 move     Rc1    43659778 nodes 3639831 nps
-Position [36] -> cp  -195 move     Kg4    43710423 nodes 3640411 nps
-Position [37] -> cp  -244 move     Kf8    43787670 nodes 3640478 nps
-Position [38] -> cp   356 move    Rxb6    43845927 nodes 3640478 nps
-Position [39] -> cp   -21 move     Bg4    52562445 nodes 3639050 nps
-Position [40] -> cp   -47 move      b3    53565533 nodes 3642674 nps
-Position [41] -> cp    50 move     Bb5    55732766 nodes 3659887 nps
-Position [42] -> cp  -133 move    Rxc1    55854984 nodes 3660941 nps
-Position [43] -> cp   -39 move     Bb4    56085210 nodes 3661392 nps
-Position [44] -> cp    92 move     Rf1    62581683 nodes 3607221 nps
-Position [45] -> cp   -28 move     Qb8    63199878 nodes 3602159 nps
-Position [46] -> cp    15 move      h5    63437886 nodes 3598700 nps
-Position [47] -> cp     5 move      e6    64679101 nodes 3593682 nps
-Position [48] -> cp     5 move      a3    72305743 nodes 3583040 nps
-Position [49] -> cp    70 move      g4    74151221 nodes 3589989 nps
-Position [50] -> cp   106 move     Rh7    75616430 nodes 3591376 nps
-Finished:                                 75616430 nodes 3591376 nps
+Position [ 1] -> cp    71 move     O-O      701278 nodes 3559787 nps
+Position [ 2] -> cp    17 move    Nxd3      949719 nodes 3557000 nps
+Position [ 3] -> cp    13 move     Bg2     3025770 nodes 3754057 nps
+Position [ 4] -> cp  -266 move    Qf4+     3033440 nodes 3758909 nps
+Position [ 5] -> cp   -23 move      e4     3038339 nodes 3755672 nps
+Position [ 6] -> cp    73 move    Rxf4     3814861 nodes 3654081 nps
+Position [ 7] -> cp   -13 move    cxd5     4514168 nodes 3637524 nps
+Position [ 8] -> cp   -51 move     Kh1     5827900 nodes 3599691 nps
+Position [ 9] -> cp  -221 move     Bb5     6241551 nodes 3601587 nps
+Position [10] -> cp  -118 move   axb4+     6281807 nodes 3604020 nps
+Position [11] -> cp   145 move    Nxd4     6466875 nodes 3606734 nps
+Position [12] -> cp    20 move     Rf8     7601417 nodes 3612841 nps
+Position [13] -> cp  -243 move     Qb6     7666598 nodes 3611209 nps
+Position [14] -> cp   -40 move     Ra5     7946914 nodes 3617166 nps
+Position [15] -> cp    35 move    Bxg7     8083792 nodes 3618528 nps
+Position [16] -> cp    65 move     Kg6     8118259 nodes 3620989 nps
+Position [17] -> cp    19 move    Bxd5     8329210 nodes 3611973 nps
+Position [18] -> cp   131 move     Bg7     9181768 nodes 3596462 nps
+Position [19] -> cp    33 move     Qe6    11346138 nodes 3615722 nps
+Position [20] -> cp    26 move     Qd5    11796225 nodes 3617364 nps
+Position [21] -> cp  -261 move     Ke1    12204446 nodes 3612920 nps
+Position [22] -> cp    -1 move     Bg5    12581030 nodes 3601783 nps
+Position [23] -> cp   133 move      d5    13339978 nodes 3598591 nps
+Position [24] -> cp   -66 move     Qf8    19218323 nodes 3614505 nps
+Position [25] -> cp   124 move      g4    19293810 nodes 3613073 nps
+Position [26] -> cp   197 move    Qg5+    19363422 nodes 3616627 nps
+Position [27] -> cp    82 move    Ngf3    19839022 nodes 3609063 nps
+Position [28] -> cp    53 move     Qb3    20222751 nodes 3590050 nps
+Position [29] -> cp   117 move     Ng5    20310954 nodes 3589142 nps
+Position [30] -> cp   -99 move     Rf6    20390819 nodes 3587406 nps
+Position [31] -> cp   139 move    Rxd6    20462397 nodes 3588634 nps
+Position [32] -> cp   -95 move     Nd4    20638072 nodes 3587982 nps
+Position [33] -> cp   -85 move     Kc6    20802757 nodes 3586682 nps
+Position [34] -> cp   -84 move     Kc6    20995812 nodes 3582903 nps
+Position [35] -> cp   124 move     Rc1    21053698 nodes 3582998 nps
+Position [36] -> cp  -195 move     Kg4    21099306 nodes 3584050 nps
+Position [37] -> cp  -244 move     Kf8    21163434 nodes 3584592 nps
+Position [38] -> cp   356 move    Rxb6    21203152 nodes 3584641 nps
+Position [39] -> cp   -21 move     Bg4    26510373 nodes 3530950 nps
+Position [40] -> cp   -47 move      b3    27132483 nodes 3531036 nps
+Position [41] -> cp    50 move     Bb5    27613309 nodes 3525703 nps
+Position [42] -> cp  -133 move    Rxc1    27668951 nodes 3525156 nps
+Position [43] -> cp   -39 move     Bb4    27854649 nodes 3524566 nps
+Position [44] -> cp    93 move     Rf1    32253706 nodes 3414536 nps
+Position [45] -> cp   -28 move     Qb8    32486188 nodes 3410981 nps
+Position [46] -> cp    15 move      h5    32631723 nodes 3408013 nps
+Position [47] -> cp     5 move      e6    33509524 nodes 3406478 nps
+Position [48] -> cp    10 move      c5    36588027 nodes 3391863 nps
+Position [49] -> cp    70 move      g4    37915470 nodes 3399881 nps
+Position [50] -> cp   106 move     Rh7    39116060 nodes 3413268 nps
+Finished:                                 39116060 nodes 3413268 nps
 ```
 ---
 

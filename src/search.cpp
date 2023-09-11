@@ -148,7 +148,13 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
         return q_search(alpha, beta, st, ss);
     }
 
-    bool root = (ss->ply == 0);
+    bool root      = (ss->ply == 0);
+    bool pv_node   = beta - alpha > 1;
+    bool in_check  = st.board.inCheck();
+    int best_score = -2 * CHECKMATE;
+    Move best_move = Move::NO_MOVE;
+    int old_alpha  = alpha;
+    int new_score  = 0;
 
     if (!root) {
         // Ply cap to prevent endless search
@@ -165,8 +171,6 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
         }
     }
 
-    bool pv_node = beta - alpha > 1;
-
     //  Probe Tranpsosition Table
     bool ttHit         = false;
     TTEntry& tte       = table->probe_entry(st.board.hash(), ttHit);
@@ -180,12 +184,12 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
 
     ss->static_eval = ttHit ? tte.get_eval() : evaluate(st);
 
-    bool in_check = st.board.inCheck();
-
-    int best_score = -2 * CHECKMATE;
-    Move best_move = Move::NO_MOVE;
-    int old_alpha  = alpha;
-    int new_score  = 0;
+    if (!pv_node && !in_check) {
+        // RFP
+        if (ss->static_eval - 75 * depth >= beta) {
+            return ss->static_eval;
+        }
+    }
 
     Movelist moves;
     movegen::legalmoves(moves, st.board);
