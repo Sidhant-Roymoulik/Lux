@@ -34,12 +34,21 @@ struct SearchThread {
     SearchInfo& info;
 
     uint64_t nodes = 0;
+    int history[6][64];
 
     Move bestmove = Move::NO_MOVE;
 
     SearchThread(SearchInfo& i) : info(i), board(STARTPOS) { clear(); }
 
-    inline void clear() { nodes = 0; }
+    inline void clear() {
+        nodes = 0;
+
+        for (int i = 0; i < 6; i++) {
+            for (int j = 0; j < 64; j++) {
+                history[i][j] = 0;
+            }
+        }
+    }
     inline void initialize() {
         tm.start_time = now();
         if (info.time_set) {

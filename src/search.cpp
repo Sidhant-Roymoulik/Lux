@@ -233,6 +233,11 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
             }
             if (alpha >= beta) {
                 flag = FLAG_BETA;
+
+                if (!st.board.isCapture(move)) {
+                    st.history[(int)st.board.at<PieceType>(move.from())][move.to()] += depth * depth;
+                }
+
                 break;
             }
         }
