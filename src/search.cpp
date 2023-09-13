@@ -142,19 +142,25 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
     if ((st.nodes & 2047) == 0) st.check_time();
     // Exit search if time over
     if (st.info.stopped) return 0;
-    // If you reach 0-depth drop into q-search
-    if (depth <= 0) {
-        st.nodes--;
-        return q_search(alpha, beta, st, ss);
-    }
 
     bool root      = (ss->ply == 0);
     bool pv_node   = beta - alpha > 1;
     bool in_check  = st.board.inCheck();
     int best_score = -2 * CHECKMATE;
     Move best_move = Move::NO_MOVE;
+    int flag       = FLAG_ALPHA;
     int old_alpha  = alpha;
     int new_score  = 0;
+
+    // if (in_check) {
+    //     depth++;
+    // }
+
+    // If you reach 0-depth drop into q-search
+    if (depth <= 0) {
+        st.nodes--;
+        return q_search(alpha, beta, st, ss);
+    }
 
     if (!root) {
         // Ply cap to prevent endless search
@@ -185,7 +191,7 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
     ss->static_eval = ttHit ? tte.get_eval() : evaluate(st);
 
     if (!pv_node && !in_check) {
-        // RFP
+        // Reverse Futility Pruning
         if (ss->static_eval - 75 * depth >= beta) {
             return ss->static_eval;
         }
@@ -221,8 +227,12 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
 
             if (root) st.bestmove = best_move;
 
-            alpha = std::max(alpha, best_score);
+            if (best_score > alpha) {
+                alpha = best_score;
+                flag  = FLAG_EXACT;
+            }
             if (alpha >= beta) {
+                flag = FLAG_BETA;
                 break;
             }
         }
@@ -231,7 +241,6 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
     if (moves.size() == 0) best_score = in_check ? mated_in(ss->ply) : 0;
 
     if (!st.info.stopped) {
-        int flag = best_score >= beta ? FLAG_BETA : (alpha != old_alpha) ? FLAG_EXACT : FLAG_ALPHA;
         table->store(st.board.hash(), flag, best_move, depth, score_to_tt(best_score, ss->ply), ss->static_eval);
     }
 
@@ -272,8 +281,12 @@ int q_search(int alpha, int beta, SearchThread& st, SearchStack* ss) {
     int new_score  = 0;
     int best_score = static_eval;
     Move best_move = Move::NO_MOVE;
+    int flag       = FLAG_ALPHA;
 
     Movelist moves;
+    // if (st.board.inCheck())
+    //     movegen::legalmoves<MoveGenType::ALL>(moves, st.board);
+    // else
     movegen::legalmoves<MoveGenType::CAPTURE>(moves, st.board);
     score_moves(st, moves, tte.move);
 
@@ -294,15 +307,17 @@ int q_search(int alpha, int beta, SearchThread& st, SearchStack* ss) {
             best_score = new_score;
             best_move  = move;
 
-            alpha = std::max(alpha, best_score);
+            if (best_score > alpha) {
+                alpha = best_score;
+            }
             if (alpha >= beta) {
+                flag = FLAG_BETA;
                 break;
             }
         }
     }
 
     if (!st.info.stopped) {
-        int flag = best_score >= beta ? FLAG_BETA : FLAG_ALPHA;
         table->store(st.board.hash(), flag, best_move, 0, score_to_tt(best_score, ss->ply), static_eval);
     }
 
