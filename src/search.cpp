@@ -152,9 +152,9 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
     int old_alpha  = alpha;
     int new_score  = 0;
 
-    // if (in_check) {
-    //     depth++;
-    // }
+    if (in_check) {
+        depth++;
+    }
 
     // If you reach 0-depth drop into q-search
     if (depth <= 0) {
@@ -284,10 +284,10 @@ int q_search(int alpha, int beta, SearchThread& st, SearchStack* ss) {
     int flag       = FLAG_ALPHA;
 
     Movelist moves;
-    // if (st.board.inCheck())
-    //     movegen::legalmoves<MoveGenType::ALL>(moves, st.board);
-    // else
-    movegen::legalmoves<MoveGenType::CAPTURE>(moves, st.board);
+    if (st.board.inCheck())
+        movegen::legalmoves<MoveGenType::ALL>(moves, st.board);
+    else
+        movegen::legalmoves<MoveGenType::CAPTURE>(moves, st.board);
     score_moves(st, moves, tte.move);
 
     for (int i = 0; i < moves.size(); i++) {
