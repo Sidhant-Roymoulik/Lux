@@ -26,6 +26,7 @@ struct SearchInfo {
 struct SearchStack {
     Ply ply{};
     int static_eval{};
+    // Move killers[2]{};
 };
 
 struct SearchThread {

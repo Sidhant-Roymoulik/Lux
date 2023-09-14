@@ -199,11 +199,13 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
 
     Movelist moves;
     movegen::legalmoves(moves, st.board);
-    score_moves(st, moves, tte.move);
+    score_moves(st, ss, moves, tte.move);
 
     for (int i = 0; i < moves.size(); i++) {
         moves.sort(i);
         Move move = moves[i];
+
+        bool is_quiet = !(st.board.isCapture(move) || move.typeOf() == Move::PROMOTION);
 
         st.makeMove(move);
         table->prefetch_tt(st.board.hash());
@@ -234,13 +236,22 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
             if (alpha >= beta) {
                 flag = FLAG_BETA;
 
-                if (!st.board.isCapture(move)) {
+                if (is_quiet) {
                     st.history[(int)st.board.at<PieceType>(move.from())][move.to()] += depth * depth;
+
+                    // if (move != ss->killers[0]) {
+                    //     ss->killers[1] = ss->killers[0];
+                    //     ss->killers[0] = move;
+                    // }
                 }
 
                 break;
             }
         }
+
+        // if (root) {
+        //     std::cout << move << ' ' << move.score() << '\n';
+        // }
     }
 
     if (moves.size() == 0) best_score = in_check ? mated_in(ss->ply) : 0;
