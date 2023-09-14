@@ -1,5 +1,3 @@
-#pragma once
-
 #include "eval.h"
 
 #include "chess.hpp"
