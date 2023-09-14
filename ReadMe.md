@@ -51,6 +51,24 @@
 
 ---
 
+## Building
+Default build (g++):
+
+```bash
+git clone https://github.com/Sidhant-Roymoulik/Lux
+cd Lux/src
+make 
+./Lux
+```
+
+Clang build:
+```bash
+git clone https://github.com/Sidhant-Roymoulik/Lux
+cd Lux/src
+make CXX=clang++
+./Lux
+```
+
 ## Resources
 
 [Chessprogramming wiki](https://www.chessprogramming.org/Main_Page) has a lot of information but can be outdated and can lack pseudocode.
