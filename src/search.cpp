@@ -195,6 +195,26 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
         if (ss->static_eval - 75 * depth >= beta) {
             return ss->static_eval;
         }
+
+        // Null Move Pruning
+        if ((ss - 1)->move != Move::NO_MOVE && ss->static_eval >= beta && depth >= 2) {
+            int R = 3 + depth / 4;
+
+            ss->move = Move::NO_MOVE;
+
+            st.board.makeNullMove();
+            (ss + 1)->ply = ss->ply + 1;
+
+            new_score = -negamax(-beta, 1 - beta, depth - R, st, ss + 1);
+
+            st.board.unmakeNullMove();
+
+            if (new_score >= beta) {
+                // Dont return a mate score, could be a false mate
+                new_score = std::min(new_score, IS_MATE_IN_MAX_PLY - 1);
+                return new_score;
+            }
+        }
     }
 
     Movelist moves;
@@ -206,6 +226,8 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
         Move move = moves[i];
 
         bool is_quiet = !(st.board.isCapture(move) || move.typeOf() == Move::PROMOTION);
+
+        ss->move = move;
 
         st.makeMove(move);
         table->prefetch_tt(st.board.hash());
@@ -248,10 +270,6 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
                 break;
             }
         }
-
-        // if (root) {
-        //     std::cout << move << ' ' << move.score() << '\n';
-        // }
     }
 
     if (moves.size() == 0) best_score = in_check ? mated_in(ss->ply) : 0;

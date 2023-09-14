@@ -34,6 +34,7 @@
  - [x] Transposition Table
  - [x] Principal Variation Search
  - [x] Reverse Futility Pruning
+ - [x] Null Move Pruning
  - [x] Check Extensions
 
 ### Eval Upgrades
