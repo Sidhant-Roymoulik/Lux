@@ -1,5 +1,3 @@
-#pragma once
-
 #include "move_score.h"
 
 #include "chess.hpp"
@@ -24,11 +22,11 @@ void score_moves(SearchThread& st, SearchStack* ss, Movelist& moves, Move tt_mov
         } else if (st.board.isCapture(moves[i])) {
             moves[i].setScore(INT16_MAX - 100 + mvv_lva[victim][attacker]);
 
-            // } else if (moves[i] == ss->killers[0]) {
-            //     moves[i].setScore(INT16_MAX - 100);
+        } else if (moves[i] == ss->killers[0]) {
+            moves[i].setScore(INT16_MAX - 100);
 
-            // } else if (moves[i] == ss->killers[1]) {
-            //     moves[i].setScore(INT16_MAX - 200);
+        } else if (moves[i] == ss->killers[1]) {
+            moves[i].setScore(INT16_MAX - 101);
 
         } else {
             moves[i].setScore(st.history[attacker][moves[i].to()] / (MOVE_SCORE_FACTOR));

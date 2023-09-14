@@ -239,10 +239,10 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
                 if (is_quiet) {
                     st.history[(int)st.board.at<PieceType>(move.from())][move.to()] += depth * depth;
 
-                    // if (move != ss->killers[0]) {
-                    //     ss->killers[1] = ss->killers[0];
-                    //     ss->killers[0] = move;
-                    // }
+                    if (move != ss->killers[0]) {
+                        ss->killers[1] = ss->killers[0];
+                        ss->killers[0] = move;
+                    }
                 }
 
                 break;
