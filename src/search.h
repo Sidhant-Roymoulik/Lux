@@ -36,7 +36,7 @@ struct SearchThread {
     SearchInfo& info;
 
     uint64_t nodes = 0;
-    int history[6][64];
+    int history[2][64][64];
 
     Move bestmove = Move::NO_MOVE;
 
@@ -45,9 +45,10 @@ struct SearchThread {
     inline void clear() {
         nodes = 0;
 
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < 64; i++) {
             for (int j = 0; j < 64; j++) {
-                history[i][j] = 0;
+                history[0][i][j] = 0;
+                history[1][i][j] = 0;
             }
         }
     }

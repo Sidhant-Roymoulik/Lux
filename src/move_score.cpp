@@ -1,12 +1,11 @@
 #include "move_score.h"
 
 #include "chess.hpp"
+#include "history.h"
 #include "search.h"
 #include "types.h"
 
 using namespace chess;
-
-#define MOVE_SCORE_FACTOR 1000000 / INT16_MAX
 
 void score_moves(SearchThread& st, SearchStack* ss, Movelist& moves, Move tt_move) {
     for (int i = 0; i < moves.size(); i++) {
@@ -26,10 +25,10 @@ void score_moves(SearchThread& st, SearchStack* ss, Movelist& moves, Move tt_mov
             moves[i].setScore(INT16_MAX - 100);
 
         } else if (moves[i] == ss->killers[1]) {
-            moves[i].setScore(INT16_MAX - 101);
+            moves[i].setScore(INT16_MAX - 200);
 
         } else {
-            moves[i].setScore(st.history[attacker][moves[i].to()] / (MOVE_SCORE_FACTOR));
+            moves[i].setScore(get_history(st, moves[i]));
         }
     }
 }
@@ -46,7 +45,7 @@ void score_moves(SearchThread& st, Movelist& moves, Move tt_move) {
             moves[i].setScore(INT16_MAX - 100 + mvv_lva[victim][attacker]);
 
         } else {
-            moves[i].setScore(st.history[attacker][moves[i].to()] / (MOVE_SCORE_FACTOR));
+            moves[i].setScore(get_history(st, moves[i]));
         }
     }
 }

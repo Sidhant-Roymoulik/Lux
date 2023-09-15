@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "eval.h"
+#include "history.h"
 #include "move_score.h"
 #include "tt.h"
 #include "types.h"
@@ -255,9 +256,9 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
             if (alpha >= beta) {
                 flag = FLAG_BETA;
 
-                if (is_quiet) {
-                    st.history[(int)st.board.at<PieceType>(move.from())][move.to()] += depth * depth;
+                update_history(st, move, moves, depth * depth);
 
+                if (is_quiet) {
                     if (move != ss->killers[0]) {
                         ss->killers[1] = ss->killers[0];
                         ss->killers[0] = move;
@@ -267,6 +268,10 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
                 break;
             }
         }
+
+        // if (root) {
+        //     std::cout << move << ' ' << move.score() << '\n';
+        // }
     }
 
     if (moves.size() == 0) best_score = in_check ? mated_in(ss->ply) : 0;
