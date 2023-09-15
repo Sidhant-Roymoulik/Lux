@@ -150,7 +150,7 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
     Move best_move = Move::NO_MOVE;
     int flag       = FLAG_ALPHA;
     int old_alpha  = alpha;
-    int new_score  = 0;
+    int score      = 0;
 
     if (in_check) {
         depth++;
@@ -192,9 +192,7 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
 
     if (!pv_node && !in_check) {
         // Reverse Futility Pruning
-        if (ss->static_eval - 75 * depth >= beta) {
-            return ss->static_eval;
-        }
+        if (ss->static_eval - 75 * depth >= beta) return ss->static_eval;
 
         // Null Move Pruning
         if ((ss - 1)->move != Move::NO_MOVE && ss->static_eval >= beta && depth >= 2) {
@@ -205,14 +203,14 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
             st.board.makeNullMove();
             (ss + 1)->ply = ss->ply + 1;
 
-            new_score = -negamax(-beta, 1 - beta, depth - R, st, ss + 1);
+            score = -negamax(-beta, 1 - beta, depth - R, st, ss + 1);
 
             st.board.unmakeNullMove();
 
-            if (new_score >= beta) {
+            if (score >= beta) {
                 // Dont return a mate score, could be a false mate
-                new_score = std::min(new_score, IS_MATE_IN_MAX_PLY - 1);
-                return new_score;
+                score = std::min(score, IS_MATE_IN_MAX_PLY - 1);
+                return score;
             }
         }
     }
@@ -235,18 +233,17 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
         (ss + 1)->ply = ss->ply + 1;
 
         if (pv_node && i == 0) {
-            new_score = -negamax(-beta, -alpha, depth - 1, st, ss + 1);
+            score = -negamax(-beta, -alpha, depth - 1, st, ss + 1);
         } else {
-            new_score = -negamax(-alpha - 1, -alpha, depth - 1, st, ss + 1);
-            if (new_score > alpha && new_score < beta) {
-                new_score = -negamax(-beta, -alpha, depth - 1, st, ss + 1);
-            }
+            score = -negamax(-alpha - 1, -alpha, depth - 1, st, ss + 1);
+
+            if (score > alpha && score < beta) score = -negamax(-beta, -alpha, depth - 1, st, ss + 1);
         }
 
         st.unmakeMove(move);
 
-        if (new_score > best_score) {
-            best_score = new_score;
+        if (score > best_score) {
+            best_score = score;
             best_move  = move;
 
             if (root) st.bestmove = best_move;
@@ -312,10 +309,10 @@ int q_search(int alpha, int beta, SearchThread& st, SearchStack* ss) {
             return tt_score;
     }
 
-    int new_score  = 0;
     int best_score = static_eval;
     Move best_move = Move::NO_MOVE;
     int flag       = FLAG_ALPHA;
+    int score      = 0;
 
     Movelist moves;
     if (st.board.inCheck())
@@ -333,12 +330,12 @@ int q_search(int alpha, int beta, SearchThread& st, SearchStack* ss) {
 
         (ss + 1)->ply = ss->ply + 1;
 
-        new_score = -q_search(-beta, -alpha, st, ss + 1);
+        score = -q_search(-beta, -alpha, st, ss + 1);
 
         st.unmakeMove(move);
 
-        if (new_score > best_score) {
-            best_score = new_score;
+        if (score > best_score) {
+            best_score = score;
             best_move  = move;
 
             if (best_score > alpha) {
