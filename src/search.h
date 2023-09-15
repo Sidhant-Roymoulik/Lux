@@ -63,7 +63,9 @@ struct SearchThread {
 
     inline void makeMove(Move& move) { board.makeMove(move); }
     inline void makeMove(std::string move_uci) { board.makeMove(uci::uciToMove(board, move_uci)); }
+    inline void makeNullMove() { board.makeNullMove(); }
     inline void unmakeMove(Move& move) { board.unmakeMove(move); }
+    inline void unmakeNullMove() { board.unmakeNullMove(); }
 
     inline void applyFen(std::string fen) { board.setFen(fen); }
 

@@ -201,12 +201,13 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
 
             ss->move = Move::NO_MOVE;
 
-            st.board.makeNullMove();
+            st.makeNullMove();
+
             (ss + 1)->ply = ss->ply + 1;
 
             score = -negamax(-beta, 1 - beta, depth - R, st, ss + 1);
 
-            st.board.unmakeNullMove();
+            st.unmakeNullMove();
 
             if (score >= beta) {
                 // Dont return a mate score, could be a false mate
