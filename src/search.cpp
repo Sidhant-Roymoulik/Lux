@@ -204,7 +204,7 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
 
     if (!pv_node && !in_check) {
         // Reverse Futility Pruning
-        if (ss->static_eval - 75 * depth >= beta) return ss->static_eval;
+        if (depth < 9 && ss->static_eval - 75 * depth >= beta) return ss->static_eval;
 
         // Null Move Pruning
         if ((ss - 1)->move != Move::NO_MOVE && ss->static_eval >= beta && depth >= 2 &&
@@ -253,10 +253,7 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
 
             // R -= pv_node;
             // R -= move == ss->killers[0] || move == ss->killers[1];
-            // if (is_quiet)
-            //     R -= get_history(st, move) / 14000;
-            // else
-            //     R--;
+            // if (!is_quiet) R--;
 
             // R = std::clamp(R, 0, depth);
 
