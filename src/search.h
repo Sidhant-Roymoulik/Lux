@@ -77,6 +77,8 @@ struct SearchThread {
     }
 };
 
+void init_search_tables();
+
 template <bool print_info>
 void iterative_deepening(SearchThread& st);
 

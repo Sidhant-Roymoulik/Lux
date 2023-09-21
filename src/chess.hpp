@@ -25,7 +25,7 @@ Source: https://github.com/Disservin/chess-library
 */
 
 /*
-VERSION: 0.1.7
+VERSION: 0.2.0
 */
 
 #ifndef CHESS_HPP
@@ -449,8 +449,8 @@ struct Move {
     constexpr Move(uint16_t move) : move_(move), score_(0) {}
 
     /// @brief Creates a move from a source and target square.
-    /// pt is the promotion piece, when you want to create a promotion move you
-    /// must also pass PROMOTION as the MoveType template parameter.
+    /// pt is the promotion piece, when you want to create a promotion move you must also
+    /// pass PROMOTION as the MoveType template parameter.
     /// @tparam MoveType
     /// @param source
     /// @param target
@@ -470,20 +470,18 @@ struct Move {
     /// @return
     [[nodiscard]] constexpr Square to() const { return static_cast<Square>(move_ & 0x3F); }
 
-    /// @brief Get the type of the move. Can be NORMAL, PROMOTION, ENPASSANT or
-    /// CASTLING.
+    /// @brief Get the type of the move. Can be NORMAL, PROMOTION, ENPASSANT or CASTLING.
     /// @return
     [[nodiscard]] constexpr uint16_t typeOf() const { return static_cast<uint16_t>(move_ & (3 << 14)); }
 
-    /// @brief Get the promotion piece of the move, should only be used if
-    /// typeOf() returns PROMOTION.
+    /// @brief Get the promotion piece of the move, should only be used if typeOf() returns
+    /// PROMOTION.
     /// @return
     [[nodiscard]] constexpr PieceType promotionType() const {
         return static_cast<PieceType>(((move_ >> 12) & 3) + static_cast<int>(PieceType::KNIGHT));
     }
 
-    /// @brief Set the score for a move. Useful if you later want to sort the
-    /// moves.
+    /// @brief Set the score for a move. Useful if you later want to sort the moves.
     /// @param score
     constexpr void setScore(int16_t score) { score_ = score; }
 
@@ -528,8 +526,8 @@ struct Movelist {
         moves_[size_++] = move;
     }
 
-    /// @brief Checks if a move is in the movelist, returns the index of the
-    /// move if it is found, otherwise -1.
+    /// @brief Checks if a move is in the movelist, returns the index of the move if it is found,
+    /// otherwise -1.
     /// @param move
     /// @return
     constexpr int find(Move move) {
@@ -552,8 +550,7 @@ struct Movelist {
     /// @brief Clears the movelist.
     constexpr void clear() { size_ = 0; }
 
-    /// @brief Sorts the movelist by score in descending order. Uses
-    /// std::stable_sort.
+    /// @brief Sorts the movelist by score in descending order. Uses std::stable_sort.
     inline void sort(int index = 0) {
         std::stable_sort(moves_ + index, moves_ + size_,
                          [](const Move &a, const Move &b) { return a.score() > b.score(); });
@@ -587,8 +584,7 @@ struct PgnMove {
 
 namespace utils {
 
-/// @brief
-/// https://stackoverflow.com/questions/6089231/getting-std-ifstream-to-handle-lf-cr-and-crlf
+/// @brief https://stackoverflow.com/questions/6089231/getting-std-ifstream-to-handle-lf-cr-and-crlf
 /// @param is
 /// @param t
 /// @return
@@ -681,6 +677,7 @@ static inline void trim(std::string &s) {
 }
 
 [[nodiscard]] constexpr PieceType typeOfPiece(Piece piece) {
+    if (piece == Piece::NONE) return PieceType::NONE;
     return static_cast<PieceType>(static_cast<int>(piece) % 6);
 }
 
@@ -1222,8 +1219,7 @@ namespace runtime {
 
 }  // namespace runtime
 
-/// @brief [Internal Usage] Initializes the magic bitboard tables for sliding
-/// pieces
+/// @brief [Internal Usage] Initializes the magic bitboard tables for sliding pieces
 /// @param sq
 /// @param table
 /// @param magic
@@ -1250,8 +1246,7 @@ inline void initSliders(Square sq, Magic table[], U64 magic, const std::function
     } while (occ);
 }
 
-/// @brief [Internal Usage] Initializes the attacks for the bishop and rook.
-/// Called once at startup.
+/// @brief [Internal Usage] Initializes the attacks for the bishop and rook. Called once at startup.
 inline void initAttacks() {
     BishopTable[0].attacks = BishopAttacks;
     RookTable[0].attacks   = RookAttacks;
@@ -1357,8 +1352,7 @@ class Board {
         }
     }
 
-    /// @brief Checks if a move is a capture, enpassant moves are also
-    /// considered captures.
+    /// @brief Checks if a move is a capture, enpassant moves are also considered captures.
     /// @param move
     /// @return
     bool isCapture(const Move &move) const {
@@ -1374,15 +1368,14 @@ class Board {
     [[nodiscard]] Square enpassantSq() const { return enpassant_sq_; }
     [[nodiscard]] CastlingRights castlingRights() const { return castling_rights_; }
     [[nodiscard]] int halfMoveClock() const { return half_moves_; }
-    [[nodiscard]] int fullMoveNumber() const { return full_moves_; }
+    [[nodiscard]] int fullMoveNumber() const { return 1 + plies_played_ / 2; }
 
     void set960(bool is960) {
         chess960_ = is960;
         setFen(original_fen_);
     }
 
-    /// @brief Checks if the current position is a chess960, aka. FRC/DFRC
-    /// position.
+    /// @brief Checks if the current position is a chess960, aka. FRC/DFRC position.
     /// @return
     [[nodiscard]] bool chess960() const { return chess960_; }
 
@@ -1390,8 +1383,8 @@ class Board {
     /// @return
     [[nodiscard]] std::string getCastleString() const;
 
-    /// @brief Checks if the current position is a repetition, set this to 1 if
-    /// you are writing a chess engine.
+    /// @brief Checks if the current position is a repetition, set this to 1 if you are writing
+    /// a chess engine.
     /// @param count
     /// @return
     [[nodiscard]] bool isRepetition(int count = 2) const;
@@ -1400,15 +1393,13 @@ class Board {
     /// @return
     [[nodiscard]] bool isHalfMoveDraw() const { return half_moves_ >= 100; }
 
-    /// @brief Checks if the current position is a draw by insufficient
-    /// material.
+    /// @brief Checks if the current position is a draw by insufficient material.
     /// @return
     [[nodiscard]] bool isInsufficientMaterial() const;
 
-    /// @brief Checks if the game is over. Returns GameResultReason::NONE if the
-    /// game is not over. This function calculates all legal moves for the
-    /// current position to check if the game is over. If you are writing you
-    /// should not use this function.
+    /// @brief Checks if the game is over. Returns GameResultReason::NONE if the game is not over.
+    /// This function calculates all legal moves for the current position to check if the game is
+    /// over. If you are writing you should not use this function.
     /// @return
     [[nodiscard]] std::pair<GameResultReason, GameResult> isGameOver() const;
 
@@ -1421,6 +1412,10 @@ class Board {
     /// @brief Checks if the current side to move is in check
     /// @return
     [[nodiscard]] bool inCheck() const;
+
+    /// @brief Checks if the given color has at least 1 piece thats not pawn and not king
+    /// @return
+    [[nodiscard]] bool hasNonPawnMaterial(Color color) const;
 
     /// @brief Regenerates the zobrist hash key
     /// @return
@@ -1441,7 +1436,7 @@ class Board {
     U64 occ_all_  = 0ULL;
 
     CastlingRights castling_rights_ = {};
-    uint16_t full_moves_            = 1;
+    uint16_t plies_played_          = 0;
 
     Color side_to_move_  = Color::WHITE;
     Square enpassant_sq_ = Square::NO_SQ;
@@ -1480,10 +1475,14 @@ inline void Board::setFenInternal(std::string fen) {
     const std::string &castling   = params[2];
     const std::string &en_passant = params[3];
 
-    half_moves_ = std::stoi(params.size() > 4 ? params[4] : "0");
-    full_moves_ = std::stoi(params.size() > 4 ? params[5] : "1") * 2;
+    half_moves_   = std::stoi(params.size() > 4 ? params[4] : "0");
+    plies_played_ = std::stoi(params.size() > 5 ? params[5] : "1") * 2 - 2;
 
     side_to_move_ = (move_right == "w") ? Color::WHITE : Color::BLACK;
+
+    if (side_to_move_ == Color::BLACK) {
+        plies_played_++;
+    }
 
     auto square = Square(56);
     for (char curr : position) {
@@ -1607,13 +1606,11 @@ inline void Board::setFen(const std::string &fen) { setFenInternal(fen); }
             ss << free_space;
         }
 
-        // Append a "/" character to the FEN string, unless this is the last
-        // rank
+        // Append a "/" character to the FEN string, unless this is the last rank
         ss << (rank > 0 ? "/" : "");
     }
 
-    // Append " w " or " b " to the FEN string, depending on which player's turn
-    // it is
+    // Append " w " or " b " to the FEN string, depending on which player's turn it is
     ss << (side_to_move_ == Color::WHITE ? " w " : " b ");
 
     // Append the appropriate characters to the FEN string to indicate
@@ -1628,7 +1625,7 @@ inline void Board::setFen(const std::string &fen) { setFenInternal(fen); }
     else
         ss << " " << squareToString[enpassant_sq_] << " ";
 
-    ss << int(half_moves_) << " " << int(full_moves_ / 2);
+    ss << halfMoveClock() << " " << fullMoveNumber();
 
     // Return the resulting FEN string
     return ss.str();
@@ -1673,8 +1670,8 @@ inline std::ostream &operator<<(std::ostream &os, const Board &b) {
     os << "\n\n";
     os << "Side to move: " << static_cast<int>(b.side_to_move_) << "\n";
     os << "Castling rights: " << b.getCastleString() << "\n";
-    os << "Halfmoves: " << static_cast<int>(b.half_moves_) << "\n";
-    os << "Fullmoves: " << static_cast<int>(b.full_moves_) / 2 << "\n";
+    os << "Halfmoves: " << b.halfMoveClock() << "\n";
+    os << "Fullmoves: " << b.fullMoveNumber() << "\n";
     os << "EP: " << static_cast<int>(b.enpassant_sq_) << "\n";
     os << "Hash: " << b.hash_key_ << "\n";
 
@@ -1781,6 +1778,11 @@ inline bool Board::isAttacked(Square square, Color color) const {
 
 inline bool Board::inCheck() const { return isAttacked(kingSq(side_to_move_), ~side_to_move_); }
 
+inline bool Board::hasNonPawnMaterial(Color color) const {
+    return pieces(PieceType::KNIGHT, color) | pieces(PieceType::BISHOP, color) | pieces(PieceType::ROOK, color) |
+           pieces(PieceType::QUEEN, color);
+}
+
 inline void Board::placePiece(Piece piece, Square sq) {
     assert(board_[sq] == Piece::NONE);
 
@@ -1808,7 +1810,7 @@ inline void Board::makeMove(const Move &move) {
     prev_states_.emplace_back(hash_key_, castling_rights_, enpassant_sq_, half_moves_, captured);
 
     half_moves_++;
-    full_moves_++;
+    plies_played_++;
 
     if (enpassant_sq_ != NO_SQ) hash_key_ ^= zobrist::enpassant(utils::squareFile(enpassant_sq_));
     enpassant_sq_ = NO_SQ;
@@ -1929,7 +1931,7 @@ inline void Board::unmakeMove(const Move &move) {
     castling_rights_ = prev.castling;
     half_moves_      = prev.half_moves;
 
-    full_moves_--;
+    plies_played_--;
 
     side_to_move_ = ~side_to_move_;
 
@@ -2009,7 +2011,7 @@ inline void Board::makeNullMove() {
 
     side_to_move_ = ~side_to_move_;
 
-    full_moves_++;
+    plies_played_++;
 }
 
 inline void Board::unmakeNullMove() {
@@ -2020,7 +2022,7 @@ inline void Board::unmakeNullMove() {
     half_moves_      = prev.half_moves;
     hash_key_        = prev.hash;
 
-    full_moves_--;
+    plies_played_--;
 
     side_to_move_ = ~side_to_move_;
 
@@ -2059,8 +2061,7 @@ static auto init_squares_between = []() constexpr {
 static const std::array<std::array<U64, 64>, 64> SQUARES_BETWEEN_BB = init_squares_between();
 
 /// @brief [Internal Usage] Generate the checkmask.
-/// Returns a bitboard where the attacker path between the king and enemy piece
-/// is set.
+/// Returns a bitboard where the attacker path between the king and enemy piece is set.
 /// @tparam c
 /// @param board
 /// @param sq
@@ -2119,9 +2120,8 @@ template <Color c>
     return mask;
 }
 
-/// @brief [Internal Usage] Generate the pin mask for horizontal and vertical
-/// pins. Returns a bitboard where the ray between the king and the pinner is
-/// set.
+/// @brief [Internal Usage] Generate the pin mask for horizontal and vertical pins.
+/// Returns a bitboard where the ray between the king and the pinner is set.
 /// @tparam c
 /// @param board
 /// @param sq
@@ -2381,8 +2381,7 @@ void generatePawnMoves(const Board &board, Movelist &moves, Bitboard pin_d, Bitb
              However, we cannot take en passant because that would put our king
              in check. For this scenario we check if there's an enemy rook/queen
              that would give check if the two pawns were removed.
-             If that's the case then the move is illegal and we can break
-             immediately.
+             If that's the case then the move is illegal and we can break immediately.
             */
             if (isPossiblePin && (attacks::rook(kSQ, board.occ() & ~connectingPawns) & enemyQueenRook) != 0) break;
 
@@ -2782,8 +2781,7 @@ template <Color c>
 /// @return
 [[nodiscard]] inline Bitboard king(Square sq) { return KingAttacks[sq]; }
 
-/// @brief Returns a bitboard with the origin squares of the attacking pieces
-/// set
+/// @brief Returns a bitboard with the origin squares of the attacking pieces set
 /// @param board
 /// @param color Attacker Color
 /// @param square Attacked Square
@@ -2792,8 +2790,7 @@ template <Color c>
 [[nodiscard]] inline Bitboard attackers(const Board &board, Color color, Square square, Bitboard occupied) {
     const auto queens = board.pieces(PieceType::QUEEN, color);
 
-    // using the fact that if we can attack PieceType from square, they can
-    // attack us back
+    // using the fact that if we can attack PieceType from square, they can attack us back
     auto atks = (pawn(~color, square) & board.pieces(PieceType::PAWN, color));
     atks |= (knight(square) & board.pieces(PieceType::KNIGHT, color));
     atks |= (bishop(square, occupied) & (board.pieces(PieceType::BISHOP, color) | queens));
@@ -2821,9 +2818,8 @@ namespace uci {
     Square from_sq = move.from();
     Square to_sq   = move.to();
 
-    // If the move is not a chess960 castling move and is a king moving more
-    // than one square, update the to square to be the correct square for a
-    // regular castling move
+    // If the move is not a chess960 castling move and is a king moving more than one square,
+    // update the to square to be the correct square for a regular castling move
     if (!chess960 && move.typeOf() == Move::CASTLING) {
         to_sq = utils::fileRankSquare(to_sq > from_sq ? File::FILE_G : File::FILE_C, utils::squareRank(from_sq));
     }
@@ -3213,8 +3209,7 @@ inline std::pair<std::string, std::string> extractHeader(const std::string &line
     return {key, value};
 }
 
-/// @brief [Internal use only] Extract and parse the move, plus any comments it
-/// might have.
+/// @brief [Internal use only] Extract and parse the move, plus any comments it might have.
 /// @param board
 /// @param line
 /// @return
@@ -3227,9 +3222,8 @@ inline void extractMoves(Board &board, std::vector<PgnMove> &moves, std::string_
 
     // Pgn are build up in the following way.
     // {move_number} {move} {comment} {move} {comment} {move_number} ...
-    // So we need to skip the move_number then start reading the move, then save
-    // the comment then read the second move in the group. After that a
-    // move_number will follow again.
+    // So we need to skip the move_number then start reading the move, then save the comment
+    // then read the second move in the group. After that a move_number will follow again.
     for (const auto c : line) {
         if (readingMove && c == ' ') {
             readingMove = false;
@@ -3299,8 +3293,7 @@ inline std::optional<Game> readGame(std::ifstream &file) {
     bool hasBody = false;
 
     while (!utils::safeGetline(file, line).eof()) {
-        // We read the moves and we reached the end of the pgn, which is
-        // signaled by an empty line.
+        // We read the moves and we reached the end of the pgn, which is signaled by an empty line.
         if (readingMoves && line.empty()) {
             break;
         }

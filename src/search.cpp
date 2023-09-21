@@ -10,6 +10,17 @@
 #include "tt.h"
 #include "types.h"
 
+// Late-move reductions
+int LMR_TABLE[256][MAX_DEPTH];
+
+void init_search_tables() {
+    for (int i = 0; i < 256; i++) {
+        for (int j = 0; j < MAX_DEPTH; j++) {
+            LMR_TABLE[i][j] = log(i) * log(j) / 1.2;
+        }
+    }
+}
+
 static inline bool moveExists(Board& board, Move move) {
     Movelist list;
     movegen::legalmoves(list, board);
@@ -196,7 +207,8 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
         if (ss->static_eval - 75 * depth >= beta) return ss->static_eval;
 
         // Null Move Pruning
-        if ((ss - 1)->move != Move::NO_MOVE && ss->static_eval >= beta && depth >= 2) {
+        if ((ss - 1)->move != Move::NO_MOVE && ss->static_eval >= beta && depth >= 2 &&
+            st.board.hasNonPawnMaterial(st.board.sideToMove())) {
             int R = 3 + depth / 4;
 
             ss->move = Move::NO_MOVE;
@@ -237,7 +249,20 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
         if (pv_node && i == 0) {
             score = -negamax(-beta, -alpha, depth - 1, st, ss + 1);
         } else {
+            // int R = LMR_TABLE[i][depth];
+
+            // R -= pv_node;
+            // R -= move == ss->killers[0] || move == ss->killers[1];
+            // if (is_quiet)
+            //     R -= get_history(st, move) / 14000;
+            // else
+            //     R--;
+
+            // R = std::clamp(R, 0, depth);
+
             score = -negamax(-alpha - 1, -alpha, depth - 1, st, ss + 1);
+
+            // if (R && score > alpha && score < beta) score = -negamax(-alpha - 1, -alpha, depth - 1, st, ss + 1);
 
             if (score > alpha && score < beta) score = -negamax(-beta, -alpha, depth - 1, st, ss + 1);
         }
@@ -330,6 +355,8 @@ int q_search(int alpha, int beta, SearchThread& st, SearchStack* ss) {
     for (int i = 0; i < moves.size(); i++) {
         moves.sort(i);
         Move move = moves[i];
+
+        ss->move = move;
 
         st.makeMove(move);
         table->prefetch_tt(st.board.hash());
