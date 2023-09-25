@@ -11,12 +11,12 @@
 #include "types.h"
 
 // Late-move reductions
-int LMR_TABLE[256][MAX_DEPTH];
+int LMR_TABLE[MAX_DEPTH][256];
 
 void init_search_tables() {
-    for (int i = 0; i < 256; i++) {
-        for (int j = 0; j < MAX_DEPTH; j++) {
-            LMR_TABLE[i][j] = log(i) * log(j) / 1.2;
+    for (int i = 0; i < MAX_DEPTH; i++) {
+        for (int j = 0; j < 256; j++) {
+            LMR_TABLE[i][j] = 2 + log(i) * log(j) / 2.5;
         }
     }
 }
@@ -246,22 +246,27 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
 
         (ss + 1)->ply = ss->ply + 1;
 
-        if (pv_node && i == 0) {
-            score = -negamax(-beta, -alpha, depth - 1, st, ss + 1);
-        } else {
-            // int R = LMR_TABLE[i][depth];
+        bool do_fullsearch = !pv_node || i > 0;
 
-            // R -= pv_node;
-            // R -= move == ss->killers[0] || move == ss->killers[1];
-            // if (!is_quiet) R--;
+        if (!in_check && depth >= 3 && i > 2 * pv_node) {
+            int R = LMR_TABLE[depth][i];
 
-            // R = std::clamp(R, 0, depth);
+            R -= pv_node;
+            R -= move == ss->killers[0] || move == ss->killers[1];
 
+            int new_depth = std::clamp(R, 1, depth - 1);
+
+            score = -negamax(-alpha - 1, -alpha, depth - R, st, ss + 1);
+
+            do_fullsearch = score > alpha && R > 1;
+        }
+
+        if (do_fullsearch) {
             score = -negamax(-alpha - 1, -alpha, depth - 1, st, ss + 1);
+        }
 
-            // if (R && score > alpha && score < beta) score = -negamax(-alpha - 1, -alpha, depth - 1, st, ss + 1);
-
-            if (score > alpha && score < beta) score = -negamax(-beta, -alpha, depth - 1, st, ss + 1);
+        if (pv_node && (i == 0 || score > alpha)) {
+            score = -negamax(-beta, -alpha, depth - 1, st, ss + 1);
         }
 
         st.unmakeMove(move);
