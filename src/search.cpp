@@ -137,13 +137,31 @@ void iterative_deepening(SearchThread& st) {
     }
 }
 
-int aspiration_window(int prevEval, int depth, SearchThread& st) {
+int aspiration_window(int prev, int depth, SearchThread& st) {
     SearchStack stack[MAX_PLY + 10], *ss = stack + 7;
 
-    int alpha = -CHECKMATE;
-    int beta  = CHECKMATE;
+    int delta = 10 + prev * prev / 16000;
+    int alpha = std::max(prev - delta, -CHECKMATE);
+    int beta  = std::min(prev + delta, (int)CHECKMATE);
 
-    return negamax(alpha, beta, depth, st, ss);
+    int score = 0;
+    while (true) {
+        score = negamax(alpha, beta, depth, st, ss);
+
+        if (score <= alpha) {
+            beta  = (alpha + beta) / 2;
+            alpha = std::max(score - delta, -CHECKMATE);
+
+        } else if (score >= beta) {
+            beta = std::min(score + delta, (int)CHECKMATE);
+
+        } else
+            break;
+
+        delta += delta / 3;
+    }
+
+    return score;
 }
 
 int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
@@ -222,7 +240,7 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
             st.unmakeNullMove();
 
             if (score >= beta) {
-                // Dont return a mate score, could be a false mate
+                // Don't return a mate score, could be a false mate
                 score = std::min(score, IS_MATE_IN_MAX_PLY - 1);
                 return score;
             }

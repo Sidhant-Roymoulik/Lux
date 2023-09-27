@@ -32,6 +32,7 @@
  - [x] AlphaBeta Negamax
  - [x] Quiescence Search
  - [x] Transposition Table
+ - [x] Aspiration Window
  - [x] Principal Variation Search
  - [x] Reverse Futility Pruning
  - [x] Null Move Pruning
