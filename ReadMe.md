@@ -36,6 +36,7 @@
  - [x] Principal Variation Search
  - [x] Reverse Futility Pruning
  - [x] Null Move Pruning
+ - [x] Late Move Pruning
  - [x] Late Move Reduction
  - [x] Check Extensions
 
