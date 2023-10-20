@@ -38,7 +38,7 @@
  - [x] Reverse Futility Pruning
  - [x] Null Move Pruning
  <!-- - [x] Late Move Pruning -->
- <!-- - [x] History Pruning -->
+ - [x] History Pruning
  - [x] Late Move Reduction
 
 ### Eval Upgrades

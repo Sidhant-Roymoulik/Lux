@@ -259,7 +259,7 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
 
         // if (i > LMP_TABLE[depth]) break;
 
-        // if (move.score() < -4000 * depth) break;
+        if (move.score() < -4000 * depth) break;
 
         bool is_quiet = !(st.board.isCapture(move) || move.typeOf() == Move::PROMOTION);
 
