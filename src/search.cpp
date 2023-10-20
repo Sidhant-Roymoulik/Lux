@@ -10,14 +10,16 @@
 #include "tt.h"
 #include "types.h"
 
-// Late-move reductions
+// Late-Move Precomputations
 int LMR_TABLE[MAX_DEPTH][256];
+// int LMP_TABLE[MAX_DEPTH];
 
 void init_search_tables() {
     for (int i = 0; i < MAX_DEPTH; i++) {
         for (int j = 0; j < 256; j++) {
             LMR_TABLE[i][j] = 2 + log(i) * log(j) / 2.5;
         }
+        // LMP_TABLE[i] = 2 + i * i;
     }
 }
 
@@ -255,6 +257,10 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
         moves.sort(i);
         Move move = moves[i];
 
+        // if (i > LMP_TABLE[depth]) break;
+
+        // if (move.score() < -4000 * depth) break;
+
         bool is_quiet = !(st.board.isCapture(move) || move.typeOf() == Move::PROMOTION);
 
         ss->move = move;
@@ -316,7 +322,7 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
         }
 
         // if (root) {
-        //     std::cout << move << ' ' << move.score() << '\n';
+        //     std::cout << move << ' ' << move.score() << std::endl;
         // }
     }
 

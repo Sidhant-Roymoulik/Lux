@@ -34,11 +34,12 @@
  - [x] Transposition Table
  - [x] Aspiration Window
  - [x] Principal Variation Search
+ - [x] Check Extensions
  - [x] Reverse Futility Pruning
  - [x] Null Move Pruning
- - [x] Late Move Pruning
+ <!-- - [x] Late Move Pruning -->
+ <!-- - [x] History Pruning -->
  - [x] Late Move Reduction
- - [x] Check Extensions
 
 ### Eval Upgrades
 
@@ -48,10 +49,10 @@
 ### Move Ordering Upgrades
 
  - [x] TT-Move
+ - [x] Promotions
  - [x] MVV-LVA
  - [x] History Heuristic
  - [x] Killer Moves
- - [x] Promotions
 
 ---
 
