@@ -148,7 +148,7 @@ void uci_loop(int argv, char **argc) {
             // Initialize variables
             int depth = -1;
 
-            uint64_t nodes = -1;
+            int64_t nodes = -1;
 
             while (token != "none") {
                 if (token == "infinite") {

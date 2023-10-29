@@ -4,7 +4,7 @@
 
 using namespace chess;
 
-#define NAME "Lux 3.3"
+#define NAME "Lux 4.0"
 #define AUTHOR "Sidhant Roymoulik"
 
 using Ply  = int16_t;

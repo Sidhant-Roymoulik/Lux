@@ -25,9 +25,10 @@ struct SearchInfo {
 
 struct SearchStack {
     Ply ply{};
-    int static_eval{};
     Move killers[2]{};
     Move move{};
+    int static_eval{};
+    int move_cnt{};
 };
 
 struct SearchThread {
@@ -35,12 +36,11 @@ struct SearchThread {
     Time_Manager tm;
     SearchInfo& info;
 
-    uint64_t nodes = 0;
-    int history[2][64][64];
-
-    Move bestmove = Move::NO_MOVE;
-
     SearchThread(SearchInfo& i) : info(i), board(STARTPOS) { clear(); }
+
+    int history[2][64][64];
+    uint64_t nodes = 0;
+    Move bestmove  = Move::NO_MOVE;
 
     inline void clear() {
         nodes = 0;

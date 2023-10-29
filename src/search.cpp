@@ -12,14 +12,12 @@
 
 // Late-Move Precomputations
 int LMR_TABLE[MAX_DEPTH][256];
-// int LMP_TABLE[MAX_DEPTH];
 
 void init_search_tables() {
-    for (int i = 0; i < MAX_DEPTH; i++) {
-        for (int j = 0; j < 256; j++) {
-            LMR_TABLE[i][j] = 2 + log(i) * log(j) / 2.5;
+    for (int depth = 0; depth < MAX_DEPTH; depth++) {
+        for (int move = 0; move < 256; move++) {
+            LMR_TABLE[depth][move] = 2 + log(depth) * log(move) / 2.5;
         }
-        // LMP_TABLE[i] = 2 + i * i;
     }
 }
 
@@ -178,10 +176,9 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
     bool root      = (ss->ply == 0);
     bool pv_node   = beta - alpha > 1;
     bool in_check  = st.board.inCheck();
-    int best_score = -2 * CHECKMATE;
     Move best_move = Move::NO_MOVE;
+    int best_score = -2 * CHECKMATE;
     int flag       = FLAG_ALPHA;
-    int old_alpha  = alpha;
     int score      = 0;
 
     if (in_check) {
@@ -221,6 +218,7 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
     }
 
     ss->static_eval = ttHit ? tte.get_eval() : evaluate(st);
+    ss->move_cnt    = 0;
 
     if (!pv_node && !in_check) {
         // Reverse Futility Pruning
@@ -257,39 +255,36 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
         moves.sort(i);
         Move move = moves[i];
 
-        // if (i > LMP_TABLE[depth]) break;
-
         if (move.score() < -4000 * depth) break;
 
         bool is_quiet = !(st.board.isCapture(move) || move.typeOf() == Move::PROMOTION);
 
         ss->move = move;
+        ss->move_cnt++;
+        (ss + 1)->ply = ss->ply + 1;
 
         st.makeMove(move);
         table->prefetch_tt(st.board.hash());
 
-        (ss + 1)->ply = ss->ply + 1;
-
-        bool do_fullsearch = !pv_node || i > 0;
-
-        if (!in_check && depth >= 3 && i > 2 * pv_node) {
-            int R = LMR_TABLE[depth][i];
+        // Late Move Reductions
+        if (!in_check && is_quiet && depth > 2 && ss->move_cnt > 1 + 2 * pv_node) {
+            int R = LMR_TABLE[depth][ss->move_cnt - 1];
 
             R -= pv_node;
             R -= move == ss->killers[0] || move == ss->killers[1];
 
-            int new_depth = std::clamp(R, 1, depth - 1);
+            int lmr_depth = std::clamp(R, 0, depth - 1);
+            score         = -negamax(-alpha - 1, -alpha, lmr_depth, st, ss + 1);
 
-            score = -negamax(-alpha - 1, -alpha, depth - R, st, ss + 1);
+            if (score > alpha && lmr_depth < depth - 1) {
+                score = -negamax(-alpha - 1, -alpha, depth - 1, st, ss + 1);
+            }
 
-            do_fullsearch = score > alpha && R > 1;
-        }
-
-        if (do_fullsearch) {
+        } else if (!pv_node || ss->move_cnt > 1) {
             score = -negamax(-alpha - 1, -alpha, depth - 1, st, ss + 1);
         }
 
-        if (pv_node && (i == 0 || score > alpha)) {
+        if (pv_node && (ss->move_cnt == 1 || score > alpha)) {
             score = -negamax(-beta, -alpha, depth - 1, st, ss + 1);
         }
 
@@ -322,7 +317,7 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
         }
 
         // if (root) {
-        //     std::cout << move << ' ' << move.score() << std::endl;
+        //     std::cout << ss->move_cnt << ' ' << move << ' ' << move.score() << std::endl;
         // }
     }
 
