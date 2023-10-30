@@ -255,7 +255,7 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
         // History Pruning
         if (move.score() < -4000 * depth) break;
 
-        bool is_quiet = !(st.board.isCapture(move) || move.typeOf() == Move::PROMOTION);
+        bool quiet = !(st.board.isCapture(move) || move.typeOf() == Move::PROMOTION);
 
         ss->move = move;
         ss->move_cnt++;
@@ -302,7 +302,7 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
 
                 update_history(st, move, moves, depth * depth);
 
-                if (is_quiet) {
+                if (quiet) {
                     if (move != ss->killers[0]) {
                         ss->killers[1] = ss->killers[0];
                         ss->killers[0] = move;
