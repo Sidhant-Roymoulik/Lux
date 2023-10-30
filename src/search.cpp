@@ -267,16 +267,15 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
         table->prefetch_tt(st.board.hash());
 
         // Late Move Reductions
-        if (!in_check && is_quiet && depth > 2 && ss->move_cnt > 1 + 2 * pv_node) {
-            int R = LMR_TABLE[depth][ss->move_cnt - 1];
+        if (!in_check && depth > 2 && ss->move_cnt > 1 + 2 * pv_node) {
+            int R = LMR_TABLE[depth][ss->move_cnt];
 
             R -= pv_node;
             R -= move == ss->killers[0] || move == ss->killers[1];
 
-            int lmr_depth = std::clamp(R, 0, depth - 1);
-            score         = -negamax(-alpha - 1, -alpha, lmr_depth, st, ss + 1);
+            score = -negamax(-alpha - 1, -alpha, depth - R, st, ss + 1);
 
-            if (score > alpha && lmr_depth < depth - 1) {
+            if (score > alpha && R > 1) {
                 score = -negamax(-alpha - 1, -alpha, depth - 1, st, ss + 1);
             }
 
