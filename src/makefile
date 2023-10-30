@@ -1,3 +1,5 @@
+# From Bit-Genie
+
 EXE := Lux
 SRC := *.cpp
 CXX := g++
