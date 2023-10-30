@@ -11,13 +11,14 @@
 #include "types.h"
 
 // Late-Move Precomputations
-int LMR_TABLE[MAX_DEPTH][256];
+int LMR_TABLE[MAX_DEPTH][256], LMP_TABLE[MAX_DEPTH];
 
 void init_search_tables() {
     for (int depth = 0; depth < MAX_DEPTH; depth++) {
         for (int move = 0; move < 256; move++) {
             LMR_TABLE[depth][move] = 2 + log(depth) * log(move) / 2.5;
         }
+        LMP_TABLE[depth] = 2 + depth * depth;
     }
 }
 
@@ -207,7 +208,7 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
         }
     }
 
-    //  Probe Transposition Table
+    // Probe Transposition Table
     bool ttHit         = false;
     TTEntry& tte       = table->probe_entry(st.board.hash(), ttHit);
     const int tt_score = ttHit ? score_from_tt(tte.get_score(), ss->ply) : 0;
@@ -249,6 +250,10 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
     score_moves(st, ss, moves, tte.move);
 
     for (int i = 0; i < moves.size(); i++) {
+        // Late Move Pruning
+        // if (ss->move_cnt > LMP_TABLE[depth]) break;
+
+        // Incremental Move Sorting
         moves.sort(i);
         Move move = moves[i];
 
@@ -347,7 +352,7 @@ int q_search(int alpha, int beta, SearchThread& st, SearchStack* ss) {
     alpha = std::max(alpha, ss->static_eval);
     if (alpha >= beta) return beta;
 
-    //  Probe Transposition Table
+    // Probe Transposition Table
     bool ttHit         = false;
     TTEntry& tte       = table->probe_entry(st.board.hash(), ttHit);
     const int tt_score = ttHit ? score_from_tt(tte.get_score(), ss->ply) : 0;

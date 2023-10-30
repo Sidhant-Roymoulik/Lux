@@ -33,22 +33,23 @@ struct SearchStack {
 
 struct SearchThread {
     Board board;
-    Time_Manager tm;
     SearchInfo& info;
+    Time_Manager tm;
 
-    SearchThread(SearchInfo& i) : info(i), board(STARTPOS) { clear(); }
+    SearchThread(SearchInfo& i) : info(i) {
+        board = Board(STARTPOS);
+        clear();
+    }
 
-    int history[2][64][64];
+    int history[13][64];
     uint64_t nodes = 0;
     Move bestmove  = Move::NO_MOVE;
 
     inline void clear() {
         nodes = 0;
-
-        for (int i = 0; i < 64; i++) {
+        for (int i = 0; i < 13; i++) {
             for (int j = 0; j < 64; j++) {
-                history[0][i][j] = 0;
-                history[1][i][j] = 0;
+                history[i][j] = 0;
             }
         }
     }
@@ -63,8 +64,9 @@ struct SearchThread {
 
     inline void makeMove(Move& move) { board.makeMove(move); }
     inline void makeMove(std::string move_uci) { board.makeMove(uci::uciToMove(board, move_uci)); }
-    inline void makeNullMove() { board.makeNullMove(); }
     inline void unmakeMove(Move& move) { board.unmakeMove(move); }
+
+    inline void makeNullMove() { board.makeNullMove(); }
     inline void unmakeNullMove() { board.unmakeNullMove(); }
 
     inline void applyFen(std::string fen) { board.setFen(fen); }

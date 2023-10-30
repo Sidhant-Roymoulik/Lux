@@ -50,7 +50,7 @@
  - [x] TT-Move
  - [x] Promotions
  - [x] MVV-LVA
- - [x] History Heuristic
+ - [x] History Heuristic \[Piece\]\[To\]
  - [x] Killer Moves
 
 ---
