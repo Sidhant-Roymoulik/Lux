@@ -13,5 +13,5 @@ inline void update_history(SearchThread &st, Move good, Movelist &moves, int bon
     history_bonus(get_history(st, good), bonus);
 
     for (auto move : moves)
-        if (!(move == good)) history_bonus(get_history(st, move), -bonus);
+        if (move != good) history_bonus(get_history(st, move), -bonus);
 }
