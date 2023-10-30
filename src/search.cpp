@@ -181,6 +181,7 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
     int flag       = FLAG_ALPHA;
     int score      = 0;
 
+    // Check Extensions
     if (in_check) {
         depth++;
     }
@@ -206,7 +207,7 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
         }
     }
 
-    //  Probe Tranpsosition Table
+    //  Probe Transposition Table
     bool ttHit         = false;
     TTEntry& tte       = table->probe_entry(st.board.hash(), ttHit);
     const int tt_score = ttHit ? score_from_tt(tte.get_score(), ss->ply) : 0;
@@ -227,22 +228,18 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
         // Null Move Pruning
         if ((ss - 1)->move != Move::NO_MOVE && ss->static_eval >= beta && depth >= 2 &&
             st.board.hasNonPawnMaterial(st.board.sideToMove())) {
-            int R = 3 + depth / 4;
-
-            ss->move = Move::NO_MOVE;
+            ss->move      = Move::NO_MOVE;
+            (ss + 1)->ply = ss->ply + 1;
 
             st.makeNullMove();
 
-            (ss + 1)->ply = ss->ply + 1;
-
-            score = -negamax(-beta, 1 - beta, depth - R, st, ss + 1);
+            score = -negamax(-beta, 1 - beta, depth - (3 + depth / 4), st, ss + 1);
 
             st.unmakeNullMove();
 
             if (score >= beta) {
                 // Don't return a mate score, could be a false mate
-                score = std::min(score, IS_MATE_IN_MAX_PLY - 1);
-                return score;
+                return std::min(score, IS_MATE_IN_MAX_PLY - 1);
             }
         }
     }
@@ -255,6 +252,7 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
         moves.sort(i);
         Move move = moves[i];
 
+        // History Pruning
         if (move.score() < -4000 * depth) break;
 
         bool is_quiet = !(st.board.isCapture(move) || move.typeOf() == Move::PROMOTION);
@@ -343,12 +341,13 @@ int q_search(int alpha, int beta, SearchThread& st, SearchStack* ss) {
     // Check for draw by repetition
     if (st.board.isRepetition()) return 0;
 
+    ss->static_eval = evaluate(st);
+
     // Delta Pruning
-    int static_eval = evaluate(st);
-    alpha           = std::max(alpha, static_eval);
+    alpha = std::max(alpha, ss->static_eval);
     if (alpha >= beta) return beta;
 
-    //  Probe Tranpsosition Table
+    //  Probe Transposition Table
     bool ttHit         = false;
     TTEntry& tte       = table->probe_entry(st.board.hash(), ttHit);
     const int tt_score = ttHit ? score_from_tt(tte.get_score(), ss->ply) : 0;
@@ -360,7 +359,7 @@ int q_search(int alpha, int beta, SearchThread& st, SearchStack* ss) {
             return tt_score;
     }
 
-    int best_score = static_eval;
+    int best_score = ss->static_eval;
     Move best_move = Move::NO_MOVE;
     int flag       = FLAG_ALPHA;
     int score      = 0;
@@ -376,12 +375,10 @@ int q_search(int alpha, int beta, SearchThread& st, SearchStack* ss) {
         moves.sort(i);
         Move move = moves[i];
 
-        ss->move = move;
+        (ss + 1)->ply = ss->ply + 1;
 
         st.makeMove(move);
         table->prefetch_tt(st.board.hash());
-
-        (ss + 1)->ply = ss->ply + 1;
 
         score = -q_search(-beta, -alpha, st, ss + 1);
 
@@ -402,7 +399,7 @@ int q_search(int alpha, int beta, SearchThread& st, SearchStack* ss) {
     }
 
     if (!st.info.stopped) {
-        table->store(st.board.hash(), flag, best_move, 0, score_to_tt(best_score, ss->ply), static_eval);
+        table->store(st.board.hash(), flag, best_move, 0, score_to_tt(best_score, ss->ply), ss->static_eval);
     }
 
     return best_score;
