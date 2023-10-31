@@ -17,10 +17,9 @@ using namespace chess;
 bool TUNING = false;
 
 static void uci_send_id() {
-    std::cout << "id name " << NAME << std::endl;
+    std::cout << "id name Lux " << VERSION << std::endl;
     std::cout << "id author " << AUTHOR << std::endl;
 
-    std::cout << "option name Threads type spin default 1 min 1 max 1" << std::endl;
     std::cout << "option name Hash type spin default 64 min 4 max " << MAXHASH << std::endl;
 
     std::cout << "uciok" << std::endl;
@@ -44,7 +43,7 @@ bool IsUci = false;
 TranspositionTable *table;
 
 void uci_loop(int argv, char **argc) {
-    std::cout << NAME << " Copyright (C) 2023 " << AUTHOR << std::endl;
+    std::cout << "Lux " << VERSION << " Copyright (C) 2023 " << AUTHOR << std::endl;
 
     SearchInfo info;
     ThreadHandler threadHandle;

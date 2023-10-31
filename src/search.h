@@ -14,7 +14,7 @@ extern TranspositionTable* table;
 
 struct SearchInfo {
     int score           = 0;
-    Ply depth           = 0;
+    int16_t depth       = 0;
     uint64_t node_limit = 0;
 
     bool stopped   = false;
@@ -24,7 +24,7 @@ struct SearchInfo {
 };
 
 struct SearchStack {
-    Ply ply{};
+    int16_t ply{};
     Move killers[2]{};
     Move move{};
     int static_eval{};
@@ -45,7 +45,7 @@ struct SearchThread {
     uint64_t nodes = 0;
     Move bestmove  = Move::NO_MOVE;
 
-    inline void clear() {
+    void clear() {
         nodes = 0;
         for (int i = 0; i < 13; i++) {
             for (int j = 0; j < 64; j++) {
@@ -53,25 +53,25 @@ struct SearchThread {
             }
         }
     }
-    inline void initialize() {
+    void initialize() {
         tm.start_time = now();
         if (info.time_set) {
             tm.set_time(board.sideToMove());
         }
     }
 
-    inline Time start_time() { return tm.start_time; }
+    Time start_time() { return tm.start_time; }
 
-    inline void makeMove(Move& move) { board.makeMove(move); }
-    inline void makeMove(std::string move_uci) { board.makeMove(uci::uciToMove(board, move_uci)); }
-    inline void unmakeMove(Move& move) { board.unmakeMove(move); }
+    void makeMove(Move& move) { board.makeMove(move); }
+    void makeMove(std::string move_uci) { board.makeMove(uci::uciToMove(board, move_uci)); }
+    void unmakeMove(Move& move) { board.unmakeMove(move); }
 
-    inline void makeNullMove() { board.makeNullMove(); }
-    inline void unmakeNullMove() { board.unmakeNullMove(); }
+    void makeNullMove() { board.makeNullMove(); }
+    void unmakeNullMove() { board.unmakeNullMove(); }
 
-    inline void applyFen(std::string fen) { board.setFen(fen); }
+    void applyFen(std::string fen) { board.setFen(fen); }
 
-    inline bool stop_early() { return info.time_set && (tm.check_time() || info.stopped); }
+    bool stop_early() { return info.time_set && (tm.check_time() || info.stopped); }
     void check_time() {
         if ((info.time_set && tm.check_time()) || (info.nodes_set && nodes >= info.node_limit)) {
             info.stopped = true;
