@@ -18,6 +18,22 @@
 
 </div>
 
+
+## Rating
+| Version | Estimated | [CCRL Blitz (2'+1")](https://ccrl.chessdom.com/ccrl/404/)  |
+|-------- |-----------|------------------------------------------------------------|
+| 1.0     | 1711      | -                                                          |
+| 2.0     | 1857      | -                                                          |
+| 2.1     | 1986      | -                                                          |
+| 2.2     | 2063      | -                                                          |
+| 2.3     | 2140      | 2140                                                       |
+| 3.0     | 2318      | -                                                          |
+| 3.1     | 2394      | -                                                          |
+| 3.2     | 2464      | -                                                          |
+| 3.3     | 2487      | -                                                          |
+
+---
+
 ## Current Version Upgrades
 
 ### Basic Requirements
@@ -54,24 +70,6 @@
  - [x] Killer Moves
 
 ---
-
-## Building
-Default build (g++):
-
-```bash
-git clone https://github.com/Sidhant-Roymoulik/Lux
-cd Lux/src
-make 
-./Lux
-```
-
-Clang build:
-```bash
-git clone https://github.com/Sidhant-Roymoulik/Lux
-cd Lux/src
-make CXX=clang++
-./Lux
-```
 
 ## Resources
 
