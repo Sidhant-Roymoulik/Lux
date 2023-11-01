@@ -4,7 +4,7 @@
 
 using namespace chess;
 
-#define VERSION "3.4"
+#define VERSION "3.5"
 #define AUTHOR "Sidhant Roymoulik"
 
 constexpr int16_t MAX_DEPTH           = 100;
