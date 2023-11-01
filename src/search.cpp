@@ -214,8 +214,8 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
     const int tt_score = ttHit ? score_from_tt(tte.get_score(), ss->ply) : 0;
 
     if (!pv_node && ttHit && tte.depth >= depth) {
-        if ((tte.flag == FLAG_ALPHA && tt_score <= alpha) || (tte.flag == FLAG_BETA && tt_score >= beta) ||
-            (tte.flag == FLAG_EXACT))
+        if ((tte.flag == FLAG_EXACT) || (tte.flag == FLAG_ALPHA && tt_score <= alpha) ||
+            (tte.flag == FLAG_BETA && tt_score >= beta))
             return tt_score;
     }
 
@@ -359,8 +359,8 @@ int q_search(int alpha, int beta, SearchThread& st, SearchStack* ss) {
 
     //  Return TT score if we found a TT entry
     if (ttHit) {
-        if ((tte.flag == FLAG_ALPHA && tt_score <= alpha) || (tte.flag == FLAG_BETA && tt_score >= beta) ||
-            (tte.flag == FLAG_EXACT))
+        if ((tte.flag == FLAG_EXACT) || (tte.flag == FLAG_ALPHA && tt_score <= alpha) ||
+            (tte.flag == FLAG_BETA && tt_score >= beta))
             return tt_score;
     }
 
