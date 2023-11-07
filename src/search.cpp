@@ -198,16 +198,8 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
         // Ply cap to prevent endless search
         if (ss->ply >= MAX_PLY) return evaluate(st);
 
-        // Check for draw by repetition
-        if (st.board.isRepetition(1)) {
-            st.reps++;
-            return 0;
-        }
-        // Check for draw by 50-move rule
-        if (st.board.isHalfMoveDraw()) {
-            st.fiftymoverule++;
-            return 0;
-        }
+        // Check for draw by repetition && draw by 50-move rule
+        if (st.board.isRepetition(1) || st.board.isHalfMoveDraw()) return 0;
 
         // Mate Distance Pruning
         alpha = std::max(alpha, mated_in(ss->ply));
@@ -355,16 +347,8 @@ int q_search(int alpha, int beta, SearchThread& st, SearchStack* ss) {
     // Ply cap to prevent endless search
     if (ss->ply > MAX_PLY - 1) return evaluate(st);
 
-    // Check for draw by repetition
-    if (st.board.isRepetition(1)) {
-        st.reps++;
-        return 0;
-    }
-    // Check for draw by 50-move rule
-    if (st.board.isHalfMoveDraw()) {
-        st.fiftymoverule++;
-        return 0;
-    }
+    // Check for draw by repetition && draw by 50-move rule
+    if (st.board.isRepetition(1) || st.board.isHalfMoveDraw()) return 0;
 
     ss->static_eval = evaluate(st);
 

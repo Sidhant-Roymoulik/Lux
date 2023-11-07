@@ -8,8 +8,10 @@
 using namespace chess;
 
 int evaluate(SearchThread& st) {
-    Score score[2];
+    // Check for draw by insufficient material
+    if (st.board.isInsufficientMaterial()) return 0;
 
+    Score score[2];
     int gamephase = 0;
     int turn      = (int)st.board.sideToMove();
 
