@@ -3,7 +3,7 @@
 void StartBenchmark(SearchThread& st) {
     SearchInfo& info = st.info;
 
-    info.depth    = 13;
+    info.depth    = 15;
     info.time_set = false;
 
     uint64_t nodes        = 0;
@@ -31,5 +31,9 @@ void StartBenchmark(SearchThread& st) {
 
     printf("Finished: %40lld nodes %d nps\n", static_cast<uint64_t>(nodes),
            static_cast<int>(1000.0f * nodes / (time_elapsed + 1)));
+
+    std::cout << st.fiftymoverule << '\n';
+    std::cout << st.reps << '\n';
+    std::cout << st.insuf << '\n';
     std::cout << std::flush;
 }

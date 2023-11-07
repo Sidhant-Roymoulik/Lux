@@ -36,6 +36,8 @@ struct SearchThread {
     SearchInfo& info;
     Time_Manager tm;
 
+    int fiftymoverule = 0, reps = 0, insuf = 0;
+
     SearchThread(SearchInfo& i) : info(i) {
         board = Board(STARTPOS);
         clear();

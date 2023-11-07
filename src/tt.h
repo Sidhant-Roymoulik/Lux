@@ -5,21 +5,17 @@
 // 8192 MBS
 #define MAXHASH 8192
 
-using TTKey = uint16_t;
-
 enum : uint8_t { FLAG_NONE, FLAG_BETA, FLAG_ALPHA, FLAG_EXACT };
 
 struct TTEntry {
+    uint16_t key  = 0;
     int16_t score = 0;
     int16_t eval  = 0;
-    uint8_t flag  = FLAG_NONE;
     uint8_t depth = 0;
-
-    Move move = Move::NO_MOVE;
-    TTKey key = 0;
+    uint8_t flag  = FLAG_NONE;
+    Move move     = Move::NO_MOVE;
 
     int get_score() { return (int)score; }
-
     int get_eval() { return (int)eval; }
 };
 

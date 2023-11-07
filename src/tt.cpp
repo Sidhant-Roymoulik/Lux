@@ -11,12 +11,12 @@ void TranspositionTable::Initialize(int MB) {
 void TranspositionTable::store(U64 key, uint8_t f, Move move, uint8_t depth, int score, int eval) {
     TTEntry& entry = entries[reduce_hash(key, entries.size())];
 
-    if (move != Move::NO_MOVE || static_cast<TTKey>(key) != entry.key) {
+    if (move != Move::NO_MOVE || static_cast<uint16_t>(key) != entry.key) {
         entry.move = move;
     }
 
-    if (f == FLAG_EXACT || static_cast<TTKey>(key) != entry.key || depth > entry.depth) {
-        entry.key   = static_cast<TTKey>(key);
+    if (f == FLAG_EXACT || static_cast<uint16_t>(key) != entry.key || depth > entry.depth) {
+        entry.key   = static_cast<uint16_t>(key);
         entry.flag  = f;
         entry.move  = move;
         entry.depth = depth;
@@ -27,16 +27,14 @@ void TranspositionTable::store(U64 key, uint8_t f, Move move, uint8_t depth, int
 
 TTEntry& TranspositionTable::probe_entry(U64 key, bool& ttHit) {
     TTEntry& entry = entries[reduce_hash(key, entries.size())];
-
-    ttHit = (static_cast<TTKey>(key) == entry.key);
-
+    ttHit          = (static_cast<uint16_t>(key) == entry.key);
     return entry;
 }
 
 Move TranspositionTable::probe_move(U64 key) {
     TTEntry& entry = entries[reduce_hash(key, entries.size())];
 
-    if (static_cast<TTKey>(key) == entry.key) {
+    if (static_cast<uint16_t>(key) == entry.key) {
         return entry.move;
     }
 

@@ -11,14 +11,15 @@
 #include "types.h"
 
 // Late-Move Precomputations
-int LMR_TABLE[MAX_DEPTH][256], LMP_TABLE[MAX_DEPTH];
+int LMR_TABLE[MAX_DEPTH][256], LMP_TABLE[2][MAX_DEPTH];
 
 void init_search_tables() {
     for (int depth = 0; depth < MAX_DEPTH; depth++) {
         for (int move = 0; move < 256; move++) {
             LMR_TABLE[depth][move] = 2 + log(depth) * log(move) / 2.5;
         }
-        LMP_TABLE[depth] = 2 + depth * depth;
+        LMP_TABLE[0][depth] = (3 + depth * depth) / 2;
+        LMP_TABLE[1][depth] = 3 + depth * depth;
     }
 }
 
@@ -198,7 +199,15 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
         if (ss->ply >= MAX_PLY) return evaluate(st);
 
         // Check for draw by repetition
-        if (st.board.isRepetition()) return 0;
+        if (st.board.isRepetition(1)) {
+            st.reps++;
+            return 0;
+        }
+        // Check for draw by 50-move rule
+        if (st.board.isHalfMoveDraw()) {
+            st.fiftymoverule++;
+            return 0;
+        }
 
         // Mate Distance Pruning
         alpha = std::max(alpha, mated_in(ss->ply));
@@ -221,6 +230,8 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
 
     ss->static_eval = ttHit ? tte.get_eval() : evaluate(st);
     ss->move_cnt    = 0;
+
+    // bool improving = !in_check && ss->static_eval > (ss - 2)->static_eval;
 
     if (!pv_node && !in_check) {
         // Reverse Futility Pruning
@@ -251,7 +262,7 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
 
     for (int i = 0; i < moves.size(); i++) {
         // Late Move Pruning
-        // if (ss->move_cnt > LMP_TABLE[depth]) break;
+        // if (ss->move_cnt > LMP_TABLE[improving][depth]) break;
 
         // Incremental Move Sorting
         moves.sort(i);
@@ -343,8 +354,17 @@ int q_search(int alpha, int beta, SearchThread& st, SearchStack* ss) {
 
     // Ply cap to prevent endless search
     if (ss->ply > MAX_PLY - 1) return evaluate(st);
+
     // Check for draw by repetition
-    if (st.board.isRepetition()) return 0;
+    if (st.board.isRepetition(1)) {
+        st.reps++;
+        return 0;
+    }
+    // Check for draw by 50-move rule
+    if (st.board.isHalfMoveDraw()) {
+        st.fiftymoverule++;
+        return 0;
+    }
 
     ss->static_eval = evaluate(st);
 
