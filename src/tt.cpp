@@ -46,9 +46,9 @@ void TranspositionTable::prefetch_tt(const U64 key) { prefetch(&(entries[reduce_
 void TranspositionTable::clear() { entries.clear(); }
 
 int score_to_tt(int score, int ply) {
-    if (score >= IS_MATE_IN_MAX_PLY) {
+    if (score >= MATE_IN_MAX) {
         return score - ply;
-    } else if (score <= IS_MATED_IN_MAX_PLY) {
+    } else if (score <= MATED_IN_MAX) {
         return score + ply;
     }
 
@@ -56,9 +56,9 @@ int score_to_tt(int score, int ply) {
 }
 
 int score_from_tt(int score, int ply) {
-    if (score >= IS_MATE_IN_MAX_PLY) {
+    if (score >= MATE_IN_MAX) {
         return score - ply;
-    } else if (score <= IS_MATED_IN_MAX_PLY) {
+    } else if (score <= MATED_IN_MAX) {
         return score + ply;
     }
 

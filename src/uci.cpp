@@ -14,13 +14,21 @@
 
 using namespace chess;
 
+int DefaultHashSize = 64;
+int CurrentHashSize = DefaultHashSize;
+int LastHashSize    = CurrentHashSize;
+
+bool IsUci  = false;
 bool TUNING = false;
+
+TranspositionTable *table;
 
 static void uci_send_id() {
     std::cout << "id name Lux " << VERSION << std::endl;
     std::cout << "id author " << AUTHOR << std::endl;
 
     std::cout << "option name Hash type spin default 64 min 4 max " << MAXHASH << std::endl;
+    std::cout << "option name Threads type spin default 1 min 1 max 1" << std::endl;
 
     std::cout << "uciok" << std::endl;
 }
@@ -34,14 +42,6 @@ static void set_option(std::istream &is, std::string &token, std::string name, i
     }
 }
 
-int DefaultHashSize = 64;
-int CurrentHashSize = DefaultHashSize;
-int LastHashSize    = CurrentHashSize;
-
-bool IsUci = false;
-
-TranspositionTable *table;
-
 void uci_loop(int argv, char **argc) {
     std::cout << "Lux " << VERSION << " Copyright (C) 2023 " << AUTHOR << std::endl;
 
@@ -49,9 +49,9 @@ void uci_loop(int argv, char **argc) {
     ThreadHandler threadHandle;
 
     auto searchThread = std::make_unique<SearchThread>(info);
+    auto ttable       = std::make_unique<TranspositionTable>();
 
-    auto ttable = std::make_unique<TranspositionTable>();
-    table       = ttable.get();
+    table = ttable.get();
     table->Initialize(DefaultHashSize);
 
     if (argv > 1 && std::string{argc[1]} == "bench") {
@@ -222,7 +222,7 @@ void uci_loop(int argv, char **argc) {
             }
 
             if (depth == -1) {
-                info.depth = MAX_DEPTH;
+                info.depth = MAX_PLY;
             }
 
             info.stopped   = false;
@@ -250,7 +250,7 @@ void uci_loop(int argv, char **argc) {
             continue;
 
         } else if (token == "bencheval") {
-            long long samples = 1000000000;
+            long long samples = 10000000;
             long long timeSum = 0;
             int output;
             for (int i = 0; i < samples; i++) {
@@ -267,9 +267,8 @@ void uci_loop(int argv, char **argc) {
 
         } else if (token == "eval") {
             std::cout << "Eval: " << evaluate(*searchThread) << std::endl;
-
         } else if (token == "repetition") {
-            std::cout << searchThread->board.isRepetition() << std::endl;
+            std::cout << searchThread->board.isRepetition(1) << std::endl;
         } else if (token == "bench") {
             StartBenchmark(*searchThread);
         }

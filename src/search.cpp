@@ -11,10 +11,10 @@
 #include "types.h"
 
 // Late-Move Precomputations
-int LMR_TABLE[MAX_DEPTH][256], LMP_TABLE[2][MAX_DEPTH];
+int LMR_TABLE[MAX_PLY][256], LMP_TABLE[2][MAX_PLY];
 
 void init_search_tables() {
-    for (int depth = 0; depth < MAX_DEPTH; depth++) {
+    for (int depth = 0; depth < MAX_PLY; depth++) {
         for (int move = 0; move < 256; move++) {
             LMR_TABLE[depth][move] = 2 + log(depth) * log(move) / 2.5;
         }
@@ -102,10 +102,10 @@ void iterative_deepening(SearchThread& st) {
                 std::cout << " depth " << current_depth;
 
                 std::cout << " score ";
-                if (score >= -CHECKMATE && score <= IS_MATED_IN_MAX_PLY) {
-                    std::cout << "mate " << ((-CHECKMATE - score) / 2);
-                } else if (score <= CHECKMATE && score >= IS_MATE_IN_MAX_PLY) {
-                    std::cout << "mate " << ((CHECKMATE - score) / 2);
+                if (score >= -MATE && score <= MATED_IN_MAX) {
+                    std::cout << "mate " << ((-MATE - score) / 2);
+                } else if (score <= MATE && score >= MATE_IN_MAX) {
+                    std::cout << "mate " << ((MATE - score) / 2);
                 } else {
                     std::cout << "cp " << score;
                 }
@@ -143,8 +143,8 @@ int aspiration_window(int prev, int depth, SearchThread& st) {
     SearchStack stack[MAX_PLY + 10], *ss = stack + 7;
 
     int delta = 10 + prev * prev / 16000;
-    int alpha = std::max(prev - delta, -CHECKMATE);
-    int beta  = std::min(prev + delta, (int)CHECKMATE);
+    int alpha = std::max(prev - delta, -MATE);
+    int beta  = std::min(prev + delta, (int)MATE);
 
     int score = 0;
     while (true) {
@@ -152,10 +152,10 @@ int aspiration_window(int prev, int depth, SearchThread& st) {
 
         if (score <= alpha) {
             beta  = (alpha + beta) / 2;
-            alpha = std::max(score - delta, -CHECKMATE);
+            alpha = std::max(score - delta, -MATE);
 
         } else if (score >= beta) {
-            beta = std::min(score + delta, (int)CHECKMATE);
+            beta = std::min(score + delta, (int)MATE);
 
         } else
             break;
@@ -179,7 +179,7 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
     bool pv_node   = beta - alpha > 1;
     bool in_check  = st.board.inCheck();
     Move best_move = Move::NO_MOVE;
-    int best_score = -2 * CHECKMATE;
+    int best_score = -2 * MATE;
     int flag       = FLAG_ALPHA;
     int score      = 0;
 
@@ -202,28 +202,24 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
         if (st.board.isRepetition(1) || st.board.isHalfMoveDraw()) return 0;
 
         // Mate Distance Pruning
-        alpha = std::max(alpha, mated_in(ss->ply));
-        beta  = std::min(beta, mate_in(ss->ply + 1));
-        if (alpha >= beta) {
-            return alpha;
-        }
+        alpha = std::max(alpha, -MATE + ss->ply);
+        beta  = std::min(beta, MATE - ss->ply - 1);
+        if (alpha >= beta) return alpha;
     }
 
     // Probe Transposition Table
-    bool ttHit         = false;
-    TTEntry& tte       = table->probe_entry(st.board.hash(), ttHit);
-    const int tt_score = ttHit ? score_from_tt(tte.get_score(), ss->ply) : 0;
+    bool tt_Hit  = false;
+    TTEntry& tte = table->probe_entry(st.board.hash(), tt_Hit);
+    Move tt_move = Move::NO_MOVE;
 
-    if (!pv_node && ttHit && tte.depth >= depth) {
-        if ((tte.flag == FLAG_EXACT) || (tte.flag == FLAG_ALPHA && tt_score <= alpha) ||
-            (tte.flag == FLAG_BETA && tt_score >= beta))
-            return tt_score;
+    if (tt_Hit) {
+        tt_move      = tte.move;
+        int tt_score = score_from_tt(tte.get_score(), ss->ply);
+        if (!pv_node && tte.depth >= depth && (tte.flag & (tt_score >= beta ? FLAG_BETA : FLAG_ALPHA))) return tt_score;
     }
 
-    ss->static_eval = ttHit ? tte.get_eval() : evaluate(st);
+    ss->static_eval = tt_Hit ? tte.get_eval() : evaluate(st);
     ss->move_cnt    = 0;
-
-    // bool improving = !in_check && ss->static_eval > (ss - 2)->static_eval;
 
     if (!pv_node && !in_check) {
         // Reverse Futility Pruning
@@ -236,21 +232,18 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
             (ss + 1)->ply = ss->ply + 1;
 
             st.makeNullMove();
-
             score = -negamax(-beta, 1 - beta, depth - (3 + depth / 4), st, ss + 1);
-
             st.unmakeNullMove();
 
-            if (score >= beta) {
+            if (score >= beta)
                 // Don't return a mate score, could be a false mate
-                return std::min(score, IS_MATE_IN_MAX_PLY - 1);
-            }
+                return std::min(score, MATE_IN_MAX - 1);
         }
     }
 
     Movelist moves;
     movegen::legalmoves(moves, st.board);
-    score_moves(st, ss, moves, tte.move);
+    score_moves(st, ss, moves, tt_move);
 
     for (int i = 0; i < moves.size(); i++) {
         // Late Move Pruning
@@ -322,11 +315,11 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
         }
 
         // if (root) {
-        //     std::cout << ss->move_cnt << ' ' << move << ' ' << move.score() << std::endl;
+        //     std::cout << ss->move_cnt << ' ' << move << ' ' << move.score() << ' ' << score << std::endl;
         // }
     }
 
-    if (moves.size() == 0) best_score = in_check ? mated_in(ss->ply) : 0;
+    if (moves.size() == 0) best_score = in_check ? -MATE + ss->ply : 0;
 
     if (!st.info.stopped) {
         table->store(st.board.hash(), flag, best_move, depth, score_to_tt(best_score, ss->ply), ss->static_eval);
@@ -345,7 +338,7 @@ int q_search(int alpha, int beta, SearchThread& st, SearchStack* ss) {
     if (st.info.stopped) return 0;
 
     // Ply cap to prevent endless search
-    if (ss->ply > MAX_PLY - 1) return evaluate(st);
+    if (ss->ply >= MAX_PLY) return evaluate(st);
 
     // Check for draw by repetition && draw by 50-move rule
     if (st.board.isRepetition(1) || st.board.isHalfMoveDraw()) return 0;
@@ -357,15 +350,14 @@ int q_search(int alpha, int beta, SearchThread& st, SearchStack* ss) {
     if (alpha >= beta) return beta;
 
     // Probe Transposition Table
-    bool ttHit         = false;
-    TTEntry& tte       = table->probe_entry(st.board.hash(), ttHit);
-    const int tt_score = ttHit ? score_from_tt(tte.get_score(), ss->ply) : 0;
+    bool tt_Hit  = false;
+    TTEntry& tte = table->probe_entry(st.board.hash(), tt_Hit);
+    Move tt_move = Move::NO_MOVE;
 
-    //  Return TT score if we found a TT entry
-    if (ttHit) {
-        if ((tte.flag == FLAG_EXACT) || (tte.flag == FLAG_ALPHA && tt_score <= alpha) ||
-            (tte.flag == FLAG_BETA && tt_score >= beta))
-            return tt_score;
+    if (tt_Hit) {
+        tt_move      = tte.move;
+        int tt_score = score_from_tt(tte.get_score(), ss->ply);
+        if ((tte.flag & (tt_score >= beta ? FLAG_BETA : FLAG_ALPHA))) return tt_score;
     }
 
     int best_score = ss->static_eval;
@@ -378,7 +370,7 @@ int q_search(int alpha, int beta, SearchThread& st, SearchStack* ss) {
         movegen::legalmoves<MoveGenType::ALL>(moves, st.board);
     else
         movegen::legalmoves<MoveGenType::CAPTURE>(moves, st.board);
-    score_moves(st, moves, tte.move);
+    score_moves(st, moves, tt_move);
 
     for (int i = 0; i < moves.size(); i++) {
         moves.sort(i);

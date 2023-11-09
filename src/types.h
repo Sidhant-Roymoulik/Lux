@@ -7,14 +7,13 @@ using namespace chess;
 #define VERSION "3.5"
 #define AUTHOR "Sidhant Roymoulik"
 
-constexpr int16_t MAX_DEPTH           = 100;
-constexpr int16_t MAX_PLY             = 100;
-constexpr int16_t CHECKMATE           = 30000;
-constexpr int16_t IS_MATE_IN_MAX_PLY  = CHECKMATE - MAX_PLY;
-constexpr int16_t IS_MATED_IN_MAX_PLY = -IS_MATE_IN_MAX_PLY;
+enum score {
+    MAX_PLY = 100,
 
-constexpr int mate_in(int16_t ply) { return CHECKMATE - ply; }
-constexpr int mated_in(int16_t ply) { return -CHECKMATE + ply; }
+    MATE         = 30000,
+    MATE_IN_MAX  = MATE - MAX_PLY,
+    MATED_IN_MAX = -MATE_IN_MAX,
+};
 
 struct Score {
     int mg = 0, eg = 0;

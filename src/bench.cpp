@@ -3,7 +3,7 @@
 void StartBenchmark(SearchThread& st) {
     SearchInfo& info = st.info;
 
-    info.depth    = 15;
+    info.depth    = 13;
     info.time_set = false;
 
     uint64_t nodes        = 0;
