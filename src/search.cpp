@@ -175,36 +175,31 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
     // Exit search if time over
     if (st.info.stopped) return 0;
 
-    bool root      = (ss->ply == 0);
-    bool pv_node   = beta - alpha > 1;
-    bool in_check  = st.board.inCheck();
-    Move best_move = Move::NO_MOVE;
-    int best_score = -2 * MATE;
-    int flag       = FLAG_ALPHA;
-    int score      = 0;
-
-    // Check Extensions
-    if (in_check) {
-        depth++;
-    }
-
-    // If you reach 0-depth drop into q-search
-    if (depth <= 0) {
-        st.nodes--;
-        return q_search(alpha, beta, st, ss);
-    }
+    bool root    = (ss->ply == 0);
+    bool pv_node = beta - alpha > 1;
 
     if (!root) {
-        // Ply cap to prevent endless search
-        if (ss->ply >= MAX_PLY) return evaluate(st);
-
         // Check for draw by repetition && draw by 50-move rule
         if (st.board.isRepetition(1) || st.board.isHalfMoveDraw()) return 0;
+
+        // Ply cap to prevent endless search
+        if (ss->ply >= MAX_PLY) return evaluate(st);
 
         // Mate Distance Pruning
         alpha = std::max(alpha, -MATE + ss->ply);
         beta  = std::min(beta, MATE - ss->ply - 1);
         if (alpha >= beta) return alpha;
+    }
+
+    bool in_check = st.board.inCheck();
+
+    // Check Extensions
+    if (in_check) depth++;
+
+    // If you reach 0-depth drop into q-search
+    if (depth <= 0) {
+        st.nodes--;
+        return q_search(alpha, beta, st, ss);
     }
 
     // Probe Transposition Table
@@ -228,11 +223,14 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
         // Null Move Pruning
         if ((ss - 1)->move != Move::NO_MOVE && ss->static_eval >= beta && depth >= 2 &&
             st.board.hasNonPawnMaterial(st.board.sideToMove())) {
+            int R = 3 + depth / 4;
+
             ss->move      = Move::NO_MOVE;
             (ss + 1)->ply = ss->ply + 1;
 
             st.makeNullMove();
-            score = -negamax(-beta, 1 - beta, depth - (3 + depth / 4), st, ss + 1);
+            table->prefetch_tt(st.board.hash());
+            int score = -negamax(-beta, 1 - beta, depth - R, st, ss + 1);
             st.unmakeNullMove();
 
             if (score >= beta)
@@ -240,6 +238,11 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
                 return std::min(score, MATE_IN_MAX - 1);
         }
     }
+
+    Move best_move = Move::NO_MOVE;
+    int best_score = -2 * MATE;
+    int flag       = FLAG_ALPHA;
+    int score      = 0;
 
     Movelist moves;
     movegen::legalmoves(moves, st.board);
@@ -337,11 +340,11 @@ int q_search(int alpha, int beta, SearchThread& st, SearchStack* ss) {
     // Exit search if time over
     if (st.info.stopped) return 0;
 
-    // Ply cap to prevent endless search
-    if (ss->ply >= MAX_PLY) return evaluate(st);
-
     // Check for draw by repetition && draw by 50-move rule
     if (st.board.isRepetition(1) || st.board.isHalfMoveDraw()) return 0;
+
+    // Ply cap to prevent endless search
+    if (ss->ply >= MAX_PLY) return evaluate(st);
 
     ss->static_eval = evaluate(st);
 
