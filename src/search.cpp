@@ -11,15 +11,13 @@
 #include "types.h"
 
 // Late-Move Precomputations
-int LMR_TABLE[MAX_PLY][256], LMP_TABLE[2][MAX_PLY];
+int LMR_TABLE[MAX_PLY][256];
 
 void init_search_tables() {
-    for (int depth = 0; depth < MAX_PLY; depth++) {
-        for (int move = 0; move < 256; move++) {
+    for (int depth = 1; depth < MAX_PLY; depth++) {
+        for (int move = 1; move < 256; move++) {
             LMR_TABLE[depth][move] = 2 + log(depth) * log(move) / 2.5;
         }
-        LMP_TABLE[0][depth] = (3 + depth * depth) / 2;
-        LMP_TABLE[1][depth] = 3 + depth * depth;
     }
 }
 
@@ -83,7 +81,7 @@ void iterative_deepening(SearchThread& st) {
     auto startime = st.start_time();
     Move bestmove = Move::NO_MOVE;
 
-    for (int current_depth = 1; current_depth <= info.depth; current_depth++) {
+    for (int current_depth = 1; current_depth < info.depth; current_depth++) {
         score = aspiration_window(score, current_depth, st);
 
         if (st.info.stopped || st.stop_early()) {
@@ -148,7 +146,7 @@ int aspiration_window(int prev, int depth, SearchThread& st) {
 
     int score = 0;
     while (true) {
-        score = negamax(alpha, beta, depth, st, ss);
+        score = negamax(st, ss, alpha, beta, depth, false);
 
         if (score <= alpha) {
             beta  = (alpha + beta) / 2;
@@ -166,7 +164,7 @@ int aspiration_window(int prev, int depth, SearchThread& st) {
     return score;
 }
 
-int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
+int negamax(SearchThread& st, SearchStack* ss, int alpha, int beta, int depth, bool cutnode) {
     // Increment total nodes
     st.nodes++;
 
@@ -180,7 +178,7 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
 
     if (!root) {
         // Check for draw by repetition && draw by 50-move rule
-        if (st.board.isRepetition(1) || st.board.isHalfMoveDraw()) return 0;
+        if (st.board.isRepetition() || st.board.isHalfMoveDraw()) return 0;
 
         // Ply cap to prevent endless search
         if (ss->ply >= MAX_PLY) return evaluate(st);
@@ -199,65 +197,72 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
     // If you reach 0-depth drop into q-search
     if (depth <= 0) {
         st.nodes--;
-        return q_search(alpha, beta, st, ss);
+        return q_search(st, ss, alpha, beta);
     }
 
     // Probe Transposition Table
-    bool tt_Hit  = false;
-    TTEntry& tte = table->probe_entry(st.board.hash(), tt_Hit);
+    bool tt_hit  = false;
+    TTEntry& tte = table->probe_entry(st.board.hash(), tt_hit);
     Move tt_move = Move::NO_MOVE;
 
-    if (tt_Hit) {
+    if (tt_hit) {
         tt_move      = tte.move;
         int tt_score = score_from_tt(tte.get_score(), ss->ply);
         if (!pv_node && tte.depth >= depth && (tte.flag & (tt_score >= beta ? FLAG_BETA : FLAG_ALPHA))) return tt_score;
     }
 
-    ss->static_eval = tt_Hit ? tte.get_eval() : evaluate(st);
-    ss->move_cnt    = 0;
+    ss->static_eval = tt_hit ? tte.get_eval() : evaluate(st);
 
-    if (!pv_node && !in_check) {
-        // Reverse Futility Pruning
-        if (depth < 9 && ss->static_eval - 75 * depth >= beta) return ss->static_eval;
+    if (pv_node || in_check || (ss - 1)->move == Move::NO_MOVE) goto ab_move_loop;
 
-        // Null Move Pruning
-        if ((ss - 1)->move != Move::NO_MOVE && ss->static_eval >= beta && depth >= 2 &&
-            st.board.hasNonPawnMaterial(st.board.sideToMove())) {
-            int R = 3 + depth / 4;
+    // Reverse Futility Pruning
+    if (depth < 9 && ss->static_eval - 75 * depth >= beta) return ss->static_eval;
 
-            ss->move      = Move::NO_MOVE;
-            (ss + 1)->ply = ss->ply + 1;
+    // Null Move Pruning
+    if (depth > 1 && ss->static_eval >= beta && st.board.hasNonPawnMaterial(st.board.sideToMove())) {
+        int R = 3 + depth / 4;
 
-            st.makeNullMove();
-            table->prefetch_tt(st.board.hash());
-            int score = -negamax(-beta, 1 - beta, depth - R, st, ss + 1);
-            st.unmakeNullMove();
+        ss->move      = Move::NO_MOVE;
+        (ss + 1)->ply = ss->ply + 1;
 
-            if (score >= beta)
-                // Don't return a mate score, could be a false mate
-                return std::min(score, MATE_IN_MAX - 1);
-        }
+        st.makeNullMove();
+        table->prefetch_tt(st.board.hash());
+
+        int score = -negamax(st, ss + 1, -beta, 1 - beta, depth - R, !cutnode);
+
+        st.unmakeNullMove();
+
+        if (score >= beta)
+            // Don't return a mate score, could be a false mate
+            return score >= MATE_IN_MAX ? beta : score;
     }
+
+ab_move_loop:
 
     Move best_move = Move::NO_MOVE;
     int best_score = -2 * MATE;
-    int flag       = FLAG_ALPHA;
     int score      = 0;
+    int flag       = FLAG_ALPHA;
+    // bool improving = !in_check && ss->static_eval > (ss - 2)->static_eval;
+
+    ss->move_cnt = 0;
 
     Movelist moves;
     movegen::legalmoves(moves, st.board);
     score_moves(st, ss, moves, tt_move);
 
     for (int i = 0; i < moves.size(); i++) {
-        // Late Move Pruning
-        // if (ss->move_cnt > LMP_TABLE[improving][depth]) break;
-
         // Incremental Move Sorting
         moves.sort(i);
         Move move = moves[i];
 
-        // History Pruning
-        if (move.score() < -4000 * depth) break;
+        if (!root) {
+            // Late Move Pruning
+            // if (quiet && ss->move_cnt > (improving ? depth * depth / 2 : depth * depth)) continue;
+
+            // History Pruning
+            if (move.score() < -4000 * depth) break;
+        }
 
         bool quiet = !(st.board.isCapture(move) || move.typeOf() == Move::PROMOTION);
 
@@ -273,20 +278,20 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
             int R = LMR_TABLE[depth][ss->move_cnt];
 
             R -= pv_node;
-            R -= move == ss->killers[0] || move == ss->killers[1];
+            R -= move.score() > 17000;
 
-            score = -negamax(-alpha - 1, -alpha, depth - R, st, ss + 1);
+            score = -negamax(st, ss + 1, -alpha - 1, -alpha, depth - R, true);
 
             if (score > alpha && R > 1) {
-                score = -negamax(-alpha - 1, -alpha, depth - 1, st, ss + 1);
+                score = -negamax(st, ss + 1, -alpha - 1, -alpha, depth - 1, !cutnode);
             }
 
         } else if (!pv_node || ss->move_cnt > 1) {
-            score = -negamax(-alpha - 1, -alpha, depth - 1, st, ss + 1);
+            score = -negamax(st, ss + 1, -alpha - 1, -alpha, depth - 1, !cutnode);
         }
 
         if (pv_node && (ss->move_cnt == 1 || score > alpha)) {
-            score = -negamax(-beta, -alpha, depth - 1, st, ss + 1);
+            score = -negamax(st, ss + 1, -beta, -alpha, depth - 1, false);
         }
 
         st.unmakeMove(move);
@@ -322,6 +327,10 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
         // }
     }
 
+    if (root && st.bestmove == Move::NO_MOVE) {
+        std::cerr << "NIGHTMARE NIGHTMARE NIGHTMARE NIGHTMARE NIGHTMARE NIGHTMARE NIGHTMARE" << std::endl;
+    }
+
     if (moves.size() == 0) best_score = in_check ? -MATE + ss->ply : 0;
 
     if (!st.info.stopped) {
@@ -331,7 +340,7 @@ int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss) {
     return best_score;
 }
 
-int q_search(int alpha, int beta, SearchThread& st, SearchStack* ss) {
+int q_search(SearchThread& st, SearchStack* ss, int alpha, int beta) {
     // Increment total nodes
     st.nodes++;
 
@@ -341,7 +350,7 @@ int q_search(int alpha, int beta, SearchThread& st, SearchStack* ss) {
     if (st.info.stopped) return 0;
 
     // Check for draw by repetition && draw by 50-move rule
-    if (st.board.isRepetition(1) || st.board.isHalfMoveDraw()) return 0;
+    if (st.board.isRepetition() || st.board.isHalfMoveDraw()) return 0;
 
     // Ply cap to prevent endless search
     if (ss->ply >= MAX_PLY) return evaluate(st);
@@ -353,11 +362,11 @@ int q_search(int alpha, int beta, SearchThread& st, SearchStack* ss) {
     if (alpha >= beta) return beta;
 
     // Probe Transposition Table
-    bool tt_Hit  = false;
-    TTEntry& tte = table->probe_entry(st.board.hash(), tt_Hit);
+    bool tt_hit  = false;
+    TTEntry& tte = table->probe_entry(st.board.hash(), tt_hit);
     Move tt_move = Move::NO_MOVE;
 
-    if (tt_Hit) {
+    if (tt_hit) {
         tt_move      = tte.move;
         int tt_score = score_from_tt(tte.get_score(), ss->ply);
         if ((tte.flag & (tt_score >= beta ? FLAG_BETA : FLAG_ALPHA))) return tt_score;
@@ -384,7 +393,7 @@ int q_search(int alpha, int beta, SearchThread& st, SearchStack* ss) {
         st.makeMove(move);
         table->prefetch_tt(st.board.hash());
 
-        score = -q_search(-beta, -alpha, st, ss + 1);
+        score = -q_search(st, ss + 1, -beta, -alpha);
 
         st.unmakeMove(move);
 

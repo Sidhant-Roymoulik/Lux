@@ -41,12 +41,13 @@ struct SearchThread {
         clear();
     }
 
-    int history[13][64];
     uint64_t nodes = 0;
     Move bestmove  = Move::NO_MOVE;
+    int history[13][64];
 
     void clear() {
-        nodes = 0;
+        nodes    = 0;
+        bestmove = Move::NO_MOVE;
         for (int i = 0; i < 13; i++) {
             for (int j = 0; j < 64; j++) {
                 history[i][j] = 0;
@@ -73,9 +74,7 @@ struct SearchThread {
 
     bool stop_early() { return info.time_set && (tm.check_time() || info.stopped); }
     void check_time() {
-        if ((info.time_set && tm.check_time()) || (info.nodes_set && nodes >= info.node_limit)) {
-            info.stopped = true;
-        }
+        if ((info.time_set && tm.check_time()) || (info.nodes_set && nodes >= info.node_limit)) info.stopped = true;
     }
 };
 
@@ -85,5 +84,5 @@ template <bool print_info>
 void iterative_deepening(SearchThread& st);
 
 int aspiration_window(int prevEval, int depth, SearchThread& st);
-int negamax(int alpha, int beta, int depth, SearchThread& st, SearchStack* ss);
-int q_search(int alpha, int beta, SearchThread& st, SearchStack* ss);
+int negamax(SearchThread& st, SearchStack* ss, int alpha, int beta, int depth, bool cutnode);
+int q_search(SearchThread& st, SearchStack* ss, int alpha, int beta);
