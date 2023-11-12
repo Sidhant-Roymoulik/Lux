@@ -178,7 +178,7 @@ int negamax(SearchThread& st, SearchStack* ss, int alpha, int beta, int depth, b
 
     if (!root) {
         // Check for draw by repetition && draw by 50-move rule
-        if (st.board.isRepetition() || st.board.isHalfMoveDraw()) return 0;
+        if (st.board.isRepetition(1) || st.board.isHalfMoveDraw()) return 0;
 
         // Ply cap to prevent endless search
         if (ss->ply >= MAX_PLY) return evaluate(st);
@@ -207,12 +207,13 @@ int negamax(SearchThread& st, SearchStack* ss, int alpha, int beta, int depth, b
 
     if (tt_hit) {
         tt_move      = tte.move;
-        int tt_score = score_from_tt(tte.get_score(), ss->ply);
+        int tt_score = score_from_tt(tte.score, ss->ply);
         if (!pv_node && tte.depth >= depth && (tte.flag & (tt_score >= beta ? FLAG_BETA : FLAG_ALPHA))) return tt_score;
     }
 
-    ss->static_eval = tt_hit ? tte.get_eval() : evaluate(st);
+    ss->static_eval = tt_hit ? tte.eval : evaluate(st);
 
+    // Various Pruning Methods
     if (pv_node || in_check || (ss - 1)->move == Move::NO_MOVE) goto ab_move_loop;
 
     // Reverse Futility Pruning
@@ -257,11 +258,11 @@ ab_move_loop:
         Move move = moves[i];
 
         if (!root) {
-            // Late Move Pruning
-            // if (quiet && ss->move_cnt > (improving ? depth * depth / 2 : depth * depth)) continue;
-
             // History Pruning
             if (move.score() < -4000 * depth) break;
+
+            // Late Move Pruning
+            // if (ss->move_cnt > (improving ? depth * depth / 2 : depth * depth)) skip_quiet = true;
         }
 
         bool quiet = !(st.board.isCapture(move) || move.typeOf() == Move::PROMOTION);
@@ -327,10 +328,6 @@ ab_move_loop:
         // }
     }
 
-    if (root && st.bestmove == Move::NO_MOVE) {
-        std::cerr << "NIGHTMARE NIGHTMARE NIGHTMARE NIGHTMARE NIGHTMARE NIGHTMARE NIGHTMARE" << std::endl;
-    }
-
     if (moves.size() == 0) best_score = in_check ? -MATE + ss->ply : 0;
 
     if (!st.info.stopped) {
@@ -350,16 +347,10 @@ int q_search(SearchThread& st, SearchStack* ss, int alpha, int beta) {
     if (st.info.stopped) return 0;
 
     // Check for draw by repetition && draw by 50-move rule
-    if (st.board.isRepetition() || st.board.isHalfMoveDraw()) return 0;
+    if (st.board.isRepetition(1) || st.board.isHalfMoveDraw()) return 0;
 
     // Ply cap to prevent endless search
     if (ss->ply >= MAX_PLY) return evaluate(st);
-
-    ss->static_eval = evaluate(st);
-
-    // Delta Pruning
-    alpha = std::max(alpha, ss->static_eval);
-    if (alpha >= beta) return beta;
 
     // Probe Transposition Table
     bool tt_hit  = false;
@@ -368,9 +359,15 @@ int q_search(SearchThread& st, SearchStack* ss, int alpha, int beta) {
 
     if (tt_hit) {
         tt_move      = tte.move;
-        int tt_score = score_from_tt(tte.get_score(), ss->ply);
+        int tt_score = score_from_tt(tte.score, ss->ply);
         if ((tte.flag & (tt_score >= beta ? FLAG_BETA : FLAG_ALPHA))) return tt_score;
     }
+
+    ss->static_eval = tt_hit ? tte.eval : evaluate(st);
+
+    // Delta Pruning
+    alpha = std::max(alpha, ss->static_eval);
+    if (alpha >= beta) return beta;
 
     int best_score = ss->static_eval;
     Move best_move = Move::NO_MOVE;

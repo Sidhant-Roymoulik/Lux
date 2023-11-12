@@ -14,9 +14,6 @@ struct TTEntry {
     uint8_t depth = 0;
     uint8_t flag  = FLAG_NONE;
     Move move     = Move::NO_MOVE;
-
-    int get_score() { return (int)score; }
-    int get_eval() { return (int)eval; }
 };
 
 class TranspositionTable {
