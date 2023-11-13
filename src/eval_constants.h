@@ -4,9 +4,9 @@
 
 #define S Score
 
-int GAMEPHASE[6] = {0, 1, 1, 2, 4, 0};
+int PhaseValues[6] = {0, 1, 1, 2, 4, 0};
 
-Score PIECE_VALUES[6] = {S(111, 80), S(416, 307), S(402, 306), S(533, 565), S(1293, 944), S(20000, 20000)};
+Score PieceValues[6] = {S(111, 80), S(416, 307), S(402, 306), S(533, 565), S(1293, 944), S(20000, 20000)};
 
 Score PST[6][64] = {
     // Pawn PSTS
@@ -64,3 +64,6 @@ Score PST[6][64] = {
      S(5, -38),    S(9, -13),   S(-41, 16),  S(-101, 28), S(-77, 28),  S(-54, 19), S(2, -4),   S(11, -27),
      S(-21, -67),  S(43, -50),  S(12, -27),  S(-95, 2),   S(-14, -21), S(-50, -5), S(30, -38), S(19, -64)},
 };
+
+const Score BishopPair = S(33, 110);
+// const Score RookOrQueenOnSeventh = S(20, 0);

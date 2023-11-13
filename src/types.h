@@ -4,7 +4,7 @@
 
 using namespace chess;
 
-#define VERSION "3.5"
+#define VERSION "4.0"
 #define AUTHOR "Sidhant Roymoulik"
 
 enum score {
