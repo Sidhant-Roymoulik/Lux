@@ -51,6 +51,7 @@
  - [x] Transposition Table
  - [x] Aspiration Window
  - [x] Principal Variation Search
+ - [x] Improving Heuristic
  - [x] Check Extensions
  - [x] Reverse Futility Pruning
  - [x] Null Move Pruning
@@ -89,6 +90,8 @@ Chess package for C++: https://github.com/Disservin/chess-library
 [Blunder](https://github.com/algerbrex/blunder)
 
 [Rice](https://github.com/rafid-dev/rice)
+
+[Weiss](https://github.com/TerjeKir/weiss)
 
 And of course, [Stockfish](https://github.com/official-stockfish/Stockfish)
 
