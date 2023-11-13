@@ -212,12 +212,13 @@ int negamax(SearchThread& st, SearchStack* ss, int alpha, int beta, int depth, b
     }
 
     ss->static_eval = tt_hit ? tte.eval : evaluate(st);
+    bool improving  = !in_check && ss->static_eval > (ss - 2)->static_eval;
 
     // Various Pruning Methods
     if (pv_node || in_check || (ss - 1)->move == Move::NO_MOVE) goto ab_move_loop;
 
     // Reverse Futility Pruning
-    if (depth < 9 && ss->static_eval - 75 * depth >= beta) return ss->static_eval;
+    if (depth < 9 && ss->static_eval - 75 * (depth - improving) >= beta) return ss->static_eval;
 
     // Null Move Pruning
     if (depth > 1 && ss->static_eval >= beta && st.board.hasNonPawnMaterial(st.board.sideToMove())) {
@@ -244,7 +245,6 @@ ab_move_loop:
     int best_score = -2 * MATE;
     int score      = 0;
     int flag       = FLAG_ALPHA;
-    // bool improving = !in_check && ss->static_eval > (ss - 2)->static_eval;
 
     ss->move_cnt = 0;
 
@@ -262,7 +262,7 @@ ab_move_loop:
             if (move.score() < -4000 * depth) break;
 
             // Late Move Pruning
-            // if (ss->move_cnt > (improving ? depth * depth / 2 : depth * depth)) skip_quiet = true;
+            // if (ss->move_cnt > depth * depth / (2 - improving)) break;
         }
 
         bool quiet = !(st.board.isCapture(move) || move.typeOf() == Move::PROMOTION);
