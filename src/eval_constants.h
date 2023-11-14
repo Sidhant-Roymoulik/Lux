@@ -66,4 +66,3 @@ Score PST[6][64] = {
 };
 
 const Score BishopPair = S(33, 110);
-// const Score RookOrQueenOnSeventh = S(20, 0);

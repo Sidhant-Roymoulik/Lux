@@ -63,6 +63,7 @@
 
  - [x] Material Score
  - [x] Piece-Square Tables
+ - [x] Bishop Pair
 
 ### Move Ordering Upgrades
 

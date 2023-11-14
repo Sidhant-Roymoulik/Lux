@@ -41,9 +41,6 @@ Score eval_piece(EvalInfo& info, SearchThread& st, Color color, PieceType type) 
         Square sq = builtin::poplsb(copy);
         if (color == Color::WHITE) sq = sq ^ 56;
 
-        // if (utils::squareRank(sq) == Rank::RANK_7 && (type == PieceType::ROOK || type == PieceType::QUEEN))
-        //     score += RookOrQueenOnSeventh;
-
         score += PST[(int)type][sq];
     }
 
