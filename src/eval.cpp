@@ -35,12 +35,22 @@ Score eval_piece(EvalInfo& info, SearchThread& st, Color color, PieceType type) 
     Bitboard copy = st.board.pieces(type, color);
     info.gamephase += PhaseValues[(int)type] * builtin::popcount(copy);
 
+    if (type == PieceType::PAWN) info.pawn[(int)color] = copy;
     if (type == PieceType::BISHOP && (copy & (copy - 1))) score += BishopPair;
 
     while (copy) {
         Square sq = builtin::poplsb(copy);
-        if (color == Color::WHITE) sq = sq ^ 56;
 
+        if (type == PieceType::ROOK) {
+            Bitboard file = files[(int)utils::squareFile(sq)];
+            if (!(file & (info.pawn[0] | info.pawn[1]))) {
+                score += OpenFile;
+            } else if (!(file & info.pawn[(int)color])) {
+                score += SemiOpenFile;
+            }
+        }
+
+        if (color == Color::WHITE) sq = sq ^ 56;
         score += PST[(int)type][sq];
     }
 
@@ -66,17 +76,19 @@ int evaluate(SearchThread& st) {
     Color turn = st.board.sideToMove(), other = ~turn;
 
     info.score += eval_piece(info, st, turn, PieceType::PAWN);
+    info.score -= eval_piece(info, st, other, PieceType::PAWN);
+
     info.score += eval_piece(info, st, turn, PieceType::KNIGHT);
     info.score += eval_piece(info, st, turn, PieceType::BISHOP);
     info.score += eval_piece(info, st, turn, PieceType::ROOK);
     info.score += eval_piece(info, st, turn, PieceType::QUEEN);
-    info.score += eval_king(info, st, turn);
 
-    info.score -= eval_piece(info, st, other, PieceType::PAWN);
     info.score -= eval_piece(info, st, other, PieceType::KNIGHT);
     info.score -= eval_piece(info, st, other, PieceType::BISHOP);
     info.score -= eval_piece(info, st, other, PieceType::ROOK);
     info.score -= eval_piece(info, st, other, PieceType::QUEEN);
+
+    info.score += eval_king(info, st, turn);
     info.score -= eval_king(info, st, other);
 
     info.gamephase = std::clamp(info.gamephase, 0, 24);

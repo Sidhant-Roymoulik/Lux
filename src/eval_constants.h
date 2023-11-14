@@ -65,4 +65,6 @@ Score PST[6][64] = {
      S(-21, -67),  S(43, -50),  S(12, -27),  S(-95, 2),   S(-14, -21), S(-50, -5), S(30, -38), S(19, -64)},
 };
 
-const Score BishopPair = S(33, 110);
+const Score BishopPair   = S(33, 110);
+const Score OpenFile     = S(28, 31);
+const Score SemiOpenFile = S(17, 15);
