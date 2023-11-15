@@ -64,6 +64,7 @@
  - [x] Material Score
  - [x] Piece-Square Tables
  - [x] Bishop Pair
+ - [x] Open / Semi-Open File
 
 ### Move Ordering Upgrades
 
