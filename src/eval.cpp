@@ -35,7 +35,6 @@ Score eval_piece(EvalInfo& info, SearchThread& st, Color color, PieceType type) 
     Bitboard copy = st.board.pieces(type, color);
     info.gamephase += PhaseValues[(int)type] * builtin::popcount(copy);
 
-    if (type == PieceType::PAWN) info.pawn[(int)color] = copy;
     if (type == PieceType::BISHOP && (copy & (copy - 1))) score += BishopPair;
 
     while (copy) {
@@ -57,12 +56,28 @@ Score eval_piece(EvalInfo& info, SearchThread& st, Color color, PieceType type) 
     return score;
 }
 
+Score eval_pawn(EvalInfo& info, SearchThread& st, Color color) {
+    Score score;
+    Bitboard copy = st.board.pieces(PieceType::PAWN, color);
+
+    info.pawn[(int)color] = copy;
+
+    while (copy) {
+        Square sq = builtin::poplsb(copy);
+
+        if (color == Color::WHITE) sq = sq ^ 56;
+        score += PST[(int)PieceType::PAWN][sq];
+    }
+
+    return score;
+}
+
 Score eval_king(EvalInfo& info, SearchThread& st, Color color) {
     Score score;
 
     Square sq = st.board.kingSq(color);
-    if (color == Color::WHITE) sq = sq ^ 56;
 
+    if (color == Color::WHITE) sq = sq ^ 56;
     score += PST[(int)PieceType::KING][sq];
 
     return score;
@@ -75,8 +90,8 @@ int evaluate(SearchThread& st) {
     EvalInfo info;
     Color turn = st.board.sideToMove(), other = ~turn;
 
-    info.score += eval_piece(info, st, turn, PieceType::PAWN);
-    info.score -= eval_piece(info, st, other, PieceType::PAWN);
+    info.score += eval_pawn(info, st, turn);
+    info.score -= eval_pawn(info, st, other);
 
     info.score += eval_piece(info, st, turn, PieceType::KNIGHT);
     info.score += eval_piece(info, st, turn, PieceType::BISHOP);
