@@ -181,7 +181,7 @@ int negamax(SearchThread& st, SearchStack* ss, int alpha, int beta, int depth, b
         if (st.board.isRepetition(1) || st.board.isHalfMoveDraw()) return 0;
 
         // Ply cap to prevent endless search
-        if (ss->ply >= MAX_PLY) return evaluate(st);
+        if (ss->ply >= MAX_PLY) return evaluate(st.board);
 
         // Mate Distance Pruning
         alpha = std::max(alpha, -MATE + ss->ply);
@@ -211,7 +211,7 @@ int negamax(SearchThread& st, SearchStack* ss, int alpha, int beta, int depth, b
         if (!pv_node && tte.depth >= depth && (tte.flag & (tt_score >= beta ? FLAG_BETA : FLAG_ALPHA))) return tt_score;
     }
 
-    ss->static_eval = tt_hit ? tte.eval : evaluate(st);
+    ss->static_eval = tt_hit ? tte.eval : evaluate(st.board);
     bool improving  = !in_check && ss->static_eval > (ss - 2)->static_eval;
 
     // Various Pruning Methods
@@ -350,7 +350,7 @@ int q_search(SearchThread& st, SearchStack* ss, int alpha, int beta) {
     if (st.board.isRepetition(1) || st.board.isHalfMoveDraw()) return 0;
 
     // Ply cap to prevent endless search
-    if (ss->ply >= MAX_PLY) return evaluate(st);
+    if (ss->ply >= MAX_PLY) return evaluate(st.board);
 
     // Probe Transposition Table
     bool tt_hit  = false;
@@ -363,7 +363,7 @@ int q_search(SearchThread& st, SearchStack* ss, int alpha, int beta) {
         if ((tte.flag & (tt_score >= beta ? FLAG_BETA : FLAG_ALPHA))) return tt_score;
     }
 
-    ss->static_eval = tt_hit ? tte.eval : evaluate(st);
+    ss->static_eval = tt_hit ? tte.eval : evaluate(st.board);
 
     // Delta Pruning
     alpha = std::max(alpha, ss->static_eval);

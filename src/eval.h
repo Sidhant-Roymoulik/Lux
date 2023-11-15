@@ -10,4 +10,4 @@ struct EvalInfo {
 };
 
 void init_eval_tables();
-int evaluate(SearchThread& st);
+int evaluate(Board& board);

@@ -255,7 +255,7 @@ void uci_loop(int argv, char **argc) {
             int output;
             for (int i = 0; i < samples; i++) {
                 auto start = std::chrono::high_resolution_clock::now();
-                output     = evaluate(*searchThread);
+                output     = evaluate(searchThread->board);
                 auto stop  = std::chrono::high_resolution_clock::now();
                 timeSum += std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start).count();
             }
@@ -266,7 +266,7 @@ void uci_loop(int argv, char **argc) {
             continue;
 
         } else if (token == "eval") {
-            std::cout << "Eval: " << evaluate(*searchThread) << std::endl;
+            std::cout << "Eval: " << evaluate(searchThread->board) << std::endl;
         } else if (token == "repetition") {
             std::cout << searchThread->board.isRepetition(1) << std::endl;
         } else if (token == "bench") {
