@@ -68,5 +68,6 @@ Score PST[6][64] = {
 Score BishopPair   = S(33, 110);
 Score OpenFile     = S(28, 31);
 Score SemiOpenFile = S(17, 15);
-Score PawnSupport  = S(22, 17);
 Score PawnDoubled  = S(-11, -48);
+Score PawnDoubled2 = S(-10, -25);
+Score PawnSupport  = S(22, 17);

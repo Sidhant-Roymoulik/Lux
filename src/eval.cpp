@@ -8,26 +8,38 @@
 
 using namespace chess;
 
-Bitboard files[64], ranks[64];
-
 void init_eval_tables() {
-    for (int i = 0; i < 6; i++) {
-        for (int j = 0; j < 64; j++) {
+    for (int i = (int)PieceType::PAWN; i <= (int)PieceType::KING; i++) {
+        for (int j = Square::SQ_A1; j <= Square::SQ_H8; j++) {
             PST[i][j] += PieceValues[i];
         }
     }
+}
 
-    Bitboard file = 0x101010101010101, rank = 0xff00000000000000;
+template <Color c>
+Score eval_pawn(EvalInfo& info, Board& board) {
+    Score score;
+    Bitboard copy = board.pieces(PieceType::PAWN, c);
 
-    for (int i = 0; i < 8; i++) {
-        files[i] = file << i;
-        for (int j = i; j < 64; j += 8) files[j] = files[i];
+    info.pawn[(int)c] = copy;
+
+    // const Direction UP = (c == Color::WHITE) ? Direction::NORTH : Direction::SOUTH;
+
+    // // Check for doubled pawns one or 2 squares ahead
+    // score += PawnDoubled * builtin::popcount(copy & attacks::shift<UP>(copy));
+    // score += PawnDoubled2 * builtin::popcount(copy & attacks::shift<UP>(attacks::shift<UP>(copy)));
+
+    // int count = builtin::popcount(copy & (attacks::pawnLeftAttacks<c>(copy) | attacks::pawnRightAttacks<c>(copy)));
+    // score += PawnSupport * count;
+
+    while (copy) {
+        Square sq = builtin::poplsb(copy);
+
+        if (c == Color::WHITE) sq = sq ^ 56;
+        score += PST[(int)PieceType::PAWN][sq];
     }
 
-    for (int i = 0; i < 64; i += 8) {
-        ranks[i] = rank >> i;
-        for (int j = 0; j < 8; j++) ranks[j] = ranks[i];
-    }
+    return score;
 }
 
 template <Color c, PieceType p>
@@ -42,7 +54,7 @@ Score eval_piece(EvalInfo& info, Board& board) {
         Square sq = builtin::poplsb(copy);
 
         if (p == PieceType::ROOK) {
-            Bitboard file = files[(int)utils::squareFile(sq)];
+            Bitboard file = attacks::MASK_FILE[(int)utils::squareFile(sq)];
             if (!(file & (info.pawn[0] | info.pawn[1]))) {
                 score += OpenFile;
             } else if (!(file & info.pawn[(int)c])) {
@@ -52,29 +64,6 @@ Score eval_piece(EvalInfo& info, Board& board) {
 
         if (c == Color::WHITE) sq = sq ^ 56;
         score += PST[(int)p][sq];
-    }
-
-    return score;
-}
-
-template <Color c>
-Score eval_pawn(EvalInfo& info, Board& board) {
-    Score score;
-    Bitboard copy = board.pieces(PieceType::PAWN, c);
-
-    info.pawn[(int)c] = copy;
-
-    // int count = builtin::popcount(copy & (attacks::pawnLeftAttacks<c>(copy) | attacks::pawnRightAttacks<c>(copy)));
-    // score += PawnSupport * count;
-
-    while (copy) {
-        Square sq = builtin::poplsb(copy);
-
-        // Bitboard file = files[(int)utils::squareFile(sq)];
-        // if (builtin::popcount(copy & file) - 1) score += PawnDoubled;
-
-        if (c == Color::WHITE) sq = sq ^ 56;
-        score += PST[(int)PieceType::PAWN][sq];
     }
 
     return score;
