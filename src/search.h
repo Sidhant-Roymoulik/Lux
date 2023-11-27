@@ -37,7 +37,7 @@ struct SearchThread {
     Time_Manager tm;
 
     SearchThread(SearchInfo& i) : info(i) {
-        board = Board(STARTPOS);
+        board = Board(constants::STARTPOS);
         clear();
     }
 

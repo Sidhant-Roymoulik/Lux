@@ -96,7 +96,7 @@ void uci_loop(int argv, char **argc) {
             std::string option;
             is >> std::skipws >> option;
             if (option == "startpos") {
-                searchThread->applyFen(STARTPOS);
+                searchThread->applyFen(constants::STARTPOS);
             } else if (option == "fen") {
                 std::string final_fen;
                 is >> std::skipws >> option;
