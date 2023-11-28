@@ -20,7 +20,7 @@
 
 
 ## Rating
-| Version | Estimated | [CCRL Blitz (2'+1")](https://ccrl.chessdom.com/ccrl/404/)  | [MCERL 1' + 0.6"](https://www.chessengeria.eu/mcerl)  |
+| Version | Estimated | [CCRL Blitz (2'+1")](https://www.computerchess.org.uk/ccrl/404/)  | [MCERL 1' + 0.6"](https://www.chessengeria.eu/mcerl)  |
 |-------- |-----------|------------------------------------------------------------|-------------------------------------------------------|
 | 1.0     | 1700      | -                                                          | 1985
 | 2.0     | 1850      | -                                                          | 2102
