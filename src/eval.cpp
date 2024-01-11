@@ -61,7 +61,7 @@ Score eval_piece(EvalInfo& info, Board& board) {
 }
 
 template <Color c>
-Score eval_king(EvalInfo& info, Board& board) {
+Score eval_king(Board& board) {
     Score score;
 
     Square sq = board.kingSq(c);
@@ -86,8 +86,8 @@ void eval_pieces(EvalInfo& info, Board& board) {
     info.score -= eval_piece<Color::BLACK, PieceType::ROOK>(info, board);
     info.score -= eval_piece<Color::BLACK, PieceType::QUEEN>(info, board);
 
-    info.score += eval_king<Color::WHITE>(info, board);
-    info.score -= eval_king<Color::BLACK>(info, board);
+    info.score += eval_king<Color::WHITE>(board);
+    info.score -= eval_king<Color::BLACK>(board);
 }
 
 int evaluate(Board& board) {
