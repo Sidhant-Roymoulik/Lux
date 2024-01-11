@@ -19,21 +19,12 @@ void init_eval_tables() {
 template <Color c>
 Score eval_pawn(EvalInfo& info, Board& board) {
     Score score;
-    Bitboard copy = board.pieces(PieceType::PAWN, c);
+    Bitboard pawns = board.pieces(PieceType::PAWN, c);
 
-    info.pawn[(int)c] = copy;
+    info.pawn[(int)c] = pawns;
 
-    // const Direction UP = (c == Color::WHITE) ? Direction::NORTH : Direction::SOUTH;
-
-    // // Check for doubled pawns one or 2 squares ahead
-    // score += PawnDoubled * builtin::popcount(copy & attacks::shift<UP>(copy));
-    // score += PawnDoubled2 * builtin::popcount(copy & attacks::shift<UP>(attacks::shift<UP>(copy)));
-
-    // int count = builtin::popcount(copy & (attacks::pawnLeftAttacks<c>(copy) | attacks::pawnRightAttacks<c>(copy)));
-    // score += PawnSupport * count;
-
-    while (copy) {
-        Square sq = builtin::poplsb(copy);
+    while (pawns) {
+        Square sq = builtin::poplsb(pawns);
 
         if (c == Color::WHITE) sq = sq ^ 56;
         score += PST[(int)PieceType::PAWN][sq];

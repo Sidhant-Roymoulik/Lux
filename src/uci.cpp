@@ -250,7 +250,7 @@ void uci_loop(int argv, char **argc) {
             continue;
 
         } else if (token == "bencheval") {
-            long long samples = 10000000;
+            long long samples = 100000000;
             long long timeSum = 0;
             int output;
             for (int i = 0; i < samples; i++) {
