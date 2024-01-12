@@ -213,6 +213,7 @@ int negamax(SearchThread& st, SearchStack* ss, int alpha, int beta, int depth, b
 
     ss->static_eval = tt_hit ? tte.eval : evaluate(st.board);
     bool improving  = !in_check && ss->static_eval > (ss - 2)->static_eval;
+    int rbeta       = std::min(beta + 100, MATE_IN_MAX - 1);
 
     // Various Pruning Methods
     if (pv_node || in_check || (ss - 1)->move == Move::NULL_MOVE) goto ab_move_loop;
@@ -237,6 +238,43 @@ int negamax(SearchThread& st, SearchStack* ss, int alpha, int beta, int depth, b
         if (score >= beta)
             // Don't return a mate score, could be a false mate
             return score >= MATE_IN_MAX ? beta : score;
+    }
+
+    // ProbCut
+    if (depth > 4 && abs(beta) < MATE_IN_MAX && (!tt_hit || ss->static_eval >= rbeta || tte.depth < depth - 3)) {
+        int score = 0;
+
+        ss->move_cnt = 0;
+
+        Movelist moves;
+        movegen::legalmoves<MoveGenType::CAPTURE>(moves, st.board);
+        score_moves(st, ss, moves, tt_move);
+
+        for (int i = 0; i < moves.size(); i++) {
+            // Incremental Move Sorting
+            moves.sort(i);
+            Move move = moves[i];
+
+            if (move == tt_move) continue;
+
+            ss->move = move;
+            ss->move_cnt++;
+            (ss + 1)->ply = ss->ply + 1;
+
+            st.makeMove(move);
+            table->prefetch_tt(st.board.hash());
+
+            score = -q_search(st, ss + 1, -rbeta - 1, -rbeta);
+
+            if (score > rbeta) score = -negamax(st, ss + 1, -rbeta - 1, -rbeta, depth - 4, !cutnode);
+
+            st.unmakeMove(move);
+
+            if (score > rbeta) {
+                table->store(st.board.hash(), FLAG_BETA, move, depth - 3, score_to_tt(score, ss->ply), ss->static_eval);
+                return score;
+            }
+        }
     }
 
 ab_move_loop:
