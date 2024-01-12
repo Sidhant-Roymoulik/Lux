@@ -213,7 +213,7 @@ int negamax(SearchThread& st, SearchStack* ss, int alpha, int beta, int depth, b
 
     ss->static_eval = tt_hit ? tte.eval : evaluate(st.board);
     bool improving  = !in_check && ss->static_eval > (ss - 2)->static_eval;
-    int rbeta       = std::min(beta + 100, MATE_IN_MAX - 1);
+    int rbeta       = beta + 163 - 67 * improving;
 
     // Various Pruning Methods
     if (pv_node || in_check || (ss - 1)->move == Move::NULL_MOVE) goto ab_move_loop;
@@ -264,15 +264,14 @@ int negamax(SearchThread& st, SearchStack* ss, int alpha, int beta, int depth, b
             st.makeMove(move);
             table->prefetch_tt(st.board.hash());
 
-            score = -q_search(st, ss + 1, -rbeta - 1, -rbeta);
-
-            if (score > rbeta) score = -negamax(st, ss + 1, -rbeta - 1, -rbeta, depth - 4, !cutnode);
+            score = -q_search(st, ss + 1, -rbeta, -rbeta + 1);
+            if (score >= rbeta) score = -negamax(st, ss + 1, -rbeta, -rbeta + 1, depth - 4, !cutnode);
 
             st.unmakeMove(move);
 
-            if (score > rbeta) {
+            if (score >= rbeta) {
                 table->store(st.board.hash(), FLAG_BETA, move, depth - 3, score_to_tt(score, ss->ply), ss->static_eval);
-                return score;
+                return abs(score) < MATE_IN_MAX ? score - (rbeta - beta) : score;
             }
         }
     }
