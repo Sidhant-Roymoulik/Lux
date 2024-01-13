@@ -11,7 +11,7 @@
 #include "types.h"
 
 // Late-Move Precomputations
-int LMR_TABLE[MAX_PLY][256];
+int LMR_TABLE[MAX_PLY][constants::MAX_MOVES];
 
 void init_search_tables() {
     for (int depth = 1; depth < MAX_PLY; depth++) {
