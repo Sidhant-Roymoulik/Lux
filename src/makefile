@@ -5,7 +5,7 @@ SRC := *.cpp
 CXX := g++
 
 LFLAGS   := -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
-WFLAGS   := -Wall -Wextra
+WFLAGS   := -Wall -Wextra -Werror
 CXXFLAGS := -std=c++17 $(WFLAGS) -O3 -DNDEBUG -flto -march=native
 RFLAGS   := -std=c++17 -O3 -DNDEBUG -static 
 
