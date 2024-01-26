@@ -77,12 +77,12 @@ void StartBenchmark(SearchThread& st) {
         time_elapsed += (end - start);
 
         printf("Position [%2d] -> cp %5d move %7s %11llu nodes %d nps", int(count), int(info.score),
-               uci::moveToSan(st.board, st.bestmove).c_str(), nodes,
+               uci::moveToSan(st.board, st.bestmove).c_str(), static_cast<unsigned long long>(nodes),
                static_cast<int>(1000.0f * nodes / (time_elapsed + 1)));
         std::cout << std::endl;
     }
 
-    printf("Finished: %40llu nodes %d nps\n", static_cast<uint64_t>(nodes),
+    printf("Finished: %40llu nodes %d nps\n", static_cast<unsigned long long>(nodes),
            static_cast<int>(1000.0f * nodes / (time_elapsed + 1)));
     std::cout << std::flush;
 }
