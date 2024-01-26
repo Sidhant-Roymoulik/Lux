@@ -90,6 +90,19 @@ void eval_pieces(EvalInfo& info, Board& board) {
     info.score -= eval_king<Color::BLACK>(board);
 }
 
+double eval_drawish(Board& board) {
+    int occ = builtin::popcount(board.occ());
+
+    if (occ == 4) {
+        int white_knights = builtin::popcount(board.pieces(PieceType::KNIGHT, Color::WHITE));
+        int black_knights = builtin::popcount(board.pieces(PieceType::KNIGHT, Color::BLACK));
+
+        if (white_knights == 2 || black_knights == 2) return 0.0;
+    }
+
+    return 1.0;
+}
+
 int evaluate(Board& board) {
     // Check for draw by insufficient material
     if (board.isInsufficientMaterial()) return 0;
@@ -101,6 +114,8 @@ int evaluate(Board& board) {
     info.gamephase = std::min(info.gamephase, 24);
 
     int score = (info.score.mg * info.gamephase + info.score.eg * (24 - info.gamephase)) / 24;
+
+    score *= eval_drawish(board);
 
     return (board.sideToMove() == Color::WHITE ? score : -score);
 }
