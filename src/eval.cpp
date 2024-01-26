@@ -1,10 +1,6 @@
 #include "eval.h"
 
-#include "chess.hpp"
-#include "eval.h"
 #include "eval_constants.h"
-#include "search.h"
-#include "types.h"
 
 using namespace chess;
 

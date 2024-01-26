@@ -1,6 +1,7 @@
 #pragma once
 
-#include "search.h"
+#include "chess.hpp"
+#include "types.h"
 
 struct EvalInfo {
     int gamephase = 0;
