@@ -11,7 +11,7 @@ using namespace chess;
 void init_eval_tables() {
     for (int i = (int)PieceType::PAWN; i <= (int)PieceType::KING; i++) {
         for (int j = Square::SQ_A1; j <= Square::SQ_H8; j++) {
-            PST[i][j] += PieceValues[i];
+            pst[i][j] += piece_values[i];
         }
     }
 }
@@ -27,7 +27,7 @@ Score eval_pawn(EvalInfo& info, Board& board) {
         Square sq = builtin::poplsb(pawns);
 
         if (c == Color::WHITE) sq = sq ^ 56;
-        score += PST[(int)PieceType::PAWN][sq];
+        score += pst[(int)PieceType::PAWN][sq];
     }
 
     return score;
@@ -37,9 +37,9 @@ template <Color c, PieceType p>
 Score eval_piece(EvalInfo& info, Board& board) {
     Score score;
     Bitboard copy = board.pieces(p, c);
-    info.gamephase += PhaseValues[(int)p] * builtin::popcount(copy);
+    info.gamephase += phase_values[(int)p] * builtin::popcount(copy);
 
-    if (p == PieceType::BISHOP && (copy & (copy - 1))) score += BishopPair;
+    if (p == PieceType::BISHOP && (copy & (copy - 1))) score += bishop_pair;
 
     while (copy) {
         Square sq = builtin::poplsb(copy);
@@ -47,14 +47,14 @@ Score eval_piece(EvalInfo& info, Board& board) {
         if (p == PieceType::ROOK) {
             Bitboard file = attacks::MASK_FILE[(int)utils::squareFile(sq)];
             if (!(file & (info.pawn[0] | info.pawn[1]))) {
-                score += OpenFile;
+                score += open_file;
             } else if (!(file & info.pawn[(int)c])) {
-                score += SemiOpenFile;
+                score += semi_open_file;
             }
         }
 
         if (c == Color::WHITE) sq = sq ^ 56;
-        score += PST[(int)p][sq];
+        score += pst[(int)p][sq];
     }
 
     return score;
@@ -67,7 +67,7 @@ Score eval_king(Board& board) {
     Square sq = board.kingSq(c);
 
     if (c == Color::WHITE) sq = sq ^ 56;
-    score += PST[(int)PieceType::KING][sq];
+    score += pst[(int)PieceType::KING][sq];
 
     return score;
 }

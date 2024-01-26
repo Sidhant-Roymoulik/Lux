@@ -4,11 +4,11 @@
 
 #define S Score
 
-int PhaseValues[6] = {0, 1, 1, 2, 4, 0};
+int phase_values[6] = {0, 1, 1, 2, 4, 0};
 
-Score PieceValues[6] = {S(111, 80), S(416, 307), S(402, 306), S(533, 565), S(1293, 944), S(20000, 20000)};
+Score piece_values[6] = {S(111, 80), S(416, 307), S(402, 306), S(533, 565), S(1293, 944), S(20000, 20000)};
 
-Score PST[6][64] = {
+Score pst[6][64] = {
     // Pawn PSTS
     {S(0, 0),     S(0, 0),     S(0, 0),    S(0, 0),     S(0, 0),     S(0, 0),    S(0, 0),    S(0, 0),
      S(119, 173), S(146, 149), S(89, 140), S(145, 103), S(104, 120), S(186, 87), S(12, 155), S(-24, 191),
@@ -65,6 +65,6 @@ Score PST[6][64] = {
      S(-21, -67),  S(43, -50),  S(12, -27),  S(-95, 2),   S(-14, -21), S(-50, -5), S(30, -38), S(19, -64)},
 };
 
-Score BishopPair   = S(33, 110);
-Score OpenFile     = S(28, 31);
-Score SemiOpenFile = S(17, 15);
+Score bishop_pair    = S(33, 110);
+Score open_file      = S(28, 31);
+Score semi_open_file = S(17, 15);
