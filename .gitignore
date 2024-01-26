@@ -1,6 +1,8 @@
 .vscode
 books
 
+Lux*
+
 *.d
 *.o
 *.obj

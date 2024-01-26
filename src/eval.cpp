@@ -98,7 +98,7 @@ int evaluate(Board& board) {
 
     eval_pieces(info, board);
 
-    info.gamephase = std::clamp(info.gamephase, 0, 24);
+    info.gamephase = std::min(info.gamephase, 24);
 
     int score = (info.score.mg * info.gamephase + info.score.eg * (24 - info.gamephase)) / 24;
 
