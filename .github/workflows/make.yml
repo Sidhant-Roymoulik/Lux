@@ -1,0 +1,21 @@
+name: Make CI
+
+on: [push]
+
+defaults:
+  run:
+    working-directory: src
+
+jobs:
+  Compile:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Default
+      run: make default
+
+    - name: Release
+      run: make release
