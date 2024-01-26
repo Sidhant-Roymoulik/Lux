@@ -6,8 +6,8 @@ CXX := g++
 
 LFLAGS   := -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
 WFLAGS   := -Wall -Wextra -Werror
-CXXFLAGS := -std=c++17 $(WFLAGS) -O3 -DNDEBUG -flto -march=native
-RFLAGS   := -std=c++17 -O3 -DNDEBUG -static 
+CXXFLAGS := -std=c++20 $(WFLAGS) -O3 -DNDEBUG -flto -march=native
+RFLAGS   := -std=c++20 -O3 -DNDEBUG -static 
 
 default:
 	$(CXX) $(CXXFLAGS) $(SRC) $(LFLAGS) -o $(EXE) 
