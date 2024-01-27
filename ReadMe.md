@@ -80,6 +80,7 @@
 ### Useful Tools
 
 [Texel Tuner](https://github.com/GediminasMasaitis/texel-tuner) - Tune your handcrafted eval function
+- [Dataset of quiet positions](https://github.com/KierenP/ChessTrainingSets)
 
 ### Libraries 
 
@@ -91,15 +92,7 @@ Chess package for C++: https://github.com/Disservin/chess-library
 
 ### Other Engine Insiprations
 
-[Altair](https://github.com/Alex2262/AltairChessEngine)
-
-[Bit-Genie](https://github.com/Aryan1508/Bit-Genie)
-
-[Blunder](https://github.com/algerbrex/blunder)
-
-[Rice](https://github.com/rafid-dev/rice)
-
-[Weiss](https://github.com/TerjeKir/weiss)
+[Altair](https://github.com/Alex2262/AltairChessEngine)  [Bit-Genie](https://github.com/Aryan1508/Bit-Genie)  [Blunder](https://github.com/algerbrex/blunder)  [Rice](https://github.com/rafid-dev/rice)  [Weiss](https://github.com/TerjeKir/weiss)
 
 And of course, [Stockfish](https://github.com/official-stockfish/Stockfish)
 
