@@ -77,17 +77,21 @@
 
 ---
 
-## Resources
+### Useful Tools
 
-[Chessprogramming wiki](https://www.chessprogramming.org/Main_Page) has a lot of information but can be outdated and can lack pseudocode.
+[Texel Tuner](https://github.com/GediminasMasaitis/texel-tuner) - Tune your handcrafted eval function
 
 ### Libraries 
 
 Chess package for C++: https://github.com/Disservin/chess-library
 
+### Resources
+
+[Chessprogramming wiki](https://www.chessprogramming.org/Main_Page) has a lot of information but can be outdated and lacks pseudocode.
+
 ### Other Engine Insiprations
 
-[antikythera](https://github.com/0hq/antikythera)
+[Altair](https://github.com/Alex2262/AltairChessEngine)
 
 [Bit-Genie](https://github.com/Aryan1508/Bit-Genie)
 
