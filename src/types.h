@@ -15,21 +15,9 @@ enum score {
     MATED_IN_MAX = -MATE_IN_MAX,
 };
 
-struct Score {
-    int mg = 0, eg = 0;
-
-    Score() : mg(0), eg(0) {}
-    Score(int a, int b) : mg(a), eg(b) {}
-
-    Score operator+(const Score x) { return Score(mg + x.mg, eg + x.eg); }
-    Score operator-(const Score x) { return Score(mg - x.mg, eg - x.eg); }
-    Score operator*(int x) { return Score(mg * x, eg * x); }
-    void operator+=(const Score x) {
-        mg += x.mg;
-        eg += x.eg;
-    }
-    void operator-=(const Score x) {
-        mg -= x.mg;
-        eg -= x.eg;
-    }
-};
+constexpr int S(const int mg, const int eg) {
+    // return (eg << 16) + mg;
+    return static_cast<int>(static_cast<uint32_t>(eg) << 16) + mg;
+}
+static constexpr int mg_score(int score) { return static_cast<int16_t>(score); }
+static constexpr int eg_score(int score) { return static_cast<int16_t>((score + 0x8000) >> 16); }

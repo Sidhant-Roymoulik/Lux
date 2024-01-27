@@ -5,7 +5,7 @@
 
 struct EvalInfo {
     int gamephase = 0;
-    Score score;
+    int score     = 0;
 
     Bitboard pawn[2];
 };

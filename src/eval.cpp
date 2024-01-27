@@ -7,14 +7,14 @@ using namespace chess;
 void init_eval_tables() {
     for (int i = (int)PieceType::PAWN; i <= (int)PieceType::KING; i++) {
         for (int j = Square::SQ_A1; j <= Square::SQ_H8; j++) {
-            pst[i][j] += piece_values[i];
+            pst[i][j] += material[i];
         }
     }
 }
 
 template <Color c>
-Score eval_pawn(EvalInfo& info, Board& board) {
-    Score score;
+int eval_pawn(EvalInfo& info, Board& board) {
+    int score      = 0;
     Bitboard pawns = board.pieces(PieceType::PAWN, c);
 
     info.pawn[(int)c] = pawns;
@@ -30,8 +30,8 @@ Score eval_pawn(EvalInfo& info, Board& board) {
 }
 
 template <Color c, PieceType p>
-Score eval_piece(EvalInfo& info, Board& board) {
-    Score score;
+int eval_piece(EvalInfo& info, Board& board) {
+    int score     = 0;
     Bitboard copy = board.pieces(p, c);
     info.gamephase += phase_values[(int)p] * builtin::popcount(copy);
 
@@ -57,8 +57,8 @@ Score eval_piece(EvalInfo& info, Board& board) {
 }
 
 template <Color c>
-Score eval_king(Board& board) {
-    Score score;
+int eval_king(Board& board) {
+    int score = 0;
 
     Square sq = board.kingSq(c);
 
@@ -96,7 +96,7 @@ int evaluate(Board& board) {
 
     info.gamephase = std::min(info.gamephase, 24);
 
-    int score = (info.score.mg * info.gamephase + info.score.eg * (24 - info.gamephase)) / 24;
+    int score = (mg_score(info.score) * info.gamephase + eg_score(info.score) * (24 - info.gamephase)) / 24;
 
     return (board.sideToMove() == Color::WHITE ? score : -score);
 }
