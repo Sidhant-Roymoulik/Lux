@@ -13,7 +13,7 @@ void init_eval_tables() {
 }
 
 template <Color c>
-int eval_pawn(EvalInfo &info, Board &board) {
+int eval_pawn(EvalInfo &info, const Board &board) {
     int score      = 0;
     Bitboard pawns = board.pieces(PieceType::PAWN, c);
 
@@ -31,7 +31,7 @@ int eval_pawn(EvalInfo &info, Board &board) {
 }
 
 template <Color c, PieceType p>
-int eval_piece(EvalInfo &info, Board &board) {
+int eval_piece(EvalInfo &info, const Board &board) {
     int score     = 0;
     Bitboard copy = board.pieces(p, c);
     info.gamephase += phase_values[(int)p] * builtin::popcount(copy);
@@ -62,7 +62,7 @@ int eval_piece(EvalInfo &info, Board &board) {
     return score;
 }
 
-void eval_pieces(EvalInfo &info, Board &board) {
+void eval_pieces(EvalInfo &info, const Board &board) {
     info.score += eval_pawn<Color::WHITE>(info, board);
     info.score -= eval_pawn<Color::BLACK>(info, board);
 
@@ -85,7 +85,7 @@ double endgame_scale(EvalInfo &info) {
     return (128 - num_missing_stronger_pawns * num_missing_stronger_pawns) / 128.0;
 }
 
-int evaluate(Board &board) {
+int evaluate(const Board &board) {
     // Check for draw by insufficient material
     if (board.isInsufficientMaterial()) return 0;
 
