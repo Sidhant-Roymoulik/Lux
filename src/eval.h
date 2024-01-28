@@ -12,4 +12,4 @@ struct EvalInfo {
 };
 
 void init_eval_tables();
-int evaluate(Board& board);
+int evaluate(const Board& board);
