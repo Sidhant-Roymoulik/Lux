@@ -13,7 +13,7 @@ void init_eval_tables() {
 }
 
 template <Color c>
-int eval_pawn(EvalInfo& info, Board& board) {
+int eval_pawn(EvalInfo &info, Board &board) {
     int score      = 0;
     Bitboard pawns = board.pieces(PieceType::PAWN, c);
 
@@ -23,6 +23,7 @@ int eval_pawn(EvalInfo& info, Board& board) {
         Square sq = builtin::poplsb(pawns);
 
         if (c == Color::WHITE) sq = sq ^ 56;
+
         score += pst[(int)PieceType::PAWN][sq];
     }
 
@@ -30,45 +31,38 @@ int eval_pawn(EvalInfo& info, Board& board) {
 }
 
 template <Color c, PieceType p>
-int eval_piece(EvalInfo& info, Board& board) {
+int eval_piece(EvalInfo &info, Board &board) {
     int score     = 0;
     Bitboard copy = board.pieces(p, c);
     info.gamephase += phase_values[(int)p] * builtin::popcount(copy);
 
-    if (p == PieceType::BISHOP && (copy & (copy - 1))) score += bishop_pair;
+    if (p == PieceType::BISHOP && (copy & (copy - 1))) {
+        score += bishop_pair;
+    }
 
     while (copy) {
         Square sq = builtin::poplsb(copy);
 
-        if (p == PieceType::ROOK) {
+        if ((int)p >= 3) {
             Bitboard file = attacks::MASK_FILE[(int)utils::squareFile(sq)];
-            if (!(file & (info.pawn[0] | info.pawn[1]))) {
-                score += open_file;
-            } else if (!(file & info.pawn[(int)c])) {
-                score += semi_open_file;
+            if (!(file & info.pawn[(int)c])) {
+                if (!(file & info.pawn[(int)~c])) {
+                    score += open_file[(int)p];
+                } else {
+                    score += semi_open_file[(int)p];
+                }
             }
         }
 
         if (c == Color::WHITE) sq = sq ^ 56;
+
         score += pst[(int)p][sq];
     }
 
     return score;
 }
 
-template <Color c>
-int eval_king(Board& board) {
-    int score = 0;
-
-    Square sq = board.kingSq(c);
-
-    if (c == Color::WHITE) sq = sq ^ 56;
-    score += pst[(int)PieceType::KING][sq];
-
-    return score;
-}
-
-void eval_pieces(EvalInfo& info, Board& board) {
+void eval_pieces(EvalInfo &info, Board &board) {
     info.score += eval_pawn<Color::WHITE>(info, board);
     info.score -= eval_pawn<Color::BLACK>(info, board);
 
@@ -82,11 +76,11 @@ void eval_pieces(EvalInfo& info, Board& board) {
     info.score -= eval_piece<Color::BLACK, PieceType::ROOK>(info, board);
     info.score -= eval_piece<Color::BLACK, PieceType::QUEEN>(info, board);
 
-    info.score += eval_king<Color::WHITE>(board);
-    info.score -= eval_king<Color::BLACK>(board);
+    info.score += eval_piece<Color::WHITE, PieceType::KING>(info, board);
+    info.score -= eval_piece<Color::BLACK, PieceType::KING>(info, board);
 }
 
-int evaluate(Board& board) {
+int evaluate(Board &board) {
     // Check for draw by insufficient material
     if (board.isInsufficientMaterial()) return 0;
 
