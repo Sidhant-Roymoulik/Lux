@@ -6,6 +6,7 @@
 struct EvalInfo {
     int gamephase = 0;
     int score     = 0;
+    double scale  = 0;
 
     Bitboard pawn[2];
 };

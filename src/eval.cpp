@@ -80,6 +80,11 @@ void eval_pieces(EvalInfo &info, Board &board) {
     info.score -= eval_piece<Color::BLACK, PieceType::KING>(info, board);
 }
 
+double endgame_scale(EvalInfo &info) {
+    int num_missing_stronger_pawns = 8 - builtin::popcount(info.pawn[info.score < 0]);
+    return (128 - num_missing_stronger_pawns * num_missing_stronger_pawns) / 128.0;
+}
+
 int evaluate(Board &board) {
     // Check for draw by insufficient material
     if (board.isInsufficientMaterial()) return 0;
@@ -89,8 +94,10 @@ int evaluate(Board &board) {
     eval_pieces(info, board);
 
     info.gamephase = std::min(info.gamephase, 24);
+    info.scale     = endgame_scale(info);
 
-    int score = (mg_score(info.score) * info.gamephase + eg_score(info.score) * (24 - info.gamephase)) / 24;
+    int score =
+        (mg_score(info.score) * info.gamephase + eg_score(info.score) * (24 - info.gamephase) * info.scale) / 24;
 
     return (board.sideToMove() == Color::WHITE ? score : -score);
 }
