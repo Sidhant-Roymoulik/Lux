@@ -14,13 +14,13 @@ void init_eval_tables() {
 
 template <Color c>
 int eval_pawn(EvalInfo &info, const Board &board) {
-    int score      = 0;
-    Bitboard pawns = board.pieces(PieceType::PAWN, c);
+    int score   = 0;
+    Bitboard bb = board.pieces(PieceType::PAWN, c);
 
-    info.pawn[(int)c] = pawns;
+    info.pawn[(int)c] = bb;
 
-    while (pawns) {
-        Square sq = builtin::poplsb(pawns);
+    while (bb) {
+        Square sq = builtin::poplsb(bb);
 
         if (c == Color::WHITE) sq = sq ^ 56;
 
@@ -32,16 +32,16 @@ int eval_pawn(EvalInfo &info, const Board &board) {
 
 template <Color c, PieceType p>
 int eval_piece(EvalInfo &info, const Board &board) {
-    int score     = 0;
-    Bitboard copy = board.pieces(p, c);
-    info.gamephase += phase_values[(int)p] * builtin::popcount(copy);
+    int score   = 0;
+    Bitboard bb = board.pieces(p, c);
+    info.gamephase += phase_values[(int)p] * builtin::popcount(bb);
 
-    if (p == PieceType::BISHOP && (copy & (copy - 1))) {
+    if (p == PieceType::BISHOP && (bb & (bb - 1))) {
         score += bishop_pair;
     }
 
-    while (copy) {
-        Square sq = builtin::poplsb(copy);
+    while (bb) {
+        Square sq = builtin::poplsb(bb);
 
         if ((int)p >= 3) {
             Bitboard file = attacks::MASK_FILE[(int)utils::squareFile(sq)];
