@@ -279,7 +279,7 @@ ab_move_loop:
             int R = LMR_TABLE[depth][ss->move_cnt];
 
             R -= pv_node;
-            R -= move.score() > 17000;
+            R -= move.score() >= MoveGenStage::KILLER_2;
 
             score = -negamax(st, ss + 1, -alpha - 1, -alpha, depth - R, true);
 
