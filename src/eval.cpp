@@ -55,7 +55,6 @@ int eval_piece(EvalInfo &info, const Board &board) {
         }
 
         Bitboard moves = 0;
-
         if (p == PieceType::KNIGHT)
             moves = attacks::knight(sq);
         else if (p == PieceType::BISHOP)
