@@ -80,6 +80,8 @@
 
 ### Useful Tools
 
+[Cutechess](https://github.com/cutechess/cutechess) - Use the Cutechess CLI to run SPRT on your engine
+
 [Texel Tuner](https://github.com/GediminasMasaitis/texel-tuner) - Tune your handcrafted eval function
 - [Dataset of quiet positions](https://github.com/KierenP/ChessTrainingSets)
 
