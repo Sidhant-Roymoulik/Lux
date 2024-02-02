@@ -54,6 +54,18 @@ int eval_piece(EvalInfo &info, const Board &board) {
             }
         }
 
+        Bitboard moves = 0;
+        if (p == PieceType::KNIGHT)
+            moves = attacks::knight(sq);
+        else if (p == PieceType::BISHOP)
+            moves = attacks::bishop(sq, board.occ());
+        else if (p == PieceType::ROOK)
+            moves = attacks::rook(sq, board.occ());
+        else if (p == PieceType::QUEEN || p == PieceType::KING)
+            moves = attacks::queen(sq, board.occ());
+
+        score += mobility[(int)p - 1][builtin::popcount(moves & ~board.us(c))];
+
         if (c == Color::WHITE) sq = sq ^ 56;
 
         score += pst[(int)p][sq];
