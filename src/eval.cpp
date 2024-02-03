@@ -36,6 +36,11 @@ int eval_piece(EvalInfo &info, const Board &board) {
     Bitboard bb = board.pieces(p, c);
     info.gamephase += phase_values[(int)p] * builtin::popcount(bb);
 
+    const Direction UP_EAST = c == Color::BLACK ? Direction::NORTH_EAST : Direction::SOUTH_EAST;
+    const Direction UP_WEST = c == Color::BLACK ? Direction::NORTH_WEST : Direction::SOUTH_WEST;
+
+    Bitboard pawn_attacks = attacks::shift<UP_EAST>(info.pawn[(int)~c]) | attacks::shift<UP_WEST>(info.pawn[(int)~c]);
+
     if (p == PieceType::BISHOP && (bb & (bb - 1))) {
         score += bishop_pair;
     }
@@ -64,7 +69,7 @@ int eval_piece(EvalInfo &info, const Board &board) {
         else if (p == PieceType::QUEEN || p == PieceType::KING)
             moves = attacks::queen(sq, board.occ());
 
-        score += mobility[(int)p - 1][builtin::popcount(moves & ~board.us(c))];
+        score += mobility[(int)p - 1][builtin::popcount(moves & ~board.us(c) & ~pawn_attacks)];
 
         if (c == Color::WHITE) sq = sq ^ 56;
 
