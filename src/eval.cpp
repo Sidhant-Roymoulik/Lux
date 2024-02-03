@@ -52,11 +52,15 @@ int eval_piece(EvalInfo &info, const Board &board) {
             Bitboard file = attacks::MASK_FILE[(int)utils::squareFile(sq)];
             if (!(file & info.pawn[(int)c])) {
                 if (!(file & info.pawn[(int)~c])) {
-                    score += open_file[(int)p];
+                    score += open_file[(int)p - 3];
                 } else {
-                    score += semi_open_file[(int)p];
+                    score += semi_open_file[(int)p - 3];
                 }
             }
+        }
+
+        if (pawn_attacks & (1ULL << sq)) {
+            score += attacked_by_pawn[c == board.sideToMove()];
         }
 
         Bitboard moves = 0;
