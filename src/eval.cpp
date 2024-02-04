@@ -24,7 +24,8 @@ int eval_pawn(EvalInfo &info, const Board &board) {
     const Direction UP = c == Color::WHITE ? Direction::NORTH : Direction::SOUTH;
 
     // Penalty for doubled pawns
-    score += doubled_pawn * builtin::popcount(bb & attacks::shift<UP>(bb));
+    score +=
+        doubled_pawn * builtin::popcount(bb & (attacks::shift<UP>(bb) | attacks::shift<UP>(attacks::shift<UP>(bb))));
 
     while (bb) {
         Square sq = builtin::poplsb(bb);
