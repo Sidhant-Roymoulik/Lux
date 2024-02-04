@@ -20,6 +20,12 @@ int eval_pawn(EvalInfo &info, const Board &board) {
     // Add pawn bb to eval info
     info.pawn[(int)c] = bb;
 
+    // Init useful directions
+    const Direction UP = c == Color::WHITE ? Direction::NORTH : Direction::SOUTH;
+
+    // Penalty for doubled pawns
+    score += doubled_pawn * builtin::popcount(bb & attacks::shift<UP>(bb));
+
     while (bb) {
         Square sq = builtin::poplsb(bb);
 
