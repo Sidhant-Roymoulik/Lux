@@ -263,6 +263,8 @@ ab_move_loop:
 
             // Late Move Pruning
             // if (ss->move_cnt > depth * depth / (2 - improving)) break;
+        } else if (i == 0) {
+            st.bestmove = moves[0];
         }
 
         bool quiet = !(st.board.isCapture(move) || move.typeOf() == Move::PROMOTION);
