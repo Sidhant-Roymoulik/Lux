@@ -30,12 +30,20 @@ int eval_pawn(EvalInfo &info, const Board &board) {
     // Init useful directions
     const Direction UP = c == Color::WHITE ? Direction::NORTH : Direction::SOUTH;
 
+    // Init friendly pawn attacks
+    Bitboard pawn_protection = get_pawn_attacks<UP>(bb);
+
     // Penalty for doubled pawns
     score +=
         doubled_pawn * builtin::popcount(bb & (attacks::shift<UP>(bb) | attacks::shift<UP>(attacks::shift<UP>(bb))));
 
     while (bb) {
         Square sq = builtin::poplsb(bb);
+
+        // Bonus if pawn is protected by pawn
+        if (pawn_protection & (1ULL << sq)) {
+            score += protected_by_pawn[0];
+        }
 
         if (c == Color::WHITE) sq = sq ^ 56;
 
@@ -52,10 +60,12 @@ int eval_piece(EvalInfo &info, const Board &board) {
     info.gamephase += phase_values[(int)p] * builtin::popcount(bb);
 
     // Init useful directions
+    const Direction UP   = c == Color::WHITE ? Direction::NORTH : Direction::SOUTH;
     const Direction DOWN = c == Color::BLACK ? Direction::NORTH : Direction::SOUTH;
 
     // Init friendly and enemy pawn attacks
-    Bitboard pawn_attacks = get_pawn_attacks<DOWN>(info.pawn[(int)~c]);
+    Bitboard pawn_protection = get_pawn_attacks<UP>(info.pawn[(int)c]);
+    Bitboard pawn_attacks    = get_pawn_attacks<DOWN>(info.pawn[(int)~c]);
 
     // Bishop pair bonus
     if (p == PieceType::BISHOP && (bb & (bb - 1))) {
@@ -75,6 +85,11 @@ int eval_piece(EvalInfo &info, const Board &board) {
                     score += semi_open_file[(int)p - 3];
                 }
             }
+        }
+
+        // Bonus if piece is protected by pawn
+        if (pawn_protection & (1ULL << sq)) {
+            score += protected_by_pawn[(int)p];
         }
 
         // Penalty is piece is attacked by pawn
