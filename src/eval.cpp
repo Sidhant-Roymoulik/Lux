@@ -12,6 +12,13 @@ void init_eval_tables() {
     }
 }
 
+// Get a bitboard with all pawn attacks based on pawn location and movement direction
+template <Direction D>
+Bitboard get_pawn_attacks(Bitboard &pawns) {
+    Bitboard shifted = attacks::shift<D>(pawns);
+    return attacks::shift<Direction::WEST>(shifted) | attacks::shift<Direction::EAST>(shifted);
+}
+
 template <Color c>
 int eval_pawn(EvalInfo &info, const Board &board) {
     int score   = 0;
@@ -45,12 +52,10 @@ int eval_piece(EvalInfo &info, const Board &board) {
     info.gamephase += phase_values[(int)p] * builtin::popcount(bb);
 
     // Init useful directions
-    const Direction DOWN_EAST = c == Color::BLACK ? Direction::NORTH_EAST : Direction::SOUTH_EAST;
-    const Direction DOWN_WEST = c == Color::BLACK ? Direction::NORTH_WEST : Direction::SOUTH_WEST;
+    const Direction DOWN = c == Color::BLACK ? Direction::NORTH : Direction::SOUTH;
 
-    // Init enemy pawn attacks
-    Bitboard pawn_attacks =
-        attacks::shift<DOWN_EAST>(info.pawn[(int)~c]) | attacks::shift<DOWN_WEST>(info.pawn[(int)~c]);
+    // Init friendly and enemy pawn attacks
+    Bitboard pawn_attacks = get_pawn_attacks<DOWN>(info.pawn[(int)~c]);
 
     // Bishop pair bonus
     if (p == PieceType::BISHOP && (bb & (bb - 1))) {
