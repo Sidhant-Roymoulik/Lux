@@ -65,8 +65,11 @@
 
  - [x] Material Score
  - [x] Piece-Square Tables
- - [x] Bishop Pair
+ - [x] Mobility
  - [x] Open / Semi-Open File
+ - [x] Attacked / Protected by Pawn
+ - [x] Bishop Pair
+ - [x] Doubled Pawn
 
 ### Move Ordering Upgrades
 
