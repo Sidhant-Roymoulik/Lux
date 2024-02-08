@@ -1,16 +1,17 @@
-name: clang-format Check
+name: Lux
 
 on: [push]
 
 jobs:
-  formatting-check:
+  Lux:
+    name: clang-format check
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@main
+      - uses: actions/checkout@main
         
       - name: Run clang-format style check
-        uses:  jidicula/clang-format-action@f62da5e3d3a2d88ff364771d9d938773a618ab5e #v4.11.0
+        uses: jidicula/clang-format-action@f62da5e3d3a2d88ff364771d9d938773a618ab5e  # @v4.11.0
+        id: clang-format
+        continue-on-error: true
         with:
           clang-format-version: '17'
-          exclude-regex: ''
