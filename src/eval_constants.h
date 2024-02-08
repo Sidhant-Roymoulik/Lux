@@ -1,5 +1,7 @@
 #pragma once
 
+#include "types.h"
+
 int phase_values[6] = {0, 1, 1, 2, 4, 0};
 
 const int material[6] = {S(99, 203), S(379, 361), S(402, 397), S(503, 722), S(1149, 1316), S(0, 0)};
