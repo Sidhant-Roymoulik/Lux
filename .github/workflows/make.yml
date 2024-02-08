@@ -1,4 +1,4 @@
-name: Compile Check
+name: Lux
 
 on: [push]
 
@@ -7,7 +7,8 @@ defaults:
     working-directory: src
 
 jobs:
-  compile-check:
+  Lux:
+    name: compile check
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@main
