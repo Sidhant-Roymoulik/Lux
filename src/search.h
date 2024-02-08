@@ -5,7 +5,6 @@
 #include "chess.hpp"
 #include "time_manager.h"
 #include "tt.h"
-#include "types.h"
 
 using namespace chess;
 
