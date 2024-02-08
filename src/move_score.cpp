@@ -1,9 +1,6 @@
 #include "move_score.h"
 
-#include "chess.hpp"
 #include "history.h"
-#include "search.h"
-#include "types.h"
 
 using namespace chess;
 

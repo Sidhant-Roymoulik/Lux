@@ -1,3 +1,5 @@
+#pragma once
+
 #include "search.h"
 
 inline bool moveExists(Board& board, Move move);

@@ -1,9 +1,6 @@
 #pragma once
 
 #include <thread>
-#include <vector>
-
-#include "search.h"
 
 class Thread {
    public:

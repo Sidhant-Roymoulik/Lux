@@ -1,8 +1,5 @@
 #pragma once
 
-#include <memory>
-
-#include "chess.hpp"
 #include "time_manager.h"
 #include "tt.h"
 

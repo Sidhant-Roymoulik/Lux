@@ -1,6 +1,5 @@
 #pragma once
 
-#include "chess.hpp"
 #include "types.h"
 
 struct EvalInfo {

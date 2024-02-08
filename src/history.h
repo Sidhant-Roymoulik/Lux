@@ -1,8 +1,5 @@
 #pragma once
 
-#include "chess.hpp"
-#include "search.h"
-
 using namespace chess;
 
 inline int &get_history(SearchThread &st, Move move) { return st.history[(int)st.board.at(move.from())][move.to()]; }

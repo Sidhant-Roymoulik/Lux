@@ -1,11 +1,6 @@
 #include "uci.h"
 
-#include <chrono>
-#include <iostream>
-#include <sstream>
-
 #include "bench.h"
-#include "chess.hpp"
 #include "eval.h"
 #include "search.h"
 #include "thread.h"

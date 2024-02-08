@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "eval.h"
 #include "search.h"
 #include "uci.h"

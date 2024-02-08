@@ -1,6 +1,5 @@
 #pragma once
 
-#include "chess.hpp"
 #include "search.h"
 #include "types.h"
 

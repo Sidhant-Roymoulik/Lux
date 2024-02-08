@@ -3,7 +3,6 @@
 #include <chrono>
 #include <cmath>
 
-#include "chess.hpp"
 #include "types.h"
 
 using namespace chess;
