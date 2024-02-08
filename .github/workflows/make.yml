@@ -1,4 +1,4 @@
-name: Make CI
+name: Compile Check
 
 on: [push]
 
