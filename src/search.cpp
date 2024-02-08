@@ -93,7 +93,7 @@ int aspiration_window(int prev, int depth, SearchThread& st) {
 
     int delta = 10 + prev * prev / 16000;
     int alpha = std::max(prev - delta, -MATE);
-    int beta  = std::min(prev + delta, (int)MATE);
+    int beta  = std::min(prev + delta, static_cast<int>(MATE));
 
     int score = 0;
     while (true) {
@@ -104,7 +104,7 @@ int aspiration_window(int prev, int depth, SearchThread& st) {
             alpha = std::max(score - delta, -MATE);
 
         } else if (score >= beta) {
-            beta = std::min(score + delta, (int)MATE);
+            beta = std::min(score + delta, static_cast<int>(MATE));
 
         } else
             break;
