@@ -25,43 +25,38 @@ static inline bool moveExists(Board& board, Move move) {
     Movelist list;
     movegen::legalmoves(list, board);
 
-    if (list.find(move) > -1) {
-        return true;
-    }
-
-    return false;
+    return list.find(move) > -1;
 }
 
-static void getPvLines(SearchThread& st, std::vector<U64>& positions, Move bestmove = Move::NO_MOVE) {
-    if (positions.size() >= MAX_PLY) {
-        return;
-    }
+static void get_pv_hash(SearchThread& st, std::vector<U64>& positions) {
+    if (positions.size() >= MAX_PLY) return;
 
-    if (bestmove != Move::NO_MOVE) {
-        std::cout << " " << uci::moveToUci(bestmove);
-        positions.push_back(st.board.hash());
-        st.makeMove(bestmove);
-        getPvLines(st, positions);
-        st.unmakeMove(bestmove);
+    auto pv_move = table->probe_move(st.board.hash());
 
-        return;
-    }
+    if (pv_move != Move::NO_MOVE && moveExists(st.board, pv_move)) {
+        for (auto& pos : positions)
+            if (pos == st.board.hash()) return;
 
-    auto pvMove = table->probe_move(st.board.hash());
-
-    if (pvMove != Move::NO_MOVE && moveExists(st.board, pvMove)) {
-        for (auto& pos : positions) {
-            if (pos == st.board.hash()) {
-                return;
-            }
-        }
-        std::cout << " " << uci::moveToUci(pvMove);
+        std::cout << " " << uci::moveToUci(pv_move);
         positions.push_back(st.board.hash());
 
-        st.makeMove(pvMove);
-        getPvLines(st, positions);
-        st.unmakeMove(pvMove);
+        st.makeMove(pv_move);
+        get_pv_hash(st, positions);
+        st.unmakeMove(pv_move);
     }
+    return;
+}
+
+static void get_pv(SearchThread& st, std::vector<U64>& positions, Move best_move) {
+    assert(best_move != Move::NO_MOVE);
+
+    std::cout << " " << uci::moveToUci(best_move);
+    positions.push_back(st.board.hash());
+
+    st.makeMove(best_move);
+    get_pv_hash(st, positions);
+    st.unmakeMove(best_move);
+
     return;
 }
 
@@ -114,7 +109,7 @@ void iterative_deepening(SearchThread& st) {
                 std::cout << " pv";
 
                 std::vector<uint64_t> positions;
-                getPvLines(st, positions, bestmove);
+                get_pv(st, positions, bestmove);
 
                 std::cout << std::endl;
             } else {
@@ -125,7 +120,7 @@ void iterative_deepening(SearchThread& st) {
                        static_cast<float>(1000.0f * st.nodes / (time_elapsed + 1)) / 1000000.0f);
 
                 std::vector<uint64_t> positions;
-                getPvLines(st, positions, bestmove);
+                get_pv(st, positions, bestmove);
 
                 std::cout << std::endl;
             }
