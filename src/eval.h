@@ -8,6 +8,7 @@ struct EvalInfo {
     double scale  = 0;
 
     Bitboard pawn[2];
+    Bitboard pawn_attacks[2];
 };
 
 void init_eval_tables();
