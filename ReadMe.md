@@ -68,6 +68,7 @@
  - [x] Mobility
  - [x] Open / Semi-Open File
  - [x] Attacked / Protected by Pawn
+ - [x] Phalanx Pawns
  - [x] Bishop Pair
  - [x] Doubled Pawn
 
