@@ -12,6 +12,16 @@ void init_eval_tables() {
     }
 }
 
+// Get relative position of square based on color
+template <Color c>
+Square black_relative_square(Square sq) {
+    return (c == Color::WHITE) ? sq ^ 56 : sq;
+}
+template <Color c>
+Square white_relative_square(Square sq) {
+    return (c == Color::BLACK) ? sq ^ 56 : sq;
+}
+
 // Get a bitboard with all pawn attacks based on pawn location and movement direction
 template <Direction D>
 Bitboard get_pawn_attacks(Bitboard &pawns) {
@@ -23,9 +33,6 @@ template <Color c>
 int eval_pawn(EvalInfo &info, const Board &board) {
     int score   = 0;
     Bitboard bb = board.pieces(PieceType::PAWN, c);
-
-    // Add pawn bb to eval info
-    info.pawn[(int)c] = bb;
 
     // Init useful directions
     const Direction UP = c == Color::WHITE ? Direction::NORTH : Direction::SOUTH;
@@ -40,10 +47,7 @@ int eval_pawn(EvalInfo &info, const Board &board) {
 
     // Bonus for phalanx pawns
     while (pawn_phalanx) {
-        Square sq = builtin::poplsb(pawn_phalanx);
-        if (c == Color::BLACK) sq = sq ^ 56;
-
-        score += phalanx_pawns[(int)utils::squareRank(sq)];
+        score += phalanx_pawns[(int)utils::squareRank(white_relative_square<c>(builtin::poplsb(pawn_phalanx)))];
     }
 
     while (bb) {
@@ -54,9 +58,7 @@ int eval_pawn(EvalInfo &info, const Board &board) {
             score += protected_by_pawn[0];
         }
 
-        if (c == Color::WHITE) sq = sq ^ 56;
-
-        score += pst[(int)PieceType::PAWN][sq];
+        score += pst[0][black_relative_square<c>(sq)];
     }
 
     return score;
@@ -93,7 +95,7 @@ int eval_piece(EvalInfo &info, const Board &board) {
             score += protected_by_pawn[(int)p];
         }
 
-        // Penalty if piece is attacked by pawn
+        // Penalty is piece is attacked by pawn
         if (info.pawn_attacks[(int)~c] & (1ULL << sq)) {
             score += attacked_by_pawn[c == board.sideToMove()];
         }
@@ -112,15 +114,17 @@ int eval_piece(EvalInfo &info, const Board &board) {
         // Bonus/penalty for number of moves per piece
         score += mobility[(int)p - 1][builtin::popcount(moves & ~board.us(c) & ~info.pawn_attacks[(int)~c])];
 
-        if (c == Color::WHITE) sq = sq ^ 56;
-
-        score += pst[(int)p][sq];
+        score += pst[(int)p][black_relative_square<c>(sq)];
     }
 
     return score;
 }
 
 void eval_pieces(EvalInfo &info, const Board &board) {
+    // Add pawn bb to eval info
+    info.pawn[(int)Color::WHITE] = board.pieces(PieceType::PAWN, Color::WHITE);
+    info.pawn[(int)Color::BLACK] = board.pieces(PieceType::PAWN, Color::BLACK);
+
     info.score += eval_pawn<Color::WHITE>(info, board);
     info.score -= eval_pawn<Color::BLACK>(info, board);
 
