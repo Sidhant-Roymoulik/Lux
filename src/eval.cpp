@@ -4,10 +4,26 @@
 
 using namespace chess;
 
+Bitboard passed_pawn_mask[2][64];
+
 void init_eval_tables() {
     for (int i = (int)PieceType::PAWN; i <= (int)PieceType::KING; i++) {
         for (int j = Square::SQ_A1; j <= Square::SQ_H8; j++) {
             pst[i][j] += material[i];
+        }
+    }
+
+    for (int i = Square::SQ_A1; i <= Square::SQ_H8; i++) {
+        Bitboard file = attacks::MASK_FILE[(int)utils::squareFile(Square(i))];
+
+        passed_pawn_mask[0][i] = file | attacks::shift<Direction::EAST>(file) | attacks::shift<Direction::WEST>(file);
+        passed_pawn_mask[1][i] = passed_pawn_mask[0][i];
+
+        while (passed_pawn_mask[0][i] & (1 << i)) {
+            passed_pawn_mask[0][i] = attacks::shift<Direction::NORTH>(passed_pawn_mask[0][i]);
+        }
+        while (passed_pawn_mask[1][i] & (1 << i)) {
+            passed_pawn_mask[1][i] = attacks::shift<Direction::SOUTH>(passed_pawn_mask[1][i]);
         }
     }
 }
@@ -37,7 +53,7 @@ int eval_pawn(EvalInfo &info, const Board &board) {
     // Init useful directions
     const Direction UP = c == Color::WHITE ? Direction::NORTH : Direction::SOUTH;
 
-    // Init useful bitboards
+    // Init friendly pawn attacks
     info.pawn_attacks[(int)c] = get_pawn_attacks<UP>(bb);
     Bitboard pawn_phalanx     = bb & attacks::shift<Direction::WEST>(bb);
 
@@ -47,7 +63,9 @@ int eval_pawn(EvalInfo &info, const Board &board) {
 
     // Bonus for phalanx pawns
     while (pawn_phalanx) {
-        score += phalanx_pawns[(int)utils::squareRank(white_relative_square<c>(builtin::poplsb(pawn_phalanx)))];
+        Square sq = builtin::poplsb(pawn_phalanx);
+
+        score += phalanx_pawns[(int)utils::squareRank(white_relative_square<c>(sq))];
     }
 
     while (bb) {
@@ -56,6 +74,11 @@ int eval_pawn(EvalInfo &info, const Board &board) {
         // Bonus if pawn is protected by pawn
         if (info.pawn_attacks[(int)c] & (1ULL << sq)) {
             score += protected_by_pawn[0];
+        }
+
+        // Bonus if pawn is passed
+        if (!(passed_pawn_mask[(int)c][sq] & info.pawn[(int)~c])) {
+            score += passed_pawns[(int)utils::squareRank(white_relative_square<c>(sq))];
         }
 
         score += pst[0][black_relative_square<c>(sq)];
