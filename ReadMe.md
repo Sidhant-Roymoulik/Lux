@@ -26,15 +26,15 @@
 | 2.0     | 1850      | -                                                     | -                                                                 | 2129
 | 2.1     | 2000      | -                                                     | -                                                                 | 2246
 | 2.2     | 2050      | -                                                     | -                                                                 | -
-| 2.3     | 2100      | -                                                     | 2041                                                              | -
+| 2.3     | 2100      | -                                                     | 2024                                                              | -
 | 3.0     | 2200      | -                                                     | -                                                                 | 2493
 | 3.1     | 2300      | -                                                     | -                                                                 | -
 | 3.2     | 2350      | -                                                     | -                                                                 | -
-| 3.3     | 2375      | -                                                     | -                                                                 | 2557
+| 3.3     | 2375      | -                                                     | -                                                                 | 2564
 | 3.4     | 2400      | -                                                     | 2351                                                              | -
 | 3.5     | 2450      | -                                                     | -                                                                 | -
-| 4.0     | 2550      | 2518                                                  | -                                                                 | 2660
-| 4.1     | 2600      | -                                                     | 2591                                                              | -
+| 4.0     | 2550      | 2518                                                  | -                                                                 | 2670
+| 4.1     | 2600      | -                                                     | 2580                                                              | 2733
 
 ---
 
@@ -66,9 +66,10 @@
  - [x] Material Score
  - [x] Piece-Square Tables
  - [x] Mobility
- - [x] Open / Semi-Open File
- - [x] Attacked / Protected by Pawn
+ - [x] Passed Pawns
  - [x] Phalanx Pawns
+ - [x] Attacked / Protected by Pawn
+ - [x] Open / Semi-Open File
  - [x] Bishop Pair
  - [x] Doubled Pawn
 
