@@ -65,13 +65,20 @@
 
  - [x] Material Score
  - [x] Piece-Square Tables
- - [x] Mobility
- - [x] Passed Pawns
- - [x] Phalanx Pawns
- - [x] Attacked / Protected by Pawn
- - [x] Open / Semi-Open File
- - [x] Bishop Pair
- - [x] Doubled Pawn
+ - Pawn Eval
+   - [x] Passed
+   - [x] Phalanx
+   - [x] Isolated
+   - [x] Supported
+ - Piece Eval
+   - [x] Mobility
+   - [x] Attacked by Pawn
+   - [x] Open / Semi-Open File
+   - [x] Bishop Pair
+   - [x] Minor Piece Behind Pawn
+ - King Eval
+   - [x] King Openness
+   - [x] Attacking Pawn
 
 ### Move Ordering Upgrades
 
