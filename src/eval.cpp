@@ -180,7 +180,7 @@ int eval_piece(EvalInfo &info, const Board &board) {
 
 template <Color c>
 int eval_king(EvalInfo &info, const Board &board) {
-    int score      = 0;
+    int score = 0, count = 0;
     Bitboard bb    = board.pieces(PieceType::KING, c);
     Square king_sq = builtin::poplsb(bb);
 
@@ -192,10 +192,15 @@ int eval_king(EvalInfo &info, const Board &board) {
     TraceIncr(king_open[builtin::popcount(moves & ~board.us(c) & ~info.pawn_attacks[(int)~c])]);
 
     // Bonus/penalty if king threatens enemy pawn
-    if (attacks::king(king_sq) & board.pieces(PieceType::PAWN, ~c)) {
+    if (attacks::king(king_sq) & info.pawn[(int)~c]) {
         score += king_att_pawn;
         TraceIncr(king_att_pawn);
     }
+
+    // Bonus for pawn sheltering king
+    count = builtin::popcount(passed_pawn_mask[(int)c][king_sq] & info.pawn[(int)c]);
+    score += king_shelter * count;
+    TraceAdd(king_shelter);
 
     score += pst[5][black_relative_square<c>(king_sq)];
     TraceIncr(pst[5][black_relative_square<c>(king_sq)]);
