@@ -150,7 +150,7 @@ int eval_piece(EvalInfo &info, const Board &board) {
         }
 
         // Penalty is piece is attacked by pawn
-        if (info.pawn_attacks[(int)~c] & (1ULL << sq)) {
+        if (info.pawn[(int)~c] & attacks::pawn(c, sq)) {
             score += attacked_by_pawn[(int)p];
             TraceIncr(attacked_by_pawn[(int)p]);
         }
@@ -248,10 +248,9 @@ int evaluate(const Board &board) {
 
     int score = eval_pieces(info, board);
 
-    info.gamephase = std::min(info.gamephase, 24);
+    int gamephase = std::min(info.gamephase, 24);
 
-    score =
-        (mg_score(score) * info.gamephase + eg_score(score) * (24 - info.gamephase) * endgame_scale(info, score)) / 24;
+    score = (mg_score(score) * gamephase + eg_score(score) * (24 - gamephase) * endgame_scale(info, score)) / 24;
 
     return (board.sideToMove() == Color::WHITE ? score : -score);
 }
