@@ -7,7 +7,7 @@ using namespace chess;
 #define TraceIncr(parameter)
 #define TraceAdd(parameter)
 
-Bitboard passed_pawn_mask[2][64], pawn_isolated_mask[64];
+Bitboard passed_pawn_mask[2][64], pawn_isolated_mask[64], outpost_mask[2];
 
 void init_eval_tables() {
     for (int i = (int)PieceType::PAWN; i <= (int)PieceType::KING; i++) {
@@ -15,6 +15,9 @@ void init_eval_tables() {
             pst[i][j] += material[i];
         }
     }
+
+    outpost_mask[0] = attacks::MASK_RANK[4] | attacks::MASK_RANK[5] | attacks::MASK_RANK[6] | attacks::MASK_RANK[7];
+    outpost_mask[1] = attacks::MASK_RANK[0] | attacks::MASK_RANK[1] | attacks::MASK_RANK[2] | attacks::MASK_RANK[3];
 
     for (int i = Square::SQ_A1; i <= Square::SQ_H8; i++) {
         Bitboard file = attacks::MASK_FILE[(int)utils::squareFile(Square(i))];
@@ -130,6 +133,11 @@ int eval_piece(EvalInfo &info, const Board &board) {
         count = builtin::popcount(bb & attacks::shift<DOWN>(info.pawn[(int)c]));
         score += minor_behind_pawn * count;
         TraceAdd(minor_behind_pawn);
+
+        // Bonus for knight/bishop outposts
+        count = builtin::popcount(bb & info.pawn_attacks[(int)c] & outpost_mask[(int)c]);
+        score += outpost * count;
+        TraceAdd(outpost);
     }
 
     while (bb) {
