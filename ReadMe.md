@@ -1,6 +1,6 @@
 <div align="center">
 
-  <img src="./img/logo.jpg" width="30%">
+  <img src="./img/logo_2.jfif" width="30%">
   <br>
   <br>
   <b><i>UCI-Compatible Chess Engine Built in C++</i></b>
