@@ -76,6 +76,7 @@
    - [x] Open / Semi-Open File
    - [x] Bishop Pair
    - [x] Minor Piece Behind Pawn
+   - [x] Minor Piece Outpost
  - King Eval
    - [x] King Openness
    - [x] Attacking Pawn
