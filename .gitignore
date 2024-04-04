@@ -15,6 +15,6 @@ Lux*
 *.epd
 *.json
 *.pgn
-*.txt
+*d.txt
 *.json
 *.sh

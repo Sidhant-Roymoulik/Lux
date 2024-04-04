@@ -46,11 +46,9 @@ void iterative_deepening(SearchThread& st) {
             if (info.print_uci) {
                 auto time_elapsed = now() - startime;
 
-                std::cout << "info";
+                std::cout << "info"
+                          << " depth " << current_depth << " score ";
 
-                std::cout << " depth " << current_depth;
-
-                std::cout << " score ";
                 if (score >= -MATE && score <= MATED_IN_MAX) {
                     std::cout << "mate " << ((-MATE - score) / 2);
                 } else if (score <= MATE && score >= MATE_IN_MAX) {
@@ -59,10 +57,9 @@ void iterative_deepening(SearchThread& st) {
                     std::cout << "cp " << score;
                 }
 
-                std::cout << " nodes " << st.nodes;
-                std::cout << " nps " << static_cast<int>(1000.0f * st.nodes / (time_elapsed + 1));
-                std::cout << " time " << static_cast<uint64_t>(time_elapsed);
-                std::cout << " pv";
+                std::cout << " nodes " << st.nodes << " nps "
+                          << static_cast<int>(1000.0f * st.nodes / (time_elapsed + 1)) << " time "
+                          << static_cast<uint64_t>(time_elapsed) << " pv";
 
                 std::vector<uint64_t> positions;
                 get_pv(st, positions, bestmove);
