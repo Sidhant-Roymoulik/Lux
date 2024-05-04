@@ -68,9 +68,9 @@ struct SearchThread {
 
     void applyFen(std::string fen) { board.setFen(fen); }
 
-    bool stop_early() { return info.time_set && (tm.check_time() || info.stopped); }
+    bool stop_early() { return info.time_set && (tm.check_time_opt() || info.stopped); }
     void check_time() {
-        if ((info.time_set && tm.check_time()) || (info.nodes_set && nodes >= info.node_limit)) info.stopped = true;
+        if ((info.time_set && tm.check_time_max()) || (info.nodes_set && nodes >= info.node_limit)) info.stopped = true;
     }
 };
 

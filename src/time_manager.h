@@ -25,7 +25,9 @@ struct Time_Manager {
 
     Time start_time{};
     Time end_time{};
+
     Time stoptime_max{};
+    Time stoptime_opt{};
 
     void set_time(Color side) {
         constexpr int safety_overhead = 20;
@@ -33,20 +35,22 @@ struct Time_Manager {
         Time inc                      = (side == Color::WHITE ? winc : binc);
 
         if (movestogo != -1) {
-            stoptime_max = uci_time / movestogo - safety_overhead;
+            stoptime_opt = stoptime_max = (uci_time - safety_overhead) / movestogo;
 
         } else if (movetime == -1) {
             uci_time /= 30;
             uci_time -= safety_overhead;
 
-            stoptime_max = uci_time + inc;
+            Time time = uci_time + inc;
+
+            stoptime_opt = time;
+            stoptime_max = std::min(uci_time, time * 2);
 
         } else if (movetime != -1) {
-            stoptime_max = movetime - safety_overhead;
+            stoptime_opt = stoptime_max = movetime - safety_overhead;
         }
-
-        end_time = start_time + stoptime_max;
     }
 
-    bool check_time() { return now() > end_time; }
+    bool check_time_opt() { return now() > start_time + stoptime_opt; }
+    bool check_time_max() { return now() > start_time + stoptime_max; }
 };
