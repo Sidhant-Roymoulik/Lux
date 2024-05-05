@@ -35,16 +35,13 @@ struct Time_Manager {
         Time inc      = (side == Color::WHITE ? winc : binc);
 
         if (movestogo != -1) {
-            stoptime_opt = stoptime_max = std::max(overhead, uci_time / movestogo - overhead);
+            stoptime_opt = stoptime_max = uci_time / movestogo - overhead;
 
         } else if (movetime == -1) {
-            uci_time /= 30;
-            uci_time -= overhead;
+            Time time = uci_time / 30 + inc - overhead;
 
-            Time time = uci_time + inc;
-
-            stoptime_opt = time / 2;
-            stoptime_max = std::min(uci_time, time);
+            stoptime_opt = time;
+            stoptime_max = time;
 
         } else if (movetime != -1)
             stoptime_opt = stoptime_max = movetime - overhead;

@@ -35,9 +35,7 @@ void iterative_deepening(SearchThread& st) {
     for (int current_depth = 1; current_depth < info.depth; current_depth++) {
         score = aspiration_window(score, current_depth, st);
 
-        if (st.info.stopped || st.stop_early()) {
-            break;
-        }
+        if (st.info.stopped || st.stop_early()) break;
 
         bestmove   = st.bestmove;
         info.score = score;
