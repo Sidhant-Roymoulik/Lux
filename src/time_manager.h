@@ -39,7 +39,7 @@ struct Time_Manager {
         Time overhead = 20;
 
         if (movetime != -1) {
-            avg_time = max_time = opt_time = std::max(1LL, movetime - overhead);
+            avg_time = max_time = opt_time = movetime - overhead;
         }
 
         else {
@@ -47,11 +47,13 @@ struct Time_Manager {
             Time inc   = (side == Color::WHITE) ? winc : binc;
             double mtg = (movestogo != -1) ? movestogo : 40.0;
 
-            time = std::max(0LL, time - overhead);
+            time = time - overhead;
 
             avg_time = time / mtg + inc;
             max_time = time / std::pow(mtg, 0.4) + inc;
 
+            avg_time = std::min(time, avg_time);
+            max_time = std::min(time, max_time);
             opt_time = max_time;
         }
 
