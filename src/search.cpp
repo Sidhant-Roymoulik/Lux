@@ -29,8 +29,8 @@ void iterative_deepening(SearchThread& st) {
 
     int score = 0;
 
-    auto startime = st.start_time();
-    Move bestmove = Move::NO_MOVE;
+    auto start_time = st.start_time();
+    Move bestmove   = Move::NO_MOVE;
 
     for (int current_depth = 1; current_depth < info.depth; current_depth++) {
         score = aspiration_window(score, current_depth, st);
@@ -40,9 +40,11 @@ void iterative_deepening(SearchThread& st) {
         bestmove   = st.bestmove;
         info.score = score;
 
+        if (st.info.time_set) st.tm.update_tm(bestmove);
+
         if constexpr (print_info) {
             if (info.print_uci) {
-                auto time_elapsed = now() - startime;
+                auto time_elapsed = now() - start_time;
 
                 std::cout << "info"
                           << " depth " << current_depth << " score ";
@@ -64,7 +66,7 @@ void iterative_deepening(SearchThread& st) {
 
                 std::cout << std::endl;
             } else {
-                auto time_elapsed = now() - startime;
+                auto time_elapsed = now() - start_time;
 
                 printf("[%2d/%2d] > eval: %-4.2f nodes: %6.2fM speed: %-5.2f MNPS", current_depth, info.depth,
                        static_cast<float>(score / 100.0f), static_cast<float>(st.nodes / 1000000.0f),

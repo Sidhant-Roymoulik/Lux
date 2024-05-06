@@ -14,6 +14,9 @@ inline Time now() {
         .count();
 }
 
+// Stability scale from Stash
+const double stability_scale[5] = {2.50, 1.20, 0.90, 0.80, 0.75};
+
 struct Time_Manager {
     Time wtime = -1;
     Time btime = -1;
@@ -24,29 +27,50 @@ struct Time_Manager {
     Time movetime = -1;
 
     Time start_time{};
-    Time end_time{};
 
-    Time stoptime_max{};
-    Time stoptime_opt{};
+    Time avg_time{};
+    Time max_time{};
+    Time opt_time{};
+
+    Move prev_bestmove{Move::NO_MOVE};
+    int stability{};
 
     void set_time(Color side) {
         Time overhead = 20;
-        Time uci_time = (side == Color::WHITE ? wtime : btime);
-        Time inc      = (side == Color::WHITE ? winc : binc);
 
-        if (movestogo != -1) {
-            stoptime_opt = stoptime_max = uci_time / movestogo - overhead;
+        if (movetime != -1) {
+            avg_time = max_time = opt_time = std::max(1LL, movetime - overhead);
+        }
 
-        } else if (movetime == -1) {
-            Time time = uci_time / 30 + inc - overhead;
+        else {
+            Time time  = (side == Color::WHITE) ? wtime : btime;
+            Time inc   = (side == Color::WHITE) ? winc : binc;
+            double mtg = (movestogo != -1) ? movestogo : 40.0;
 
-            stoptime_opt = time;
-            stoptime_max = time;
+            time = std::max(0LL, time - overhead);
 
-        } else if (movetime != -1)
-            stoptime_opt = stoptime_max = movetime - overhead;
+            avg_time = time / mtg + inc;
+            max_time = time / std::pow(mtg, 0.4) + inc;
+
+            opt_time = max_time;
+        }
+
+        prev_bestmove = Move::NO_MOVE;
+        stability     = 0;
     }
 
-    bool check_time_opt() { return now() > start_time + stoptime_opt; }
-    bool check_time_max() { return now() > start_time + stoptime_max; }
+    void update_tm(Move bestmove) {
+        if (prev_bestmove != bestmove) {
+            prev_bestmove = bestmove;
+            stability     = 0;
+        } else
+            stability = std::min(stability + 1, 4);
+
+        double scale = stability_scale[stability];
+
+        opt_time = std::min<Time>(max_time, avg_time * scale);
+    }
+
+    bool check_time_opt() { return now() > start_time + opt_time; }
+    bool check_time_max() { return now() > start_time + opt_time; }
 };
