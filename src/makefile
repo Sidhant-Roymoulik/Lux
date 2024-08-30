@@ -19,8 +19,6 @@ ifeq ($(OS),Windows_NT)
     CXXFLAGS := $(CXXFLAGS) -DWIN32
     RFLAGS := $(RFLAGS) -static
     EXEDIR := $(EXEDIR)
-    # Using cmd.exe for Windows commands
-    MKDIR := cmd /c if not exist "$(EXEDIR)" mkdir "$(EXEDIR)"
 else
     # Unix-like (Linux, macOS)
     ifeq ($(shell uname),Darwin)
@@ -33,12 +31,11 @@ else
         LFLAGS := -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
         CXXFLAGS := $(CXXFLAGS) -march=native
     endif
-    MKDIR := mkdir -p $(EXEDIR)
 endif
 
 # Directory creation
 create_dir:
-	$(MKDIR)
+	$(shell mkdir $(EXEDIR))
 
 default: create_dir
 	$(CXX) $(CXXFLAGS) $(SRC) $(LFLAGS) -o $(EXEDIR)/$(EXE)
