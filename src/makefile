@@ -1,4 +1,4 @@
-# From Bit-Genie
+# Makefile
 
 EXE := Lux
 SRC := *.cpp
@@ -6,18 +6,42 @@ CXX := g++
 
 EXEDIR := executables
 
-LFLAGS   := -Wl, -lpthread -Wl,
-WFLAGS   := -Wall -Wextra -Werror
-CXXFLAGS := -std=c++20 $(WFLAGS) -O3 -DNDEBUG -flto -march=native
-RFLAGS   := -std=c++20 -O3 -DNDEBUG -static 
+# Default flags
+LFLAGS := 
+WFLAGS := -Wall -Wextra -Werror
+CXXFLAGS := -std=c++20 $(WFLAGS) -O3 -DNDEBUG -flto
+RFLAGS := -std=c++20 -O3 -DNDEBUG
 
+# Platform-specific flags and libraries
+ifeq ($(OS),Windows_NT)
+    # Windows-specific flags and settings
+    LFLAGS := 
+    CXXFLAGS := $(CXXFLAGS) -DWIN32
+    RFLAGS := $(RFLAGS) -static
+    EXEDIR := $(EXEDIR)
+    MKDIR := if not exist $(EXEDIR) mkdir $(EXEDIR)
+else
+    # Unix-like (Linux, macOS)
+    LFLAGS := -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
+    ifeq ($(shell uname),Darwin)
+        # macOS specific settings
+        CXXFLAGS := $(CXXFLAGS) -stdlib=libc++
+        RFLAGS := $(RFLAGS) -stdlib=libc++
+    else
+        # Ubuntu specific settings
+        CXXFLAGS := $(CXXFLAGS) -march=native
+    endif
+    MKDIR := mkdir -p $(EXEDIR)
+endif
 
-default:
-	$(CXX) $(CXXFLAGS) $(SRC) $(LFLAGS) -o $(EXEDIR)/$(EXE) 
+# Directory creation
+$(EXEDIR):
+	$(MKDIR)
 
-release:
+default: $(EXEDIR)
+	$(CXX) $(CXXFLAGS) $(SRC) $(LFLAGS) -o $(EXEDIR)/$(EXE)
+
+release: $(EXEDIR)
 	$(CXX) $(RFLAGS) $(SRC) -mbmi2 -mavx2 -mpopcnt $(LFLAGS) -o $(EXEDIR)/$(EXE)-bmi2
 	$(CXX) $(RFLAGS) $(SRC) -msse4.2 -msse4.1 -mssse3 -mpopcnt $(LFLAGS) -o $(EXEDIR)/$(EXE)-modern 
 	$(CXX) $(RFLAGS) $(SRC) -mssse3 -mno-popcnt $(LFLAGS) -o $(EXEDIR)/$(EXE)-ssse3
-
-$(shell mkdir $(EXEDIR))
