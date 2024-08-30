@@ -19,7 +19,6 @@ ifeq ($(OS),Windows_NT)
     CXXFLAGS := $(CXXFLAGS) -DWIN32
     RFLAGS := $(RFLAGS) -static
     EXEDIR := $(EXEDIR)
-		EXE := $(EXE).exe
     # Using cmd.exe for Windows commands
     MKDIR := cmd /c if not exist "$(EXEDIR)" mkdir "$(EXEDIR)"
 else

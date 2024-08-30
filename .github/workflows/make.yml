@@ -22,16 +22,16 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    # - name: Set up build tools
-    #   run: |
-    #     if [ $RUNNER_OS == 'Ubuntu' ]; then
-    #       sudo apt-get update
-    #       sudo apt-get install -y build-essential
-    #     elif [ $RUNNER_OS == 'macOS' ]; then
-    #       brew install make
-    #     elif [ $RUNNER_OS == 'Windows' ]; then
-    #       choco install make
-    #     fi
+    - name: Set up build tools
+      run: |
+        if [ $RUNNER_OS == 'Ubuntu' ]; then
+          sudo apt-get update
+          sudo apt-get install -y build-essential
+        elif [ $RUNNER_OS == 'macOS' ]; then
+          brew install make
+        elif [ $RUNNER_OS == 'Windows' ]; then
+          choco install make
+        fi
 
     - name: Default
       run: make default
