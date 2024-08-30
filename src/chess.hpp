@@ -3359,48 +3359,71 @@ class Visitor {
     bool skip_ = false;
 };
 
+template <std::size_t BUFFER_SIZE =
+#if defined(__unix__) || defined(__unix) || defined(unix) || defined(__APPLE__) || defined(__MACH__)
+#if defined(__APPLE__) || defined(__MACH__)
+              256
+#else
+              1024
+#endif
+#else
+              256
+#endif
+          >
 class StreamParser {
    public:
     StreamParser(std::istream &stream) : stream_buffer(stream) {}
 
     void readGames(Visitor &vis) {
-        this->visitor = &vis;
+        visitor = &vis;
 
-        while (true) {
-            const auto c = stream_buffer.get();
+        if (!stream_buffer.fill()) {
+            return;
+        }
 
-            if (!c.has_value()) {
-                if (!pgn_end && has_body) {
-                    pgn_end = true;
+        stream_buffer.loop([this](char c) {
+            if (in_header) {
+                visitor->skipPgn(false);
 
-                    callVisitorMoveFunction();
+                if (c == '[') {
+                    visitor->startPgn();
+                    pgn_end = false;
 
-                    visitor->endPgn();
-                    visitor->skipPgn(false);
+                    processHeader();
                 }
 
-                return;
+            } else if (in_body) {
+                processBody();
             }
 
-            processNextByte(*c);
+            stream_buffer.advance();
+        });
+
+        if (!pgn_end) {
+            onEnd();
         }
     }
 
    private:
     class LineBuffer {
        public:
-        bool empty() const { return index_ == 0; }
+        bool empty() const noexcept { return index_ == 0; }
 
-        void clear() { index_ = 0; }
+        void clear() noexcept { index_ = 0; }
 
-        std::string_view get() const { return std::string_view(buffer_.data(), index_); }
+        std::string_view get() const noexcept { return std::string_view(buffer_.data(), index_); }
 
         void operator+=(char c) {
-            if (index_ < N) {
-                buffer_[index_++] = c;
-            } else {
-                throw std::runtime_error("LineBuffer overflow");
+            assert(index_ < N);
+            buffer_[index_++] = c;
+        }
+
+        void remove_suffix(std::size_t n) {
+            if (n > index_) {
+                throw std::runtime_error("LineBuffer underflow");
             }
+
+            index_ -= n;
         }
 
        private:
@@ -3412,30 +3435,40 @@ class StreamParser {
 
     class StreamBuffer {
        private:
-        static constexpr std::size_t N = 512;
+        static constexpr std::size_t N = BUFFER_SIZE;
         using BufferType               = std::array<char, N * N>;
 
        public:
         StreamBuffer(std::istream &stream) : stream_(stream) {}
 
-        std::optional<char> get() {
-            if (buffer_index_ == bytes_read_) {
-                const auto ret = fill();
-                return ret.has_value() && *ret ? std::optional<char>(buffer_[buffer_index_++]) : std::nullopt;
+        template <typename FUNC>
+        void loop(FUNC f) {
+            while (bytes_read_) {
+                if (buffer_index_ >= bytes_read_) {
+                    if (!fill()) {
+                        return;
+                    }
+                }
+
+                while (buffer_index_ < bytes_read_) {
+                    const auto c = buffer_[buffer_index_];
+
+                    if (c == '\r') {
+                        buffer_index_++;
+                        continue;
+                    }
+
+                    if constexpr (std::is_same_v<decltype(f(c)), bool>) {
+                        const auto res = f(c);
+
+                        if (res) {
+                            return;
+                        }
+                    } else {
+                        f(c);
+                    }
+                }
             }
-
-            return buffer_[buffer_index_++];
-        }
-
-        std::optional<bool> fill() {
-            if (!stream_.good()) return std::nullopt;
-
-            buffer_index_ = 0;
-
-            stream_.read(buffer_.data(), N * N);
-            bytes_read_ = stream_.gcount();
-
-            return std::optional<bool>(bytes_read_ > 0);
         }
 
         /// @brief Assume that the current character is already the opening_delim
@@ -3443,10 +3476,10 @@ class StreamParser {
         /// @param close_delim
         /// @return
         bool readUntilMatchingDelimiter(char open_delim, char close_delim) {
-            int stack = 1;
+            int stack = 0;
 
             while (true) {
-                const auto ret = get();
+                const auto ret = getNextByte();
 
                 if (!ret.has_value()) {
                     return false;
@@ -3472,6 +3505,49 @@ class StreamParser {
             return false;
         }
 
+        bool fill() {
+            if (!stream_.good()) return false;
+
+            buffer_index_ = 0;
+
+            stream_.read(buffer_.data(), N * N);
+            bytes_read_ = stream_.gcount();
+
+            return bytes_read_ > 0;
+        }
+
+        void advance() {
+            if (buffer_index_ >= bytes_read_) {
+                fill();
+            }
+
+            buffer_index_++;
+        }
+
+        char peek() {
+            if (buffer_index_ + 1 >= bytes_read_) {
+                return stream_.peek();
+            }
+
+            return buffer_[buffer_index_ + 1];
+        }
+
+        std::optional<char> current() {
+            if (buffer_index_ >= bytes_read_) {
+                return fill() ? std::optional<char>(buffer_[buffer_index_]) : std::nullopt;
+            }
+
+            return buffer_[buffer_index_];
+        }
+
+        std::optional<char> getNextByte() {
+            if (buffer_index_ == bytes_read_) {
+                return fill() ? std::optional<char>(buffer_[buffer_index_++]) : std::nullopt;
+            }
+
+            return buffer_[buffer_index_++];
+        }
+
        private:
         std::istream &stream_;
         BufferType buffer_;
@@ -3486,23 +3562,9 @@ class StreamParser {
         move.clear();
         comment.clear();
 
-        reading_move    = false;
-        reading_comment = false;
-
-        line_start = true;
-
-        has_head = false;
-        has_body = false;
-
-        in_header = false;
+        in_header = true;
         in_body   = false;
-
-        // Header
-        reading_key   = false;
-        reading_value = false;
     }
-
-    bool isLetter(char c) { return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'); }
 
     void callVisitorMoveFunction() {
         if (!move.empty()) {
@@ -3513,147 +3575,355 @@ class StreamParser {
         }
     }
 
-    void processNextByte(const char c) {
-        // save the last three characters across different buffers
-        c3 = c2;
-        c2 = c1;
-        c1 = c;
+    void processHeader() {
+        stream_buffer.loop([this](char c) {
+            switch (c) {
+                // tag start
+                case '[':
+                    stream_buffer.advance();
 
-        // skip carriage return
-        if (c == '\r') {
-            return;
-        }
+                    stream_buffer.loop([this](char c) {
+                        if (is_space(c)) {
+                            return true;
+                        } else {
+                            header.first += c;
+                            stream_buffer.advance();
+                            return false;
+                        }
+                    });
 
-        // PGN Header
-        if (line_start && c == '[') {
-            if (pgn_end) {
-                pgn_end = false;
-                visitor->skipPgn(false);
-                visitor->startPgn();
-            }
+                    stream_buffer.advance();
+                    return false;
+                case '"':
+                    stream_buffer.advance();
+                    stream_buffer.loop([this](char c) {
+                        if (c == ']') {
+                            stream_buffer.advance();
 
-            has_head = true;
+                            return true;
+                        } else {
+                            header.second += c;
+                            stream_buffer.advance();
+                            return false;
+                        }
+                    });
 
-            in_header = true;
-            in_body   = false;
-
-            reading_key = true;
-
-            line_start = false;
-            return;
-        }
-
-        // PGN Moves Start
-        if (line_start && has_head && !in_header && !in_body) {
-            reading_move    = false;
-            reading_comment = false;
-
-            has_body = true;
-
-            in_header = false;
-            in_body   = true;
-
-            line_start = false;
-
-            if (!visitor->skip()) visitor->startMoves();
-            return;
-        }
-
-        // PGN End
-        if (line_start && in_body && c == '\n') {
-            // buffer_index = i + 1;
-            pgn_end = true;
-
-            visitor->endPgn();
-            visitor->skipPgn(false);
-
-            reset_trackers();
-            return;
-        }
-
-        // set line_start to true, since the next char will be first on
-        // a new line
-        if (c == '\n') {
-            line_start = true;
-        }
-
-        // make sure that the line_start is turned off again
-        if (line_start && c != '\n') {
-            line_start = false;
-        }
-
-        if (in_header) {
-            if (c == '"') {
-                reading_value = !reading_value;
-            } else if (reading_key && c == ' ') {
-                reading_key = false;
-            } else if (reading_key) {
-                header.first += c;
-            } else if (reading_value) {
-                header.second += c;
-            } else if (c == '\n') {
-                reading_key   = false;
-                reading_value = false;
-                in_header     = false;
-
-                if (!visitor->skip()) visitor->header(header.first.get(), header.second.get());
-
-                header.first.clear();
-                header.second.clear();
-            }
-        }
-        // Pgn are build up in the following way.
-        // {move_number} {move} {comment} {move} {comment} {move_number} ...
-        // So we need to skip the move_number then start reading the move, then save the comment
-        // then read the second move in the group. After that a move_number will follow again.
-        else if (in_body) {
-            // whitespace while reading a move means that we have finished reading the move
-            if (c == '\n') {
-                reading_move    = false;
-                reading_comment = false;
-
-                callVisitorMoveFunction();
-            } else if (reading_move && c == ' ') {
-                reading_move = false;
-            } else if (reading_move) {
-                move += c;
-            } else if (!reading_comment && c == '{') {
-                reading_comment = true;
-            } else if (reading_comment && c == '}') {
-                reading_comment = false;
-
-                callVisitorMoveFunction();
-            }
-            // we are in empty space, when we encounter now a file or a piece, or a castling
-            // move, we try to parse the move
-            else if (!reading_move && !reading_comment) {
-                // skip variations
-                if (c == '(') {
-                    stream_buffer.readUntilMatchingDelimiter('(', ')');
-                    return;
-                }
-
-                // O-O(-O) castling moves are caught by isLetter(c), and we need to distinguish
-                // 0-0(-0) castling moves from results like 1-0 and 0-1.
-                if (isLetter(c) || (c == '0' && c2 == '-' && c3 == '0')) {
-                    callVisitorMoveFunction();
-
-                    reading_move = true;
-
-                    if (c == '0') {
-                        move += '0';
-                        move += '-';
-                        move += '0';
-                    } else {
-                        move += c;
+                    // manually skip carriage return, otherwise we would be in the body
+                    // ideally we should completely skip all carriage returns and newlines to avoid this
+                    if (stream_buffer.current() == '\r') {
+                        stream_buffer.advance();
                     }
-                } else {
-                    // no new move detected
-                    return;
-                }
-            } else if (reading_comment) {
-                comment += c;
+
+                    header.second.remove_suffix(1);
+
+                    if (!visitor->skip()) visitor->header(header.first.get(), header.second.get());
+
+                    header.first.clear();
+                    header.second.clear();
+
+                    stream_buffer.advance();
+                    return false;
+                case '\n':
+                    in_header = false;
+                    in_body   = true;
+
+                    if (!visitor->skip()) visitor->startMoves();
+
+                    return true;
+                default:
+                    // this should normally not happen
+                    // lets just go into the body, will this always be save?
+                    in_header = false;
+                    in_body   = true;
+
+                    if (!visitor->skip()) visitor->startMoves();
+
+                    return true;
             }
+
+            stream_buffer.advance();
+            return false;
+        });
+    }
+
+    void processBody() {
+        auto is_termination_symbol = false;
+        auto has_comment           = false;
+
+    start:
+        /*
+        Skip first move number or game termination
+        Also skip - * / to fix games
+        which directly start with a game termination
+        this https://github.com/Disservin/chess-library/issues/68
+        */
+        stream_buffer.loop([this, &is_termination_symbol, &has_comment](char c) {
+            if (c == ' ' || is_digit(c)) {
+                stream_buffer.advance();
+                return false;
+            } else if (c == '-' || c == '*' || c == '/') {
+                is_termination_symbol = true;
+                stream_buffer.advance();
+                return false;
+            } else if (c == '{') {
+                has_comment = true;
+
+                // reading comment
+                stream_buffer.advance();
+                stream_buffer.loop([this](char c) {
+                    stream_buffer.advance();
+
+                    if (c == '}') return true;
+
+                    comment += c;
+
+                    return false;
+                });
+
+                // the game has no moves, but a comment followed by a game termination
+                if (!visitor->skip()) {
+                    visitor->move("", comment.get());
+
+                    comment.clear();
+                }
+            }
+
+            return true;
+        });
+
+        // we need to reparse the termination symbol
+        if (has_comment && !is_termination_symbol) {
+            goto start;
+        }
+
+        // game had no moves, so we can skip it and call endPgn
+        if (is_termination_symbol) {
+            onEnd();
+            return;
+        }
+
+        stream_buffer.loop([this](char) {
+            // Pgn are build up in the following way.
+            // {move_number} {move} {comment} {move} {comment} {move_number} ...
+            // So we need to skip the move_number then start reading the move, then save the comment
+            // then read the second move in the group. After that a move_number will follow again.
+
+            // skip move number digits
+            stream_buffer.loop([this](char c) {
+                if (is_space(c) || is_digit(c)) {
+                    stream_buffer.advance();
+                    return false;
+                }
+
+                return true;
+            });
+
+            // skip dots
+            stream_buffer.loop([this](char c) {
+                if (c == '.') {
+                    stream_buffer.advance();
+                    return false;
+                }
+
+                return true;
+            });
+
+            // skip spaces
+            stream_buffer.loop([this](char c) {
+                if (is_space(c)) {
+                    stream_buffer.advance();
+                    return false;
+                }
+
+                return true;
+            });
+
+            // parse move
+            if (parseMove()) {
+                return true;
+            }
+
+            // skip spaces
+            stream_buffer.loop([this](char c) {
+                if (is_space(c)) {
+                    stream_buffer.advance();
+                    return false;
+                }
+
+                return true;
+            });
+
+            // game termination
+            auto curr = stream_buffer.current();
+
+            if (!curr.has_value()) {
+                onEnd();
+                return true;
+            }
+
+            // game termination
+            if (*curr == '*') {
+                onEnd();
+                stream_buffer.advance();
+
+                return true;
+            }
+
+            const auto peek = stream_buffer.peek();
+
+            if (*curr == '1') {
+                if (peek == '-') {
+                    stream_buffer.advance();
+                    stream_buffer.advance();
+
+                    onEnd();
+                    return true;
+                } else if (peek == '/') {
+                    for (size_t i = 0; i <= 6; i++) {
+                        stream_buffer.advance();
+                    }
+
+                    onEnd();
+                    return true;
+                }
+            }
+
+            // might be 0-1 (game termination) or 0-0-0/0-0 (castling)
+            if (*curr == '0' && stream_buffer.peek() == '-') {
+                stream_buffer.advance();
+                stream_buffer.advance();
+
+                const auto c = stream_buffer.current();
+                if (!c.has_value()) {
+                    onEnd();
+
+                    return true;
+                }
+
+                // game termination
+                if (*c == '1') {
+                    onEnd();
+                    stream_buffer.advance();
+
+                    return true;
+                }
+                // castling
+                else {
+                    move += '0';
+                    move += '-';
+
+                    if (parseMove()) {
+                        stream_buffer.advance();
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        });
+    }
+
+    bool parseMove() {
+        // reading move
+        stream_buffer.loop([this](char c) {
+            if (is_space(c)) {
+                return true;
+            }
+
+            move += c;
+
+            stream_buffer.advance();
+            return false;
+        });
+
+    start:
+        auto curr = stream_buffer.current();
+        if (!curr.has_value()) {
+            onEnd();
+            return true;
+        }
+
+        switch (*curr) {
+            case '{':
+                // reading comment
+                stream_buffer.advance();
+                stream_buffer.loop([this](char c) {
+                    stream_buffer.advance();
+
+                    if (c == '}') return true;
+
+                    comment += c;
+
+                    return false;
+                });
+                goto start;
+            case '(':
+                stream_buffer.readUntilMatchingDelimiter('(', ')');
+                goto start;
+            case '$':
+                stream_buffer.loop([this](char c) {
+                    if (is_space(c)) return true;
+
+                    stream_buffer.advance();
+                    return false;
+                });
+                goto start;
+            case ' ':
+                stream_buffer.loop([this](char c) {
+                    if (is_space(c)) {
+                        stream_buffer.advance();
+                        return false;
+                    }
+
+                    return true;
+                });
+                goto start;
+            default:
+                break;
+        }
+
+        callVisitorMoveFunction();
+
+        return false;
+    }
+
+    void onEnd() {
+        callVisitorMoveFunction();
+        visitor->endPgn();
+        visitor->skipPgn(false);
+
+        reset_trackers();
+
+        pgn_end = true;
+    }
+
+    bool is_space(const char c) noexcept {
+        switch (c) {
+            case ' ':
+            case '\t':
+            case '\n':
+            case '\r':
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    bool is_digit(const char c) noexcept {
+        switch (c) {
+            case '0':
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+            case '8':
+            case '9':
+                return true;
+            default:
+                return false;
         }
     }
 
@@ -3662,34 +3932,15 @@ class StreamParser {
     Visitor *visitor = nullptr;
 
     // one time allocations
-    std::pair<LineBuffer, LineBuffer> header;
+    std::pair<LineBuffer, LineBuffer> header = {LineBuffer{}, LineBuffer{}};
 
-    // std::string move;
-    LineBuffer move;
-    LineBuffer comment;
-
-    // buffer for the last two characters, cbuf[0] is the current character
-    char c3 = '\0';
-    char c2 = '\0';
-    char c1 = '\0';
+    LineBuffer move    = {};
+    LineBuffer comment = {};
 
     // State
 
-    bool reading_move    = false;
-    bool reading_comment = false;
-
-    // True when at the start of a line
-    bool line_start = true;
-
-    bool in_header = false;
+    bool in_header = true;
     bool in_body   = false;
-
-    bool has_head = false;
-    bool has_body = false;
-
-    // Header
-    bool reading_key   = false;
-    bool reading_value = false;
 
     bool pgn_end = true;
 };
