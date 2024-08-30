@@ -19,7 +19,7 @@ ifeq ($(OS),Windows_NT)
     CXXFLAGS := $(CXXFLAGS) -DWIN32
     RFLAGS := $(RFLAGS) -static
     EXEDIR := $(EXEDIR)
-    MKDIR := if not exist $(EXEDIR) mkdir $(EXEDIR)
+    MKDIR := if not exist "$(EXEDIR)" ( mkdir "$(EXEDIR)" )
 else
     # Unix-like (Linux, macOS)
     ifeq ($(shell uname),Darwin)
