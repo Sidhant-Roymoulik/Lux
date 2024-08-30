@@ -15,7 +15,7 @@ RFLAGS := -std=c++20 -O3 -DNDEBUG
 # Platform-specific flags and libraries
 ifeq ($(OS),Windows_NT)
     # Windows-specific flags and settings
-    LFLAGS := 
+    LFLAGS := -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
     CXXFLAGS := $(CXXFLAGS) -DWIN32
     RFLAGS := $(RFLAGS) -static
     EXEDIR := $(EXEDIR)
