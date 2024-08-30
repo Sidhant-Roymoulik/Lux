@@ -22,13 +22,14 @@ ifeq ($(OS),Windows_NT)
     MKDIR := if not exist $(EXEDIR) mkdir $(EXEDIR)
 else
     # Unix-like (Linux, macOS)
-    LFLAGS := -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
     ifeq ($(shell uname),Darwin)
         # macOS specific settings
+        LFLAGS := 
         CXXFLAGS := $(CXXFLAGS) -stdlib=libc++
         RFLAGS := $(RFLAGS) -stdlib=libc++
     else
         # Ubuntu specific settings
+        LFLAGS := -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
         CXXFLAGS := $(CXXFLAGS) -march=native
     endif
     MKDIR := mkdir -p $(EXEDIR)
