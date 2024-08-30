@@ -3389,8 +3389,6 @@ class StreamParser {
    private:
     class LineBuffer {
        public:
-        LineBuffer();
-
         bool empty() const { return index_ == 0; }
 
         void clear() { index_ = 0; }
