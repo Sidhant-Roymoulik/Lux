@@ -6,7 +6,7 @@ CXX := g++
 
 EXEDIR := executables
 
-LFLAGS   := -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
+LFLAGS   := -Wl, -lpthread -Wl,
 WFLAGS   := -Wall -Wextra -Werror
 CXXFLAGS := -std=c++20 $(WFLAGS) -O3 -DNDEBUG -flto -march=native
 RFLAGS   := -std=c++20 -O3 -DNDEBUG -static 
