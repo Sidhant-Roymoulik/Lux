@@ -36,59 +36,60 @@
 | 4.0     | 2550      | 2519                                                  | -                                                                 | 2670
 | 4.1     | 2600      | 2601                                                  | 2578                                                              | 2733
 | 4.2     | 2670      | 2764                                                  | 2689                                                              | -
----
 
 ## Current Version Upgrades
 
 ### Basic Requirements
-
- - [x] UCI Protocol
- - [x] Time Management
- - [x] Negamax
- - [x] Iterative Deepening
+ - UCI Protocol
+ - Time Management
+ - Negamax
+ - Iterative Deepening
 
 ### Search Upgrades
+ - Aspiration Window
+ - AlphaBeta Negamax
+   - Principal Variation Search
+   - Improving Heuristic
+ - Quiescence Search
+ - Transposition Table
 
- - [x] AlphaBeta Negamax
- - [x] Quiescence Search
- - [x] Transposition Table
- - [x] Aspiration Window
- - [x] Principal Variation Search
- - [x] Improving Heuristic
- - [x] Check Extensions
- - [x] Reverse Futility Pruning
- - [x] Null Move Pruning
- - [x] History Pruning
- - [x] Late Move Reduction
+#### Pruning
+ - Reverse Futility Pruning
+ - Null Move Pruning
+ - History Pruning
+
+#### Extensions
+ - Check Extensions
+
+#### Reductions
+ - Late Move Reductions
 
 ### Eval Upgrades
-
- - [x] Material Score
- - [x] Piece-Square Tables
+ - Material Score
+ - Piece-Square Tables
  - Pawn Eval
-   - [x] Passed
-   - [x] Phalanx
-   - [x] Isolated
-   - [x] Supported
+   - Passed
+   - Phalanx
+   - Isolated
+   - Supported
  - Piece Eval
-   - [x] Mobility
-   - [x] Attacked by Pawn
-   - [x] Open / Semi-Open File
-   - [x] Bishop Pair
-   - [x] Minor Piece Behind Pawn
-   - [x] Minor Piece Outpost
+   - Mobility
+   - Attacked by Pawn
+   - Open / Semi-Open File
+   - Bishop Pair
+   - Minor Piece Behind Pawn
+   - Minor Piece Outpost
  - King Eval
-   - [x] King Openness
-   - [x] Attacking Pawn
-   - [x] Pawn In Front
+   - King Openness
+   - Attacking Pawn
+   - Pawn In Front
 
 ### Move Ordering Upgrades
-
- - [x] TT-Move
- - [x] Promotions
- - [x] MVV-LVA
- - [x] History Heuristic \[Piece\]\[To\]
- - [x] Killer Moves
+ - TT-Move
+ - Promotions
+ - MVV-LVA
+ - History Heuristic [Piece][To]
+ - Killer Moves
 
 ---
 
