@@ -22,20 +22,20 @@
 ## Rating
 | Version | Estimated | [CCRL 40/15](https://computerchess.org.uk/ccrl/4040/) | [CCRL Blitz (2'+1")](https://www.computerchess.org.uk/ccrl/404/)  | [MCERL 1' + 0.6"](https://www.chessengeria.eu/mcerl)  |
 |-------- |-----------|-------------------------------------------------------|-------------------------------------------------------------------|-------------------------------------------------------|
-| 1.0     | 1700      | -                                                     | -                                                                 | 2026
-| 2.0     | 1850      | -                                                     | -                                                                 | 2139
-| 2.1     | 2000      | -                                                     | -                                                                 | 2256
+| 1.0     | 1700      | -                                                     | -                                                                 | 2015
+| 2.0     | 1850      | -                                                     | -                                                                 | 2131
+| 2.1     | 2000      | -                                                     | -                                                                 | 2249
 | 2.2     | 2050      | -                                                     | -                                                                 | -
-| 2.3     | 2100      | 2017                                                  | 2039                                                              | -
-| 3.0     | 2200      | -                                                     | -                                                                 | 2498
+| 2.3     | 2100      | 2023                                                  | 2034                                                              | -
+| 3.0     | 2200      | -                                                     | -                                                                 | 2493
 | 3.1     | 2300      | -                                                     | -                                                                 | -
 | 3.2     | 2350      | -                                                     | -                                                                 | -
-| 3.3     | 2375      | -                                                     | -                                                                 | 2564
-| 3.4     | 2400      | -                                                     | 2349                                                              | -
+| 3.3     | 2375      | -                                                     | -                                                                 | 2563
+| 3.4     | 2400      | -                                                     | 2347                                                              | -
 | 3.5     | 2450      | -                                                     | -                                                                 | -
-| 4.0     | 2550      | 2519                                                  | -                                                                 | 2670
-| 4.1     | 2600      | 2601                                                  | 2578                                                              | 2733
-| 4.2     | 2670      | 2764                                                  | 2689                                                              | -
+| 4.0     | 2550      | 2548                                                  | -                                                                 | 2674
+| 4.1     | 2600      | 2601                                                  | 2581                                                              | 2740
+| 4.2     | 2670      | 2754                                                  | 2689                                                              | 2802
 ---
 
 ## Current Version Upgrades
@@ -107,7 +107,7 @@ Chess package for C++: https://github.com/Disservin/chess-library
 
 [Chessprogramming wiki](https://www.chessprogramming.org/Main_Page) has a lot of information but can be outdated and lacks pseudocode.
 
-### Other Engine Insiprations
+### Other Engine Inspirations
 
 [Altair](https://github.com/Alex2262/AltairChessEngine)  [Bit-Genie](https://github.com/Aryan1508/Bit-Genie)  [Blunder](https://github.com/algerbrex/blunder)  [Rice](https://github.com/rafid-dev/rice)  [Weiss](https://github.com/TerjeKir/weiss)
 
