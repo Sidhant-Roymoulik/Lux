@@ -39,8 +39,7 @@ struct Time_Manager {
         Time overhead = 20;
 
         if (movetime != -1) {
-            Time safe_time = std::max(movetime - overhead, 10LL);
-            avg_time = max_time = opt_time = safe_time;
+            avg_time = max_time = opt_time = movetime - overhead;
         }
 
         else {
