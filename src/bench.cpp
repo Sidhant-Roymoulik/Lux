@@ -1,5 +1,7 @@
 #include "bench.h"
 
+#include "eval.h"
+
 const std::vector<std::string> bench_fens = {
     "r3k2r/2pb1ppp/2pp1q2/p7/1nP1B3/1P2P3/P2N1PPP/R2QK2R w KQkq a6 0 14",
     "4rrk1/2p1b1p1/p1p3q1/4p3/2P2n1p/1P1NR2P/PB3PP1/3R1QK1 b - - 2 24",
@@ -85,4 +87,24 @@ void StartBenchmark(SearchThread& st) {
     printf("Finished: %40llu nodes %d nps\n", static_cast<unsigned long long>(nodes),
            static_cast<int>(1000.0f * nodes / (time_elapsed + 1)));
     std::cout << std::flush;
+}
+
+void StartEvalBenchmark(SearchThread& st) {
+    long long samples = 1000000;
+    long long timeSum = 0;
+    int num_fens      = bench_fens.size();
+
+    for (const auto& fen : bench_fens) {
+        st.applyFen(fen);
+
+        for (int i = 0; i < samples; i++) {
+            auto start = std::chrono::high_resolution_clock::now();
+            evaluate(st.board);
+            auto stop = std::chrono::high_resolution_clock::now();
+            timeSum += std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start).count();
+        }
+    }
+
+    auto timeAvg = (double)timeSum / samples / num_fens;
+    std::cout << "Eval/s: " << 1000000000 * samples * num_fens / timeSum << " , Time: " << timeAvg << "ns" << std::endl;
 }
