@@ -39,7 +39,8 @@ struct Time_Manager {
         Time overhead = 20;
 
         if (movetime != -1) {
-            avg_time = max_time = opt_time = movetime - overhead;
+            Time safe_time = std::max(movetime - overhead, 10LL);
+            avg_time = max_time = opt_time = safe_time;
         }
 
         else {
@@ -74,5 +75,5 @@ struct Time_Manager {
     }
 
     bool check_time_opt() { return now() > start_time + opt_time; }
-    bool check_time_max() { return now() > start_time + opt_time; }
+    bool check_time_max() { return now() > start_time + max_time; }
 };
