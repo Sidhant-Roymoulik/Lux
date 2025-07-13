@@ -37,7 +37,7 @@ static void set_option(std::istream &is, std::string &token, std::string name, i
     }
 }
 
-void uci_loop(int argv, char **argc) {
+void uci_loop() {
     std::cout << "Lux " << VERSION << " Copyright (C) 2023 " << AUTHOR << std::endl;
 
     SearchInfo info;
@@ -48,11 +48,6 @@ void uci_loop(int argv, char **argc) {
 
     table = ttable.get();
     table->Initialize(DefaultHashSize);
-
-    if (argv > 1 && std::string{argc[1]} == "bench") {
-        StartBenchmark(*searchThread);
-        exit(0);
-    }
 
     std::string command;
     std::string token;
@@ -244,31 +239,17 @@ void uci_loop(int argv, char **argc) {
             std::cout << searchThread->board << std::endl;
             continue;
 
-        } else if (token == "bencheval") {
-            long long samples = 100000000;
-            long long timeSum = 0;
-            int output;
-            for (int i = 0; i < samples; i++) {
-                auto start = std::chrono::high_resolution_clock::now();
-                output     = evaluate(searchThread->board);
-                auto stop  = std::chrono::high_resolution_clock::now();
-                timeSum += std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start).count();
-            }
-            auto timeAvg = (double)timeSum / samples;
-            std::cout << "Output: " << output << " , Eval/s: " << 1000000000 * samples / timeSum
-                      << " , Time: " << timeAvg << "ns" << std::endl;
-
-            continue;
-
         } else if (token == "eval") {
             std::cout << "Eval: " << evaluate(searchThread->board) << std::endl;
         } else if (token == "repetition") {
             std::cout << searchThread->board.isRepetition(1) << std::endl;
         } else if (token == "bench") {
             StartBenchmark(*searchThread);
+
+        } else if (token == "bencheval") {
+            StartEvalBenchmark(*searchThread);
         }
     }
-
     table->clear();
 
     std::cout << std::endl;
