@@ -28,15 +28,6 @@ static void uci_send_id() {
     std::cout << "uciok" << std::endl;
 }
 
-static void set_option(std::istream &is, std::string &token, std::string name, int &value) {
-    if (token == name) {
-        is >> std::skipws >> token;
-        is >> std::skipws >> token;
-
-        value = std::stoi(token);
-    }
-}
-
 void uci_loop() {
     std::cout << "Lux " << VERSION << " Copyright (C) 2025 " << AUTHOR << std::endl;
 
@@ -222,30 +213,43 @@ void uci_loop() {
         }
 
         else if (token == "setoption") {
-            is >> std::skipws >> token;
-            is >> std::skipws >> token;
+            // Parse: setoption name <name> [value <value>]
+            std::string name, value;
+            is >> std::skipws >> token;  // should be "name"
+            if (token == "name") {
+                is >> std::skipws >> name;
+                // Optionally parse "value"
+                is >> std::skipws >> token;
+                if (token == "value") {
+                    is >> std::skipws >> value;
+                } else {
+                    value.clear();
+                }
 
-            set_option(is, token, "Hash", CurrentHashSize);
-
-            if (CurrentHashSize != LastHashSize) {
-                CurrentHashSize = std::min(CurrentHashSize, MAXHASH);
-                LastHashSize    = CurrentHashSize;
-                table->Initialize(CurrentHashSize);
+                if (name == "Hash" && !value.empty()) {
+                    try {
+                        CurrentHashSize = std::stoi(value);
+                    } catch (...) {
+                        // ignore invalid value
+                    }
+                    if (CurrentHashSize != LastHashSize) {
+                        CurrentHashSize = std::min(CurrentHashSize, MAXHASH);
+                        LastHashSize    = CurrentHashSize;
+                        table->Initialize(CurrentHashSize);
+                    }
+                }
             }
         }
 
         /* Debugging Commands */
         else if (token == "print") {
             std::cout << searchThread->board << std::endl;
-            continue;
-
         } else if (token == "eval") {
             std::cout << "Eval: " << evaluate(searchThread->board) << std::endl;
         } else if (token == "repetition") {
             std::cout << searchThread->board.isRepetition(1) << std::endl;
         } else if (token == "bench") {
             StartBenchmark(*searchThread);
-
         } else if (token == "bencheval") {
             StartEvalBenchmark(*searchThread);
         }
