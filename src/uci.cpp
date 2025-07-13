@@ -37,8 +37,8 @@ static void set_option(std::istream &is, std::string &token, std::string name, i
     }
 }
 
-void uci_loop(int argv, char **argc) {
-    std::cout << "Lux " << VERSION << " Copyright (C) 2023 " << AUTHOR << std::endl;
+void uci_loop() {
+    std::cout << "Lux " << VERSION << " Copyright (C) 2025 " << AUTHOR << std::endl;
 
     SearchInfo info;
     ThreadHandler threadHandle;
