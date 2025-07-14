@@ -40,7 +40,7 @@ void iterative_deepening(SearchThread& st) {
         bestmove   = st.bestmove;
         info.score = score;
 
-        if (st.info.time_set) st.tm.update_tm(bestmove);
+        // if (st.info.time_set) st.tm.update_tm(bestmove);
 
         if constexpr (print_info) {
             if (info.print_uci) {
