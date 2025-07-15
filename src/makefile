@@ -15,10 +15,9 @@ RFLAGS := -std=c++20 -O3 -DNDEBUG
 # Platform-specific flags and libraries
 ifeq ($(OS),Windows_NT)
     # Windows-specific flags and settings
-    LFLAGS := 
-    CXXFLAGS := $(CXXFLAGS) -DWIN32
-    RFLAGS := $(RFLAGS) -static
-    EXEDIR := $(EXEDIR)
+    LFLAGS   := -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
+		CXXFLAGS := -std=c++20 $(WFLAGS) -O3 -DNDEBUG -flto -march=native
+		RFLAGS   := -std=c++20 -O3 -DNDEBUG -static 
 else
     # Unix-like (Linux, macOS)
     ifeq ($(shell uname),Darwin)

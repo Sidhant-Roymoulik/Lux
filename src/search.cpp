@@ -45,6 +45,7 @@ void iterative_deepening(SearchThread& st) {
                 auto time_elapsed = now() - start_time;
 
                 std::cout << "info";
+
                 std::cout << " depth " << current_depth;
 
                 std::cout << " score ";
