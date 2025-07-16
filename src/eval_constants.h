@@ -2,11 +2,11 @@
 
 #include "types.h"
 
-int phase_values[6] = {0, 1, 1, 2, 4, 0};
+const int phase_values[6] = {0, 1, 1, 2, 4, 0};
 
 const int material[6] = {S(60, 138), S(274, 414), S(299, 436), S(371, 769), S(945, 1342), S(0, 0)};
 
-int pst[6][64] = {
+inline int pst[6][64] = {
     // Pawn PST
     {S(0, 0),     S(0, 0),     S(0, 0),     S(0, 0),     S(0, 0),    S(0, 0),     S(0, 0),     S(0, 0),
      S(27, 94),   S(34, 70),   S(14, 77),   S(57, 14),   S(39, 18),  S(21, 36),   S(-42, 81),  S(-47, 100),
@@ -75,7 +75,7 @@ const int pawn_isolated   = S(-6, -5);
 const int pawn_support    = S(15, 13);
 
 // Piece Eval
-int mobility[4][28] = {
+const int mobility[4][28] = {
     // Knight (0-8)
     {S(-34, -61), S(-18, -24), S(-8, -3), S(-3, 7), S(1, 15), S(6, 23), S(13, 21), S(19, 17), S(24, 6)},
     // Bishop (0-13)

@@ -1,7 +1,5 @@
 #include "eval.h"
 
-#include "eval_constants.h"
-
 using namespace chess;
 
 #define TraceIncr(parameter)

@@ -1,7 +1,6 @@
 #include "search.h"
 
 #include "eval.h"
-#include "history.h"
 #include "move_score.h"
 #include "pv.h"
 
@@ -10,7 +9,7 @@ int LMR_TABLE[MAX_PLY][constants::MAX_MOVES];
 
 void init_search_tables() {
     for (int depth = 1; depth < MAX_PLY; depth++) {
-        for (int move = 1; move < 256; move++) {
+        for (int move = 1; move < chess::constants::MAX_MOVES; move++) {
             LMR_TABLE[depth][move] = 2 + log(depth) * log(move) / 2.5;
         }
     }

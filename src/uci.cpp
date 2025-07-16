@@ -2,10 +2,7 @@
 
 #include "bench.h"
 #include "eval.h"
-#include "search.h"
 #include "thread.h"
-#include "tt.h"
-#include "types.h"
 
 using namespace chess;
 
@@ -22,7 +19,7 @@ static void uci_send_id() {
     std::cout << "id name Lux " << VERSION << std::endl;
     std::cout << "id author " << AUTHOR << std::endl;
 
-    std::cout << "option name Hash type spin default 64 min 4 max " << MAXHASH << std::endl;
+    std::cout << "option name Hash type spin default 64 min 4 max " << MAX_HASH << std::endl;
     std::cout << "option name Threads type spin default 1 min 1 max 1" << std::endl;
 
     std::cout << "uciok" << std::endl;
@@ -233,7 +230,7 @@ void uci_loop() {
                         // ignore invalid value
                     }
                     if (CurrentHashSize != LastHashSize) {
-                        CurrentHashSize = std::min(CurrentHashSize, MAXHASH);
+                        CurrentHashSize = std::min(CurrentHashSize, MAX_HASH);
                         LastHashSize    = CurrentHashSize;
                         table->Initialize(CurrentHashSize);
                     }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "types.h"
+#include "eval_constants.h"
 
 struct EvalInfo {
     int gamephase = 0;
