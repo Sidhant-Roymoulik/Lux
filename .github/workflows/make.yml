@@ -1,4 +1,4 @@
-name: Lux
+name: Compile Check
 
 on:
     push:
@@ -8,7 +8,7 @@ on:
 
 defaults:
   run:
-    working-directory: src
+    working-directory: .
 
 jobs:
   Lux:

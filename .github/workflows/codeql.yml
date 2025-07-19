@@ -44,7 +44,7 @@ jobs:
         # queries: security-extended,security-and-quality
 
     - name: Build
-      working-directory: src
+      working-directory: .
       run: make default
 
     - name: Perform CodeQL Analysis

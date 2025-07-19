@@ -1,4 +1,4 @@
-name: Lux
+name: Format Check
 
 on:
     push:
