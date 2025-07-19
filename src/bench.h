@@ -58,25 +58,25 @@ inline void StartBenchmark(SearchThread& st) {
     st.depth    = 13;
     st.time_set = false;
 
+    int num_fens          = 0;
     uint64_t nodes        = 0;
-    uint64_t count        = 0;
     uint64_t time_elapsed = 0;
 
     // Inspired from Koivisto
 
     for (auto& fen : bench_fens) {
-        st.applyFen(fen);
+        st.set_fen(fen);
 
         auto start = now();
         iterative_deepening<false>(st);
         auto end = now();
 
-        count++;
+        num_fens++;
         nodes += st.nodes;
         time_elapsed += (end - start);
 
-        printf("Position [%2d] -> cp %4d move %7s %9llu nodes %d nps", int(count), int(st.score),
-               uci::moveToSan(st.board, st.bestmove).c_str(), nodes,
+        printf("Position [%2d] -> cp %4d move %7s %9llu nodes %d nps", int(num_fens), int(st.score),
+               uci::moveToSan(st.board, st.bestmove).c_str(), static_cast<unsigned long long>(nodes),
                static_cast<int>(1000.0f * nodes / (time_elapsed + 1)));
         std::cout << std::endl;
     }
@@ -93,7 +93,7 @@ inline void StartEvalBenchmark(SearchThread& st) {
     int num_fens      = bench_fens.size();
 
     for (const auto& fen : bench_fens) {
-        st.applyFen(fen);
+        st.set_fen(fen);
 
         for (int i = 0; i < samples; i++) {
             auto start = std::chrono::high_resolution_clock::now();

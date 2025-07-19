@@ -7,6 +7,12 @@ using namespace chess;
 #define VERSION "4.3"
 #define AUTHOR "Sidhant Roymoulik"
 
+#define DEFAULT_HASH_SIZE 64
+#define MIN_HASH_SIZE 4
+#define MAX_HASH_SIZE 8192
+
+#define MAX_THREADS 64
+
 enum score {
     MAX_PLY = 100,
 

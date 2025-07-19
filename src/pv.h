@@ -19,9 +19,9 @@ inline void get_pv_hash(SearchThread& st, std::vector<U64>& positions) {
         std::cout << " " << uci::moveToUci(pv_move);
         positions.push_back(st.board.hash());
 
-        st.makeMove(pv_move);
+        st.make_move(pv_move);
         get_pv_hash(st, positions);
-        st.unmakeMove(pv_move);
+        st.unmake_move(pv_move);
     }
 
     return;
@@ -33,9 +33,9 @@ inline void get_pv(SearchThread& st, std::vector<U64>& positions, Move best_move
     std::cout << " " << uci::moveToUci(best_move);
     positions.push_back(st.board.hash());
 
-    st.makeMove(best_move);
+    st.make_move(best_move);
     get_pv_hash(st, positions);
-    st.unmakeMove(best_move);
+    st.unmake_move(best_move);
 
     return;
 }

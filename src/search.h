@@ -56,14 +56,14 @@ struct SearchThread {
 
     Time start_time() { return tm.start_time; }
 
-    void makeMove(Move& move) { board.makeMove(move); }
-    void makeMove(std::string move_uci) { board.makeMove(uci::uciToMove(board, move_uci)); }
-    void unmakeMove(Move& move) { board.unmakeMove(move); }
+    void make_move(Move& move) { board.makeMove(move); }
+    void make_move(std::string move_uci) { board.makeMove(uci::uciToMove(board, move_uci)); }
+    void unmake_move(Move& move) { board.unmakeMove(move); }
 
-    void makeNullMove() { board.makeNullMove(); }
-    void unmakeNullMove() { board.unmakeNullMove(); }
+    void make_null_move() { board.makeNullMove(); }
+    void unmake_null_move() { board.unmakeNullMove(); }
 
-    void applyFen(std::string fen) { board.setFen(fen); }
+    void set_fen(std::string fen) { board.setFen(fen); }
 
     bool stop_early() { return stopped || (time_set && tm.check_time()); }
     void check_time() {

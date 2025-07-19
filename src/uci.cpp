@@ -6,9 +6,8 @@
 
 using namespace chess;
 
-int DefaultHashSize = 64;
-int CurrentHashSize = DefaultHashSize;
-int LastHashSize    = CurrentHashSize;
+int current_hash_size = DEFAULT_HASH_SIZE;
+int prev_hash_size    = current_hash_size;
 
 bool IsUci  = false;
 bool TUNING = false;
@@ -16,25 +15,25 @@ bool TUNING = false;
 TranspositionTable *table;
 
 static void uci_send_id() {
-    std::cout << "id name Lux " << VERSION << std::endl;
-    std::cout << "id author " << AUTHOR << std::endl;
+    printf("id name Lux %s\n", VERSION);
+    printf("id author %s\n", AUTHOR);
 
-    std::cout << "option name Hash type spin default 64 min 4 max " << MAX_HASH << std::endl;
-    std::cout << "option name Threads type spin default 1 min 1 max 1" << std::endl;
+    printf("option name Hash type spin default %d min %d max %d\n", DEFAULT_HASH_SIZE, MIN_HASH_SIZE, MAX_HASH_SIZE);
+    printf("option name Threads type spin default 1 min 1 max %d\n", MAX_THREADS);
 
     std::cout << "uciok" << std::endl;
 }
 
 void uci_loop() {
-    std::cout << "Lux " << VERSION << " Copyright (C) 2025 " << AUTHOR << std::endl;
+    printf("Lux %s Copyright (C) 2025 %s\n", VERSION, AUTHOR);
 
-    ThreadHandler threadHandle;
+    ThreadHandler thread_handler;
 
-    auto searchThread = std::make_unique<SearchThread>();
-    auto ttable       = std::make_unique<TranspositionTable>();
+    auto st     = std::make_unique<SearchThread>();
+    auto ttable = std::make_unique<TranspositionTable>();
 
     table = ttable.get();
-    table->Initialize(DefaultHashSize);
+    table->Initialize(current_hash_size);
 
     std::string command;
     std::string token;
@@ -46,12 +45,12 @@ void uci_loop() {
         is >> std::skipws >> token;
 
         if (token == "stop") {
-            searchThread->stopped = true;
-            threadHandle.stop();
+            st->stopped = true;
+            thread_handler.stop();
 
         } else if (token == "quit") {
-            searchThread->stopped = true;
-            threadHandle.stop();
+            st->stopped = true;
+            thread_handler.stop();
             break;
 
         } else if (token == "isready") {
@@ -59,7 +58,7 @@ void uci_loop() {
             continue;
 
         } else if (token == "ucinewgame") {
-            table->Initialize(CurrentHashSize);
+            table->Initialize(current_hash_size);
             continue;
 
         } else if (token == "uci") {
@@ -73,7 +72,7 @@ void uci_loop() {
             std::string option;
             is >> std::skipws >> option;
             if (option == "startpos") {
-                searchThread->applyFen(constants::STARTPOS);
+                st->set_fen(constants::STARTPOS);
             } else if (option == "fen") {
                 std::string final_fen;
                 is >> std::skipws >> option;
@@ -104,14 +103,14 @@ void uci_loop() {
                 final_fen += option;
 
                 // Finally, apply the fen.
-                searchThread->applyFen(final_fen);
+                st->set_fen(final_fen);
             }
             is >> std::skipws >> option;
             if (option == "moves") {
                 std::string moveString;
 
                 while (is >> moveString) {
-                    searchThread->makeMove(moveString);
+                    st->make_move(moveString);
                 }
             }
             continue;
@@ -133,7 +132,7 @@ void uci_loop() {
                 }
                 if (token == "movestogo") {
                     is >> std::skipws >> token;
-                    searchThread->tm.movestogo = stoi(token);
+                    st->tm.movestogo = stoi(token);
                     is >> std::skipws >> token;
                     continue;
                 }
@@ -149,13 +148,13 @@ void uci_loop() {
                 // Time
                 if (token == "wtime") {
                     is >> std::skipws >> token;
-                    searchThread->tm.wtime = std::stod(token);
+                    st->tm.wtime = std::stod(token);
                     is >> std::skipws >> token;
                     continue;
                 }
                 if (token == "btime") {
                     is >> std::skipws >> token;
-                    searchThread->tm.btime = std::stod(token);
+                    st->tm.btime = std::stod(token);
                     is >> std::skipws >> token;
                     continue;
                 }
@@ -163,20 +162,20 @@ void uci_loop() {
                 // Increment
                 if (token == "winc") {
                     is >> std::skipws >> token;
-                    searchThread->tm.winc = std::stod(token);
+                    st->tm.winc = std::stod(token);
                     is >> std::skipws >> token;
                     continue;
                 }
                 if (token == "binc") {
                     is >> std::skipws >> token;
-                    searchThread->tm.binc = std::stod(token);
+                    st->tm.binc = std::stod(token);
                     is >> std::skipws >> token;
                     continue;
                 }
 
                 if (token == "movetime") {
                     is >> std::skipws >> token;
-                    searchThread->tm.movetime = stod(token);
+                    st->tm.movetime = stod(token);
                     is >> std::skipws >> token;
                     continue;
                 }
@@ -189,23 +188,23 @@ void uci_loop() {
             }
 
             if (nodes != -1) {
-                searchThread->node_limit = nodes;
-                searchThread->nodes_set  = true;
+                st->node_limit = nodes;
+                st->nodes_set  = true;
             }
 
-            searchThread->depth = depth;
-            if (searchThread->tm.wtime != -1 || searchThread->tm.btime != -1 || searchThread->tm.movetime != -1) {
-                searchThread->time_set = true;
+            st->depth = depth;
+            if (st->tm.wtime != -1 || st->tm.btime != -1 || st->tm.movetime != -1) {
+                st->time_set = true;
             }
 
             if (depth == -1) {
-                searchThread->depth = MAX_PLY;
+                st->depth = MAX_PLY;
             }
 
-            searchThread->stopped   = false;
-            searchThread->print_uci = IsUci;
+            st->stopped   = false;
+            st->print_uci = IsUci;
 
-            threadHandle.start(*searchThread);
+            thread_handler.start(*st);
         }
 
         else if (token == "setoption") {
@@ -224,14 +223,14 @@ void uci_loop() {
 
                 if (name == "Hash" && !value.empty()) {
                     try {
-                        CurrentHashSize = std::stoi(value);
+                        current_hash_size = std::stoi(value);
                     } catch (...) {
                         // ignore invalid value
                     }
-                    if (CurrentHashSize != LastHashSize) {
-                        CurrentHashSize = std::min(CurrentHashSize, MAX_HASH);
-                        LastHashSize    = CurrentHashSize;
-                        table->Initialize(CurrentHashSize);
+                    if (current_hash_size != prev_hash_size) {
+                        current_hash_size = std::min(current_hash_size, MAX_HASH);
+                        prev_hash_size    = current_hash_size;
+                        table->Initialize(current_hash_size);
                     }
                 }
             }
@@ -239,15 +238,15 @@ void uci_loop() {
 
         /* Debugging Commands */
         else if (token == "print") {
-            std::cout << searchThread->board << std::endl;
+            std::cout << st->board << std::endl;
         } else if (token == "eval") {
-            std::cout << "Eval: " << evaluate(searchThread->board) << std::endl;
+            std::cout << "Eval: " << evaluate(st->board) << std::endl;
         } else if (token == "repetition") {
-            std::cout << searchThread->board.isRepetition(1) << std::endl;
+            std::cout << st->board.isRepetition(1) << std::endl;
         } else if (token == "bench") {
-            StartBenchmark(*searchThread);
+            StartBenchmark(*st);
         } else if (token == "bencheval") {
-            StartEvalBenchmark(*searchThread);
+            StartEvalBenchmark(*st);
         }
     }
     table->clear();

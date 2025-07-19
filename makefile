@@ -1,10 +1,10 @@
 # Makefile
 
 EXE := Lux
-SRC := *.cpp
+SRC := src/*.cpp
 CXX := g++
 
-EXEDIR := executables
+EXEDIR := src/executables
 
 # Default flags
 LFLAGS := 

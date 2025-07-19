@@ -173,12 +173,12 @@ int negamax(SearchThread& st, SearchStack* ss, int alpha, int beta, int depth, b
         ss->move      = Move::NULL_MOVE;
         (ss + 1)->ply = ss->ply + 1;
 
-        st.makeNullMove();
+        st.make_null_move();
         table->prefetch_tt(st.board.hash());
 
         int score = -negamax(st, ss + 1, -beta, 1 - beta, depth - R, !cutnode);
 
-        st.unmakeNullMove();
+        st.unmake_null_move();
 
         if (score >= beta)
             // Don't return a mate score, could be a false mate
@@ -219,7 +219,7 @@ ab_move_loop:
         ss->move_cnt++;
         (ss + 1)->ply = ss->ply + 1;
 
-        st.makeMove(move);
+        st.make_move(move);
         table->prefetch_tt(st.board.hash());
 
         // Late Move Reductions
@@ -243,7 +243,7 @@ ab_move_loop:
             score = -negamax(st, ss + 1, -beta, -alpha, depth - 1, false);
         }
 
-        st.unmakeMove(move);
+        st.unmake_move(move);
 
         if (score > best_score) {
             best_score = score;
@@ -335,12 +335,12 @@ int q_search(SearchThread& st, SearchStack* ss, int alpha, int beta) {
 
         (ss + 1)->ply = ss->ply + 1;
 
-        st.makeMove(move);
+        st.make_move(move);
         table->prefetch_tt(st.board.hash());
 
         score = -q_search(st, ss + 1, -beta, -alpha);
 
-        st.unmakeMove(move);
+        st.unmake_move(move);
 
         if (score > best_score) {
             best_score = score;
