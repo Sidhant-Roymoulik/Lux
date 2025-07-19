@@ -55,10 +55,8 @@ const std::vector<std::string> bench_fens = {
 };
 
 inline void StartBenchmark(SearchThread& st) {
-    SearchInfo& info = st.info;
-
-    info.depth    = 13;
-    info.time_set = false;
+    st.depth    = 13;
+    st.time_set = false;
 
     uint64_t nodes        = 0;
     uint64_t count        = 0;
@@ -77,7 +75,7 @@ inline void StartBenchmark(SearchThread& st) {
         nodes += st.nodes;
         time_elapsed += (end - start);
 
-        printf("Position [%2d] -> cp %4d move %7s %9llu nodes %d nps", int(count), int(info.score),
+        printf("Position [%2d] -> cp %4d move %7s %9llu nodes %d nps", int(count), int(st.score),
                uci::moveToSan(st.board, st.bestmove).c_str(), nodes,
                static_cast<int>(1000.0f * nodes / (time_elapsed + 1)));
         std::cout << std::endl;

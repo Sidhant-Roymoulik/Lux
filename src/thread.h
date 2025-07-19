@@ -6,7 +6,7 @@ class Thread {
    public:
     std::unique_ptr<SearchThread> searchThread;
 
-    Thread(SearchInfo& info) : searchThread{std::make_unique<SearchThread>(info)} {}
+    Thread() : searchThread{std::make_unique<SearchThread>()} {}
     Thread(const Thread& other) : searchThread(std::make_unique<SearchThread>(*other.searchThread)) {}
     Thread(const SearchThread& other) : searchThread{std::make_unique<SearchThread>(other)} {}
 };

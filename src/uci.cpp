@@ -28,10 +28,9 @@ static void uci_send_id() {
 void uci_loop() {
     std::cout << "Lux " << VERSION << " Copyright (C) 2025 " << AUTHOR << std::endl;
 
-    SearchInfo info;
     ThreadHandler threadHandle;
 
-    auto searchThread = std::make_unique<SearchThread>(info);
+    auto searchThread = std::make_unique<SearchThread>();
     auto ttable       = std::make_unique<TranspositionTable>();
 
     table = ttable.get();
@@ -47,11 +46,11 @@ void uci_loop() {
         is >> std::skipws >> token;
 
         if (token == "stop") {
-            info.stopped = true;
+            searchThread->stopped = true;
             threadHandle.stop();
 
         } else if (token == "quit") {
-            info.stopped = true;
+            searchThread->stopped = true;
             threadHandle.stop();
             break;
 
@@ -190,21 +189,21 @@ void uci_loop() {
             }
 
             if (nodes != -1) {
-                info.node_limit = nodes;
-                info.nodes_set  = true;
+                searchThread->node_limit = nodes;
+                searchThread->nodes_set  = true;
             }
 
-            info.depth = depth;
+            searchThread->depth = depth;
             if (searchThread->tm.wtime != -1 || searchThread->tm.btime != -1 || searchThread->tm.movetime != -1) {
-                info.time_set = true;
+                searchThread->time_set = true;
             }
 
             if (depth == -1) {
-                info.depth = MAX_PLY;
+                searchThread->depth = MAX_PLY;
             }
 
-            info.stopped   = false;
-            info.print_uci = IsUci;
+            searchThread->stopped   = false;
+            searchThread->print_uci = IsUci;
 
             threadHandle.start(*searchThread);
         }

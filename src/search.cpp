@@ -21,8 +21,6 @@ template void iterative_deepening<true>(SearchThread& st);
 
 template <bool print_info>
 void iterative_deepening(SearchThread& st) {
-    SearchInfo& info = st.info;
-
     st.clear();
     st.initialize();
 
@@ -31,16 +29,16 @@ void iterative_deepening(SearchThread& st) {
     auto start_time = st.start_time();
     Move bestmove   = Move::NO_MOVE;
 
-    for (int current_depth = 1; current_depth < info.depth; current_depth++) {
+    for (int current_depth = 1; current_depth < st.depth; current_depth++) {
         score = aspiration_window(score, current_depth, st);
 
-        if (st.info.stopped || st.stop_early()) break;
+        if (st.stopped || st.stop_early()) break;
 
-        bestmove   = st.bestmove;
-        info.score = score;
+        bestmove = st.bestmove;
+        st.score = score;
 
         if constexpr (print_info) {
-            if (info.print_uci) {
+            if (st.print_uci) {
                 auto time_elapsed = now() - start_time;
 
                 std::cout << "info";
@@ -68,7 +66,7 @@ void iterative_deepening(SearchThread& st) {
             } else {
                 auto time_elapsed = now() - start_time;
 
-                printf("[%2d/%2d] > eval: %-4.2f nodes: %6.2fM speed: %-5.2f MNPS", current_depth, info.depth,
+                printf("[%2d/%2d] > eval: %-4.2f nodes: %6.2fM speed: %-5.2f MNPS", current_depth, st.depth,
                        static_cast<float>(score / 100.0f), static_cast<float>(st.nodes / 1000000.0f),
                        static_cast<float>(1000.0f * st.nodes / (time_elapsed + 1)) / 1000000.0f);
 
@@ -119,7 +117,7 @@ int negamax(SearchThread& st, SearchStack* ss, int alpha, int beta, int depth, b
     // Check for time up every 2048 nodes
     if ((st.nodes & 2047) == 0) st.check_time();
     // Exit search if time over
-    if (st.info.stopped) return 0;
+    if (st.stopped) return 0;
 
     bool root    = (ss->ply == 0);
     bool pv_node = beta - alpha > 1;
@@ -280,7 +278,7 @@ ab_move_loop:
 
     if (moves.size() == 0) best_score = in_check ? -MATE + ss->ply : 0;
 
-    if (!st.info.stopped) {
+    if (!st.stopped) {
         table->store(st.board.hash(), flag, best_move, depth, score_to_tt(best_score, ss->ply), ss->static_eval);
     }
 
@@ -294,7 +292,7 @@ int q_search(SearchThread& st, SearchStack* ss, int alpha, int beta) {
     // Check for time up every 2048 nodes
     if ((st.nodes & 2047) == 0) st.check_time();
     // Exit search if time over
-    if (st.info.stopped) return 0;
+    if (st.stopped) return 0;
 
     // Check for draw by repetition && draw by 50-move rule
     if (st.board.isRepetition(1) || st.board.isHalfMoveDraw()) return 0;
@@ -358,7 +356,7 @@ int q_search(SearchThread& st, SearchStack* ss, int alpha, int beta) {
         }
     }
 
-    if (!st.info.stopped) {
+    if (!st.stopped) {
         table->store(st.board.hash(), flag, best_move, 0, score_to_tt(best_score, ss->ply), ss->static_eval);
     }
 

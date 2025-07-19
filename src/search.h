@@ -8,17 +8,6 @@ using namespace chess;
 // Global Transposition Table
 extern TranspositionTable* table;
 
-struct SearchInfo {
-    int score           = 0;
-    int16_t depth       = 0;
-    uint64_t node_limit = 0;
-
-    bool stopped   = false;
-    bool print_uci = false;
-    bool time_set  = false;
-    bool nodes_set = false;
-};
-
 struct SearchStack {
     int16_t ply{};
     Move killers[2]{};
@@ -29,17 +18,25 @@ struct SearchStack {
 
 struct SearchThread {
     Board board;
-    SearchInfo& info;
     Time_Manager tm;
-
-    SearchThread(SearchInfo& i) : info(i) {
-        board = Board(constants::STARTPOS);
-        clear();
-    }
+    int history[13][64];
 
     uint64_t nodes = 0;
     Move bestmove  = Move::NO_MOVE;
-    int history[13][64];
+
+    int score           = 0;
+    int16_t depth       = 0;
+    uint64_t node_limit = 0;
+
+    bool stopped   = false;
+    bool print_uci = false;
+    bool time_set  = false;
+    bool nodes_set = false;
+
+    SearchThread() {
+        board = Board(constants::STARTPOS);
+        clear();
+    }
 
     void clear() {
         nodes    = 0;
@@ -52,7 +49,7 @@ struct SearchThread {
     }
     void initialize() {
         tm.start_time = now();
-        if (info.time_set) {
+        if (time_set) {
             tm.set_time(board.sideToMove());
         }
     }
@@ -68,9 +65,9 @@ struct SearchThread {
 
     void applyFen(std::string fen) { board.setFen(fen); }
 
-    bool stop_early() { return info.stopped || (info.time_set && tm.check_time()); }
+    bool stop_early() { return stopped || (time_set && tm.check_time()); }
     void check_time() {
-        if ((info.time_set && tm.check_time()) || (info.nodes_set && nodes >= info.node_limit)) info.stopped = true;
+        if ((time_set && tm.check_time()) || (nodes_set && nodes >= node_limit)) stopped = true;
     }
 };
 
