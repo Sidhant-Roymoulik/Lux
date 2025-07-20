@@ -228,7 +228,7 @@ void uci_loop() {
                         // ignore invalid value
                     }
                     if (current_hash_size != prev_hash_size) {
-                        current_hash_size = std::min(current_hash_size, MAX_HASH);
+                        current_hash_size = std::min(current_hash_size, MAX_HASH_SIZE);
                         prev_hash_size    = current_hash_size;
                         table->Initialize(current_hash_size);
                     }

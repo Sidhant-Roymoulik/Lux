@@ -2,9 +2,6 @@
 
 #include "types.h"
 
-// 8192 MBS
-#define MAX_HASH 8192
-
 enum : uint8_t { FLAG_NONE, FLAG_BETA, FLAG_ALPHA, FLAG_EXACT };
 
 struct TTEntry {
