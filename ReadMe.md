@@ -39,32 +39,25 @@
 
 ## Features
 
-### Basic Requirements
+### Core
  - UCI Protocol
  - Time Management
- - Negamax
- - Iterative Deepening
 
-### Search Upgrades
+### Search
+ - Iterative Deepening
  - Aspiration Window
  - AlphaBeta Negamax
    - Principal Variation Search
    - Improving Heuristic
  - Quiescence Search
  - Transposition Table
-
-#### Pruning
  - Reverse Futility Pruning
  - Null Move Pruning
  - History Pruning
-
-#### Extensions
  - Check Extensions
-
-#### Reductions
  - Late Move Reductions
 
-### Eval Upgrades
+### Eval
  - Material Score
  - Piece-Square Tables
  - Pawn Eval
@@ -84,35 +77,29 @@
    - Attacking Pawn
    - Pawn In Front
 
-### Move Ordering Upgrades
+### Move Ordering
  - TT-Move
  - Promotions
  - MVV-LVA
  - History Heuristic [Piece][To]
  - Killer Moves
 
----
+## References
 
-### Useful Tools
+### Tools
+ - [Cutechess](https://github.com/cutechess/cutechess) — SPRT and engine match testing
+ - [Texel Tuner](https://github.com/GediminasMasaitis/texel-tuner) — Tune handcrafted eval
+   - [Dataset of quiet positions](https://github.com/KierenP/ChessTrainingSets)
 
-[Cutechess](https://github.com/cutechess/cutechess) - Use the Cutechess CLI to run SPRT on your engine
-
-[Texel Tuner](https://github.com/GediminasMasaitis/texel-tuner) - Tune your handcrafted eval function
-- [Dataset of quiet positions](https://github.com/KierenP/ChessTrainingSets)
-
-### Libraries 
-
-[chess-library](https://github.com/Disservin/chess-library) — Chess package for C++ by Disservin
+### Libraries
+ - [chess-library](https://github.com/Disservin/chess-library) — Chess package for C++ by Disservin
 
 ### Resources
+ - [Chessprogramming wiki](https://www.chessprogramming.org/Main_Page) — Reference for engine techniques (can be outdated)
 
-[Chessprogramming wiki](https://www.chessprogramming.org/Main_Page) has a lot of information but can be outdated and lacks pseudocode.
-
-### Other Engine Inspirations
-
-[Altair](https://github.com/Alex2262/AltairChessEngine)  [Bit-Genie](https://github.com/Aryan1508/Bit-Genie)  [Blunder](https://github.com/algerbrex/blunder)  [Rice](https://github.com/rafid-dev/rice)  [Weiss](https://github.com/TerjeKir/weiss)
-
-And of course, [Stockfish](https://github.com/official-stockfish/Stockfish)
+### Inspirations
+ - [Altair](https://github.com/Alex2262/AltairChessEngine) | [Bit-Genie](https://github.com/Aryan1508/Bit-Genie) | [Blunder](https://github.com/algerbrex/blunder) | [Rice](https://github.com/rafid-dev/rice) | [Weiss](https://github.com/TerjeKir/weiss)
+ - [Stockfish](https://github.com/official-stockfish/Stockfish)
 
 
 [downloads-badge]:https://img.shields.io/github/downloads/Sidhant-Roymoulik/Lux/total?color=success&style=for-the-badge

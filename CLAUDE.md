@@ -65,3 +65,7 @@ All source lives in `src/`. Entry point is `main.cpp`, which calls `init_search_
 ## Code Style
 
 Formatting uses clang-format 17 based on Google style with 4-space indent and 120-column limit (see `.clang-format`). The CI format check is advisory (`continue-on-error: true`).
+
+## Planned Work
+
+See `TODO.md` at the repo root for the ranked list of in-progress and upcoming work.
