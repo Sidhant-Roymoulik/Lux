@@ -77,9 +77,9 @@ class TranspositionTable {
 
 inline int score_to_tt(int score, int ply) {
     if (score >= MATE_IN_MAX) {
-        return score - ply;
-    } else if (score <= MATED_IN_MAX) {
         return score + ply;
+    } else if (score <= MATED_IN_MAX) {
+        return score - ply;
     }
 
     return score;

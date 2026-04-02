@@ -29,7 +29,7 @@ void iterative_deepening(SearchThread& st) {
     auto start_time = st.start_time();
     Move bestmove   = Move::NO_MOVE;
 
-    for (int current_depth = 1; current_depth < st.depth; current_depth++) {
+    for (int current_depth = 1; current_depth <= st.depth; current_depth++) {
         score = aspiration_window(score, current_depth, st);
 
         if (st.stopped || st.stop_early()) break;
@@ -47,9 +47,9 @@ void iterative_deepening(SearchThread& st) {
 
                 std::cout << " score ";
                 if (score >= -MATE && score <= MATED_IN_MAX) {
-                    std::cout << "mate " << ((-MATE - score) / 2);
+                    std::cout << "mate " << ((-MATE - score - 1) / 2);
                 } else if (score <= MATE && score >= MATE_IN_MAX) {
-                    std::cout << "mate " << ((MATE - score) / 2);
+                    std::cout << "mate " << ((MATE - score + 1) / 2);
                 } else {
                     std::cout << "cp " << score;
                 }
@@ -207,8 +207,6 @@ ab_move_loop:
             // History Pruning
             if (move.score() < -4000 * depth) break;
 
-            // Late Move Pruning
-            // if (ss->move_cnt > depth * depth / (2 - improving)) break;
         } else if (i == 0) {
             st.bestmove = moves[0];
         }
@@ -271,9 +269,6 @@ ab_move_loop:
             }
         }
 
-        // if (root) {
-        //     std::cout << ss->move_cnt << ' ' << move << ' ' << move.score() << ' ' << score << std::endl;
-        // }
     }
 
     if (moves.size() == 0) best_score = in_check ? -MATE + ss->ply : 0;

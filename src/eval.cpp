@@ -56,9 +56,7 @@ int eval_pawn(EvalInfo &info, const Board &board) {
     Bitboard bb = board.pieces(PieceType::PAWN, c);
 
     // Init useful bitboards
-    Bitboard phalanx_pawns    = bb & attacks::shift<Direction::WEST>(bb);
-    Bitboard pawn_attacks     = get_pawn_attacks<c>(bb);
-    info.pawn_attacks[(int)c] = pawn_attacks;
+    Bitboard phalanx_pawns = bb & attacks::shift<Direction::WEST>(bb);
 
     // Penalty for doubled pawns
     count = builtin::popcount(bb & attacks::shift<Direction::NORTH>(bb));

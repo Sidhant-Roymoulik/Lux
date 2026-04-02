@@ -50,4 +50,4 @@ else
 	$(CXX) $(RFLAGS) $(SRC) -mssse3 -mno-popcnt $(LFLAGS) -o $(EXEDIR)/$(EXE)-ssse3
 endif
 
-$(shell mkdir $(EXEDIR))
+$(shell mkdir -p $(EXEDIR))
