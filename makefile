@@ -17,12 +17,13 @@ ifeq ($(OS),Windows_NT)
     # Windows-specific flags and settings
     LFLAGS   := -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
 		CXXFLAGS := -std=c++20 $(WFLAGS) -O3 -DNDEBUG -flto -march=native
-		RFLAGS   := -std=c++20 -O3 -DNDEBUG -static 
+		RFLAGS   := -std=c++20 -O3 -DNDEBUG -static
+    IS_ARM   := 0
 else
     # Unix-like (Linux, macOS)
     ifeq ($(shell uname),Darwin)
         # macOS specific settings
-        LFLAGS := 
+        LFLAGS :=
         CXXFLAGS := $(CXXFLAGS) -stdlib=libc++
         RFLAGS := $(RFLAGS) -stdlib=libc++
     else
@@ -30,14 +31,23 @@ else
         LFLAGS := -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
         CXXFLAGS := $(CXXFLAGS) -march=native
     endif
+    ifeq ($(shell uname -m),arm64)
+        IS_ARM := 1
+    else
+        IS_ARM := 0
+    endif
 endif
 
 default:
 	$(CXX) $(CXXFLAGS) $(SRC) $(LFLAGS) -o $(EXEDIR)/$(EXE)
 
 release:
+ifeq ($(IS_ARM),1)
+	$(CXX) $(RFLAGS) $(SRC) -march=native $(LFLAGS) -o $(EXEDIR)/$(EXE)-native
+else
 	$(CXX) $(RFLAGS) $(SRC) -mbmi2 -mavx2 -mpopcnt $(LFLAGS) -o $(EXEDIR)/$(EXE)-bmi2
-	$(CXX) $(RFLAGS) $(SRC) -msse4.2 -msse4.1 -mssse3 -mpopcnt $(LFLAGS) -o $(EXEDIR)/$(EXE)-modern 
+	$(CXX) $(RFLAGS) $(SRC) -msse4.2 -msse4.1 -mssse3 -mpopcnt $(LFLAGS) -o $(EXEDIR)/$(EXE)-modern
 	$(CXX) $(RFLAGS) $(SRC) -mssse3 -mno-popcnt $(LFLAGS) -o $(EXEDIR)/$(EXE)-ssse3
+endif
 
 $(shell mkdir $(EXEDIR))
