@@ -33,14 +33,11 @@
 | 3.3     | 2375      | -                                                     | -                                                                 | 2563
 | 3.4     | 2400      | -                                                     | 2347                                                              | -
 | 3.5     | 2450      | -                                                     | -                                                                 | -
-| 4.0     | 2550      | 2519                                                  | -                                                                 | 2670
-| 4.1     | 2600      | 2601                                                  | 2578                                                              | 2733
-| 4.2     | 2670      | 2764                                                  | 2689                                                              | -
 | 4.0     | 2550      | 2548                                                  | -                                                                 | 2674
 | 4.1     | 2600      | 2601                                                  | 2581                                                              | 2740
 | 4.2     | 2670      | 2754                                                  | 2689                                                              | 2802
 
-## Current Version Upgrades
+## Features
 
 ### Basic Requirements
  - UCI Protocol
@@ -105,7 +102,7 @@
 
 ### Libraries 
 
-Chess package for C++: https://github.com/Disservin/chess-library
+[chess-library](https://github.com/Disservin/chess-library) — Chess package for C++ by Disservin
 
 ### Resources
 
