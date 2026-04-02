@@ -49,13 +49,13 @@
  - AlphaBeta Negamax
    - Principal Variation Search
    - Improving Heuristic
+   - Check Extensions
+   - Reverse Futility Pruning
+   - Null Move Pruning
+   - History Pruning
+   - Late Move Reductions
  - Quiescence Search
  - Transposition Table
- - Reverse Futility Pruning
- - Null Move Pruning
- - History Pruning
- - Check Extensions
- - Late Move Reductions
 
 ### Eval
  - Material Score
