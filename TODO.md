@@ -3,6 +3,7 @@
 Ranked by logical dependency and impact.
 
 ## 1. Setup OpenBench
+[OpenBench](https://github.com/AndyGrant/OpenBench)
 - [ ] Register engine on an OpenBench instance
 - [ ] Add OpenBench-compatible build target / worker script
 - [ ] Establish baseline ELO before making changes
@@ -14,6 +15,7 @@ Ranked by logical dependency and impact.
 - [ ] Add to CI pipeline
 
 ## 3. Upgrade chess library version
+[chess-library](https://github.com/Disservin/chess-library)
 - [ ] Check Disservin/chess-library for updates
 - [ ] Update `chess.hpp` and resolve any API changes
 - [ ] Verify bench output unchanged
