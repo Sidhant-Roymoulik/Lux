@@ -15,9 +15,15 @@ jobs:
           - os: ubuntu-latest
             platform: linux
             ext: ""
+            variants: "bmi2 modern ssse3"
           - os: windows-latest
             platform: windows
             ext: ".exe"
+            variants: "bmi2 modern ssse3"
+          - os: macos-latest
+            platform: macos
+            ext: ""
+            variants: "native"
 
     steps:
       - uses: actions/checkout@v4
@@ -32,7 +38,7 @@ jobs:
           PLATFORM="${{ matrix.platform }}"
           EXT="${{ matrix.ext }}"
           mkdir -p release-artifacts
-          for variant in bmi2 modern ssse3; do
+          for variant in ${{ matrix.variants }}; do
             mv "src/executables/Lux-${variant}${EXT}" \
                "release-artifacts/Lux-${TAG}-${variant}-${PLATFORM}${EXT}"
           done
