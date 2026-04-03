@@ -32,8 +32,10 @@ go depth 10
 Debug commands available at runtime (not part of UCI spec):
 - `print` — print the current board
 - `eval` — print static evaluation of current position
-- `bench` — run benchmark on 50 fixed positions at depth 13
+- `bench` — run benchmark on 50 fixed positions at depth 10
 - `bencheval` — benchmark eval speed in ns/call
+
+`bench` can also be passed as a command-line argument (`./Lux bench`), which runs the benchmark and exits — this is how OpenBench invokes it.
 
 ## Code Architecture
 
@@ -66,6 +68,68 @@ All source lives in `src/`. Entry point is `main.cpp`, which calls `init_search_
 ## Code Style
 
 Formatting uses clang-format 17 based on Google style with 4-space indent and 120-column limit (see `.clang-format`). The CI format check is advisory (`continue-on-error: true`).
+
+## OpenBench
+
+Self-hosted OpenBench instance for SPRT testing. Server and all data live at `C:\Users\SidRo\Projects\OpenBench`. The database (`db.sqlite3`) persists all test results, users, and engine configs across restarts.
+
+### Starting the server
+
+```bash
+cd C:\Users\SidRo\Projects\OpenBench
+python manage.py runserver 0.0.0.0:8000
+```
+
+Web UI at http://localhost:8000. Admin panel at http://localhost:8000/admin/.
+
+### Starting a worker (this machine)
+
+```bash
+cd C:\Users\SidRo\Projects\OpenBench\Client
+python client.py -U <username> -P <password> -S http://localhost:8000 -T 1 -N 1 --no-client-downloads
+```
+
+Use `-T 1` on Windows — higher thread counts hit Python multiprocessing timeouts during bench. `--no-client-downloads` prevents the client from overwriting the local `bench.py` (which has `MAX_BENCH_TIME_SECONDS = 300`).
+
+### Workers on other machines (LAN)
+
+Find this machine's local IP (`ipconfig`), then on each worker machine:
+```bash
+python client.py -U <user> -P <pass> -S http://<local-ip>:8000 -T <threads> -N 1
+```
+For machines outside the LAN, use ngrok (`ngrok http 8000`) to get a public URL.
+
+### Creating a test
+
+1. Go to http://localhost:8000 → Create Test
+2. Select Lux as both Dev and Base engine, set branches
+3. The `Bench:` value autofills from the commit message — see convention below
+4. Use the **STC** preset (8.0+0.08, SPRT elo0=0 elo1=5)
+
+### Bench convention
+
+Every commit that changes search or eval **must** include `Bench: <nodes>` in the commit message. OpenBench uses this to verify the binary is correct before running games.
+
+Current bench count (main, depth 10, 50 positions): **6010641**
+
+To get the bench count after making changes:
+```bash
+make dev                          # rebuild
+.\src\executables\Lux.exe bench   # run via argv (not echo bench | Lux.exe)
+```
+
+**Important:** Always use `Lux.exe bench` (argv), not `echo bench | Lux.exe` (stdin). The two paths produce the same count now, but argv is what OpenBench actually calls.
+
+### Build flag notes
+
+- `-flto` is intentionally absent from all Makefile targets — it changes move ordering via inlining, producing different node counts than OpenBench worker builds
+- `make dev` = local dev build with warnings, output to `src/executables/Lux.exe`
+- `make EXE=<name>` (default target) = OpenBench build with `RFLAGS + -march=native`, output to bare `<name>`
+
+### Engine config
+
+`C:\Users\SidRo\Projects\OpenBench\Engines\Lux.json` — contains build config and STC/LTC test presets.
+`C:\Users\SidRo\Projects\OpenBench\Config\config.json` — lists all active engines; Lux is included.
 
 ## Planned Work
 
