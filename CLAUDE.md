@@ -86,10 +86,10 @@ Web UI at http://localhost:8000. Admin panel at http://localhost:8000/admin/.
 
 ```bash
 cd C:\Users\SidRo\Projects\OpenBench\Client
-python client.py -U <username> -P <password> -S http://localhost:8000 -T 1 -N 1 --no-client-downloads
+python client.py -U <username> -P <password> -S http://localhost:8000 -T <threads> -N 1 --no-client-downloads
 ```
 
-Use `-T 1` on Windows — higher thread counts hit Python multiprocessing timeouts during bench. `--no-client-downloads` prevents the client from overwriting the local `bench.py` (which has `MAX_BENCH_TIME_SECONDS = 300`).
+`--no-client-downloads` prevents the client from overwriting the local `bench.py` (which has `MAX_BENCH_TIME_SECONDS = 300`). `-T <threads>` controls concurrency — previously limited to 1 on Windows due to multiprocessing timeouts, but that is no longer an issue.
 
 ### Workers on other machines (LAN)
 
@@ -104,7 +104,12 @@ For machines outside the LAN, use ngrok (`ngrok http 8000`) to get a public URL.
 1. Go to http://localhost:8000 → Create Test
 2. Select Lux as both Dev and Base engine, set branches
 3. The `Bench:` value autofills from the commit message — see convention below
-4. Use the **STC** preset (8.0+0.08, SPRT elo0=0 elo1=5)
+4. Run **STC** first (8.0+0.08, SPRT elo0=0 elo1=5); if it passes, follow up with **LTC** (60.0+0.6, SPRT elo0=0 elo1=5)
+
+### Checking recent tests
+
+The homepage (http://localhost:8000) lists recent finished tests with LLR, game counts, and W/L/D. For more detail on a specific test, click its row to see the full results page.
+
 
 ### Bench convention
 
