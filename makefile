@@ -2,7 +2,8 @@
 
 EXE := Lux
 SRC := src/*.cpp
-CXX := g++
+CC  ?= gcc
+CXX ?= g++
 
 EXEDIR := src/executables
 
@@ -40,6 +41,9 @@ endif
 
 default:
 	$(CXX) $(CXXFLAGS) $(SRC) $(LFLAGS) -o $(EXEDIR)/$(EXE)
+
+build:
+	$(CXX) $(RFLAGS) -march=native $(SRC) $(LFLAGS) -o $(EXE)
 
 release:
 ifeq ($(IS_ARM),1)
