@@ -110,7 +110,7 @@ For machines outside the LAN, use ngrok (`ngrok http 8000`) to get a public URL.
 
 Every commit that changes search or eval **must** include `Bench: <nodes>` in the commit message. OpenBench uses this to verify the binary is correct before running games.
 
-Current bench count (main, depth 10, 50 positions): **6010641**
+Current bench count (main, depth 10, 50 positions): **5129387**
 
 To get the bench count after making changes:
 ```bash

@@ -13,6 +13,14 @@ enum MoveGenStage {
 
 constexpr int16_t mvv_lva[6] = {10, 32, 33, 50, 90, 0};
 
+inline void sort_moves(Movelist& moves, int i) {
+    int best = i;
+    for (int j = i + 1; j < moves.size(); j++) {
+        if (moves[j].score() > moves[best].score()) best = j;
+    }
+    std::swap(moves[i], moves[best]);
+}
+
 inline void score_moves(SearchThread& st, SearchStack* ss, Movelist& moves, Move tt_move) {
     for (int i = 0; i < moves.size(); i++) {
         int victim   = (int)st.board.at<PieceType>(moves[i].to());

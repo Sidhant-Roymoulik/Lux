@@ -4,10 +4,10 @@ inline bool moveExists(Board& board, Move move) {
     Movelist list;
     movegen::legalmoves(list, board);
 
-    return list.find(move) > -1;
+    return std::find(list.begin(), list.end(), move) != list.end();
 }
 
-inline void get_pv_hash(SearchThread& st, std::vector<U64>& positions) {
+inline void get_pv_hash(SearchThread& st, std::vector<uint64_t>& positions) {
     if (positions.size() >= MAX_PLY) return;
 
     auto pv_move = table->probe_move(st.board.hash());
@@ -27,7 +27,7 @@ inline void get_pv_hash(SearchThread& st, std::vector<U64>& positions) {
     return;
 }
 
-inline void get_pv(SearchThread& st, std::vector<U64>& positions, Move best_move) {
+inline void get_pv(SearchThread& st, std::vector<uint64_t>& positions, Move best_move) {
     assert(best_move != Move::NO_MOVE);
 
     std::cout << " " << uci::moveToUci(best_move);
