@@ -11,6 +11,7 @@ Ranked by logical dependency and impact.
 ## 2. Fix PV truncation at draw conditions
 - [ ] Stop PV extraction when fifty-move rule (or other draw) is hit
 - [ ] Verify PV does not include moves past a terminal node
+- [ ] Confirmed occurring in practice: engine reports score cp 61 with PV extending well past fifty-move rule trigger (warning logged by OpenBench)
 
 ## 3. Rework time manager
 - [ ] Add soft/hard time limits (currently only hard limit at `time/30`)
