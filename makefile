@@ -10,14 +10,14 @@ EXEDIR := src/executables
 # Default flags
 LFLAGS := 
 WFLAGS := -Wall -Wextra -Werror
-CXXFLAGS := -std=c++20 $(WFLAGS) -O3 -DNDEBUG -flto
+CXXFLAGS := -std=c++20 $(WFLAGS) -O3 -DNDEBUG
 RFLAGS := -std=c++20 -O3 -DNDEBUG
 
 # Platform-specific flags and libraries
 ifeq ($(OS),Windows_NT)
     # Windows-specific flags and settings
     LFLAGS   := -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
-		CXXFLAGS := -std=c++20 $(WFLAGS) -O3 -DNDEBUG -flto -march=native
+		CXXFLAGS := -std=c++20 $(WFLAGS) -O3 -DNDEBUG -march=native
 		RFLAGS   := -std=c++20 -O3 -DNDEBUG -static
     IS_ARM   := 0
 else
