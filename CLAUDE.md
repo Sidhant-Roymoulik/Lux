@@ -113,7 +113,7 @@ The homepage (http://localhost:8000) lists recent finished tests with LLR, game 
 
 ### Bench convention
 
-Every commit that changes search or eval **must** include `Bench: <nodes>` in the commit message. OpenBench uses this to verify the binary is correct before running games.
+**Every commit must include `Bench: <nodes>` in the commit message**, regardless of whether it changes search or eval. OpenBench uses this to verify the binary is correct before running games.
 
 Current bench count (main, depth 10, 50 positions): **5129387**
 
