@@ -11,8 +11,9 @@ Lux is a UCI-compatible chess engine written in C++. It implements standard ches
 The project uses a `Makefile` at the repo root. From the repo root:
 
 ```bash
-make default   # debug/development build
-make release   # optimized release build
+make dev       # development build (warnings-as-errors, output to src/executables/)
+make release   # optimized release build (multiple CPU variants)
+make EXE=Lux   # OpenBench-compatible build (also the default target)
 ```
 
 The compiled binary communicates via stdin/stdout using the UCI protocol. Connect it to a GUI like Cutechess or interact directly with UCI commands.

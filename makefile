@@ -40,10 +40,10 @@ else
 endif
 
 default:
-	$(CXX) $(CXXFLAGS) $(SRC) $(LFLAGS) -o $(EXEDIR)/$(EXE)
-
-build:
 	$(CXX) $(RFLAGS) -march=native $(SRC) $(LFLAGS) -o $(EXE)
+
+dev:
+	$(CXX) $(CXXFLAGS) $(SRC) $(LFLAGS) -o $(EXEDIR)/$(EXE)
 
 release:
 ifeq ($(IS_ARM),1)

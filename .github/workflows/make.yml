@@ -26,10 +26,10 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Default
-      run: make default
+      run: make dev
 
     - name: Release
       run: make release
 
     - name: Build (OpenBench)
-      run: make build EXE=src/executables/Lux-openbench
+      run: make EXE=Lux-openbench
