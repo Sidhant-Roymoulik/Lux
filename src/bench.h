@@ -55,7 +55,7 @@ const std::vector<std::string> bench_fens = {
 };
 
 inline void StartBenchmark(SearchThread& st) {
-    st.depth    = 13;
+    st.depth    = 12;
     st.time_set = false;
 
     int num_fens          = 0;
