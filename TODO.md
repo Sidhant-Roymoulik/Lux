@@ -3,9 +3,9 @@
 Ranked by logical dependency and impact.
 
 ## 1. Fix Claude Code build/run environment
-- [ ] Claude cannot invoke `make` or run the compiled binary reliably in this session
-- [ ] Needed for: verifying bench counts, running search tests, iterative development
-- [ ] Investigate whether the issue is shell permissions, PATH, or sandbox restrictions
+- [x] Claude cannot invoke `make` or run the compiled binary reliably in this session
+- [x] Needed for: verifying bench counts, running search tests, iterative development
+- [x] Root causes: (1) MSYS2 Make doesn't inherit `OS` env var, so temp dir defaults to `C:\WINDOWS\` — fixed via `cygpath` detection. (2) Dev builds needed `-static` to find MinGW DLLs at runtime.
 
 ## 2. Add unit tests
 - [ ] Test eval correctness (known positions, symmetry, material balance)
