@@ -9,10 +9,10 @@ Ranked by logical dependency and impact.
 - [ ] Add to CI pipeline
 
 ## 2. Fix PV truncation at draw conditions
-- [ ] Stop PV extraction when fifty-move rule (or other draw) is hit
-- [ ] Verify PV does not include moves past a terminal node
-- [ ] Confirmed occurring in practice: engine reports score cp 61 with PV extending well past fifty-move rule trigger (warning logged by OpenBench)
-- [ ] Also confirmed with threefold repetition: score cp 0 but PV cycles through repeated positions (e.g. f5e3 d1e1 e3f5 e1d1 loop)
+- [x] Stop PV extraction when fifty-move rule (or other draw) is hit
+- [x] Verify PV does not include moves past a terminal node
+- [x] Confirmed occurring in practice: engine reports score cp 61 with PV extending well past fifty-move rule trigger (warning logged by OpenBench)
+- [x] Also confirmed with threefold repetition: score cp 0 but PV cycles through repeated positions (e.g. f5e3 d1e1 e3f5 e1d1 loop)
 
 ## 3. Rework time manager
 - [ ] Add soft/hard time limits (currently only hard limit at `time/30`)

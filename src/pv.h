@@ -9,6 +9,7 @@ inline bool moveExists(Board& board, Move move) {
 
 inline void get_pv_hash(SearchThread& st, std::vector<uint64_t>& positions) {
     if (positions.size() >= MAX_PLY) return;
+    if (st.board.isRepetition(1) || st.board.isHalfMoveDraw()) return;
 
     auto pv_move = table->probe_move(st.board.hash());
 
