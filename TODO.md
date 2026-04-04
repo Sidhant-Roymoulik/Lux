@@ -2,18 +2,23 @@
 
 Ranked by logical dependency and impact.
 
-## 1. Add unit tests
+## 1. Fix Claude Code build/run environment
+- [ ] Claude cannot invoke `make` or run the compiled binary reliably in this session
+- [ ] Needed for: verifying bench counts, running search tests, iterative development
+- [ ] Investigate whether the issue is shell permissions, PATH, or sandbox restrictions
+
+## 2. Add unit tests
 - [ ] Test eval correctness (known positions, symmetry, material balance)
 - [ ] Test TT probe/store and mate score normalization
 - [ ] Test time manager edge cases (movestogo, movetime, increment)
 - [ ] Add to CI pipeline
 
-## 2. Rework time manager
+## 3. Rework time manager
 - [ ] Add soft/hard time limits (currently only hard limit at `time/30`)
 - [ ] Scale time usage based on search instability / score change between iterations
 - [ ] Re-test with OpenBench after changes
 
-## 3. Refactor / cleanup
+## 4. Refactor / cleanup
 - [ ] Audit and clean up `eval.cpp` (tapered eval, EvalInfo usage)
 - [ ] Review move ordering in `move_score.h`
 - [ ] General code hygiene pass
