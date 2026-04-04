@@ -59,8 +59,7 @@ void iterative_deepening(SearchThread& st) {
                 std::cout << " time " << static_cast<uint64_t>(time_elapsed);
                 std::cout << " pv";
 
-                std::vector<uint64_t> positions;
-                get_pv(st, positions, bestmove);
+                get_pv(st, bestmove);
 
                 std::cout << std::endl;
             } else {
@@ -70,8 +69,7 @@ void iterative_deepening(SearchThread& st) {
                        static_cast<float>(score / 100.0f), static_cast<float>(st.nodes / 1000000.0f),
                        static_cast<float>(1000.0f * st.nodes / (time_elapsed + 1)) / 1000000.0f);
 
-                std::vector<uint64_t> positions;
-                get_pv(st, positions, bestmove);
+                get_pv(st, bestmove);
 
                 std::cout << std::endl;
             }
