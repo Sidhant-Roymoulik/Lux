@@ -9,7 +9,7 @@ Bitboard passed_pawn_mask[2][64], pawn_isolated_mask[64], outpost_mask[2];
 
 void init_eval_tables() {
     for (int i = (int)PieceType::PAWN; i <= (int)PieceType::KING; i++) {
-        for (int j = Square::SQ_A1; j <= Square::SQ_H8; j++) {
+        for (int j = 0; j < 64; j++) {
             pst[i][j] += material[i];
         }
     }
@@ -17,8 +17,8 @@ void init_eval_tables() {
     outpost_mask[0] = attacks::MASK_RANK[4] | attacks::MASK_RANK[5] | attacks::MASK_RANK[6] | attacks::MASK_RANK[7];
     outpost_mask[1] = attacks::MASK_RANK[0] | attacks::MASK_RANK[1] | attacks::MASK_RANK[2] | attacks::MASK_RANK[3];
 
-    for (int i = Square::SQ_A1; i <= Square::SQ_H8; i++) {
-        Bitboard file = attacks::MASK_FILE[(int)utils::squareFile(Square(i))];
+    for (int i = 0; i < 64; i++) {
+        Bitboard file = attacks::MASK_FILE[(int)Square(i).file()];
 
         pawn_isolated_mask[i] = attacks::shift<Direction::EAST>(file) | attacks::shift<Direction::WEST>(file);
 
@@ -35,22 +35,22 @@ void init_eval_tables() {
 }
 
 // Get relative position of square based on color
-template <Color c>
-Square black_relative_square(Square &sq) {
-    return (c == Color::WHITE) ? sq ^ 56 : sq;
+template <Color::underlying c>
+int black_relative_square(Square sq) {
+    return (c == Color::WHITE) ? sq.index() ^ 56 : sq.index();
 }
-template <Color c>
-Square white_relative_square(Square &sq) {
-    return (c == Color::BLACK) ? sq ^ 56 : sq;
+template <Color::underlying c>
+int white_relative_square(Square sq) {
+    return (c == Color::BLACK) ? sq.index() ^ 56 : sq.index();
 }
 
 // Get a bitboard with all pawn attacks based on pawn location and movement direction
-template <Color c>
+template <Color::underlying c>
 Bitboard get_pawn_attacks(Bitboard &pawns) {
     return attacks::pawnLeftAttacks<c>(pawns) | attacks::pawnRightAttacks<c>(pawns);
 }
 
-template <Color c>
+template <Color::underlying c>
 int eval_pawn(EvalInfo &info, const Board &board) {
     int score = 0, count = 0;
     Bitboard bb = board.pieces(PieceType::PAWN, c);
@@ -59,39 +59,39 @@ int eval_pawn(EvalInfo &info, const Board &board) {
     Bitboard phalanx_pawns = bb & attacks::shift<Direction::WEST>(bb);
 
     // Penalty for doubled pawns
-    count = builtin::popcount(bb & attacks::shift<Direction::NORTH>(bb));
+    count = (bb & attacks::shift<Direction::NORTH>(bb)).count();
     score += pawn_doubled[0] * count;
     TraceAdd(pawn_doubled[0]);
 
-    count = builtin::popcount(bb & attacks::shift<Direction::NORTH>(attacks::shift<Direction::NORTH>(bb)));
+    count = (bb & attacks::shift<Direction::NORTH>(attacks::shift<Direction::NORTH>(bb))).count();
     score += pawn_doubled[1] * count;
     TraceAdd(pawn_doubled[1]);
 
     // Bonus for pawns protecting pawns
-    count = builtin::popcount(bb & get_pawn_attacks<~c>(bb));
+    count = (bb & get_pawn_attacks<~c>(bb)).count();
     score += pawn_support * count;
     TraceAdd(pawn_support);
 
     // Bonus for phalanx pawns
     while (phalanx_pawns) {
-        Square sq = builtin::poplsb(phalanx_pawns);
+        Square sq = Square(phalanx_pawns.pop());
 
         score += pawn_phalanx[white_relative_square<c>(sq) >> 3];
         TraceIncr(pawn_phalanx[white_relative_square<c>(sq) >> 3]);
     }
 
     while (bb) {
-        Square sq = builtin::poplsb(bb);
+        Square sq = Square(bb.pop());
 
         // Penalty is pawn is isolated
-        if (!(pawn_isolated_mask[sq] & info.pawn[(int)c])) {
+        if (!(pawn_isolated_mask[sq.index()] & info.pawn[(int)c])) {
             score += pawn_isolated;
             TraceIncr(pawn_isolated);
         }
 
         // Bonus if pawn is passed
-        if (!(passed_pawn_mask[(int)c][sq] & info.pawn[(int)~c])) {
-            int protectors = builtin::popcount(info.pawn[(int)c] & attacks::pawn(~c, sq));
+        if (!(passed_pawn_mask[(int)c][sq.index()] & info.pawn[(int)~c])) {
+            int protectors = (info.pawn[(int)c] & attacks::pawn(~c, sq)).count();
 
             // Bonus if passed pawn is protected by pawn
             score += pawn_passed[protectors][white_relative_square<c>(sq) >> 3];
@@ -106,7 +106,7 @@ int eval_pawn(EvalInfo &info, const Board &board) {
     return score;
 }
 
-template <Color c, PieceType p>
+template <Color::underlying c, PieceType::underlying p>
 int eval_piece(EvalInfo &info, const Board &board) {
     int score = 0, count = 0;
     Bitboard bb = board.pieces(p, c);
@@ -116,32 +116,32 @@ int eval_piece(EvalInfo &info, const Board &board) {
     const Direction DOWN = c == Color::WHITE ? Direction::SOUTH : Direction::NORTH;
 
     // Increase gamephase
-    info.gamephase += phase_values[(int)p] * builtin::popcount(bb);
+    info.gamephase += phase_values[(int)p] * bb.count();
 
     // Bishop pair bonus
-    if (p == PieceType::BISHOP && (bb & (bb - 1))) {
+    if (p == PieceType::BISHOP && bb.count() >= 2) {
         score += bishop_pair;
         TraceIncr(bishop_pair);
     }
 
     // Bonus for minor piece behind pawn
     if (p == PieceType::KNIGHT || p == PieceType::BISHOP) {
-        count = builtin::popcount(bb & attacks::shift<DOWN>(info.pawn[(int)c]));
+        count = (bb & attacks::shift<DOWN>(info.pawn[(int)c])).count();
         score += minor_behind_pawn * count;
         TraceAdd(minor_behind_pawn);
 
         // Bonus for knight/bishop outposts
-        count = builtin::popcount(bb & info.pawn_attacks[(int)c] & outpost_mask[(int)c]);
+        count = (bb & info.pawn_attacks[(int)c] & outpost_mask[(int)c]).count();
         score += outpost * count;
         TraceAdd(outpost);
     }
 
     while (bb) {
-        Square sq = builtin::poplsb(bb);
+        Square sq = Square(bb.pop());
 
         // Open and Semi-Open file bonus
         if (p == PieceType::ROOK) {
-            Bitboard file = attacks::MASK_FILE[(int)utils::squareFile(sq)];
+            Bitboard file = attacks::MASK_FILE[(int)sq.file()];
             if (!(file & info.pawn[(int)c])) {
                 if (!(file & info.pawn[(int)~c])) {
                     score += open_file;
@@ -171,8 +171,8 @@ int eval_piece(EvalInfo &info, const Board &board) {
             moves = attacks::queen(sq, board.occ());
 
         // Bonus/penalty for number of moves per piece
-        score += mobility[(int)p - 1][builtin::popcount(moves & ~board.us(c) & ~info.pawn_attacks[(int)~c])];
-        TraceIncr(mobility[(int)p - 1][builtin::popcount(moves & ~board.us(c) & ~info.pawn_attacks[(int)~c])]);
+        score += mobility[(int)p - 1][(moves & ~board.us(c) & ~info.pawn_attacks[(int)~c]).count()];
+        TraceIncr(mobility[(int)p - 1][(moves & ~board.us(c) & ~info.pawn_attacks[(int)~c]).count()]);
 
         score += pst[(int)p][black_relative_square<c>(sq)];
         TraceIncr(pst[(int)p][black_relative_square<c>(sq)]);
@@ -182,18 +182,18 @@ int eval_piece(EvalInfo &info, const Board &board) {
     return score;
 }
 
-template <Color c>
+template <Color::underlying c>
 int eval_king(EvalInfo &info, const Board &board) {
     int score = 0, count = 0;
     Bitboard bb    = board.pieces(PieceType::KING, c);
-    Square king_sq = builtin::poplsb(bb);
+    Square king_sq = Square(bb.pop());
 
     // Init useful bitboards
     Bitboard moves = attacks::queen(king_sq, board.occ());
 
     // Bonus/penalty for number of squares king could be attacked from
-    score += king_open[builtin::popcount(moves & ~board.us(c) & ~info.pawn_attacks[(int)~c])];
-    TraceIncr(king_open[builtin::popcount(moves & ~board.us(c) & ~info.pawn_attacks[(int)~c])]);
+    score += king_open[(moves & ~board.us(c) & ~info.pawn_attacks[(int)~c]).count()];
+    TraceIncr(king_open[(moves & ~board.us(c) & ~info.pawn_attacks[(int)~c]).count()]);
 
     // Bonus/penalty if king threatens enemy pawn
     if (attacks::king(king_sq) & info.pawn[(int)~c]) {
@@ -202,7 +202,7 @@ int eval_king(EvalInfo &info, const Board &board) {
     }
 
     // Bonus for pawn sheltering king
-    count = builtin::popcount(passed_pawn_mask[(int)c][king_sq] & info.pawn[(int)c]);
+    count = (passed_pawn_mask[(int)c][king_sq.index()] & info.pawn[(int)c]).count();
     score += king_shelter * count;
     TraceAdd(king_shelter);
 
@@ -238,7 +238,7 @@ void init_eval_info(EvalInfo &info, const Board &board) {
 
 double endgame_scale(EvalInfo &info, int score) {
     // Divide the endgame score if the stronger side doesn't have many pawns left
-    int num_missing_stronger_pawns = 8 - builtin::popcount(info.pawn[score < 0]);
+    int num_missing_stronger_pawns = 8 - info.pawn[score < 0].count();
     return (128 - num_missing_stronger_pawns * num_missing_stronger_pawns) / 128.0;
 }
 

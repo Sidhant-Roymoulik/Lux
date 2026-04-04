@@ -39,7 +39,7 @@ class TranspositionTable {
                   << std::endl;
     }
 
-    void store(U64 key, uint8_t f, Move move, uint8_t depth, int score, int eval) {
+    void store(uint64_t key, uint8_t f, Move move, uint8_t depth, int score, int eval) {
         TTEntry& entry = entries[reduce_hash(key, entries.size())];
 
         if (move != Move::NO_MOVE || static_cast<uint16_t>(key) != entry.key) {
@@ -56,13 +56,13 @@ class TranspositionTable {
         }
     }
 
-    TTEntry& probe_entry(U64 key, bool& ttHit) {
+    TTEntry& probe_entry(uint64_t key, bool& ttHit) {
         TTEntry& entry = entries[reduce_hash(key, entries.size())];
         ttHit          = (static_cast<uint16_t>(key) == entry.key);
         return entry;
     }
 
-    Move probe_move(U64 key) {
+    Move probe_move(uint64_t key) {
         TTEntry& entry = entries[reduce_hash(key, entries.size())];
 
         if (static_cast<uint16_t>(key) == entry.key) {
@@ -72,7 +72,7 @@ class TranspositionTable {
         return Move::NO_MOVE;
     }
 
-    void prefetch_tt(const U64 key) { prefetch(&(entries[reduce_hash(key, entries.size())])); }
+    void prefetch_tt(const uint64_t key) { prefetch(&(entries[reduce_hash(key, entries.size())])); }
 };
 
 inline int score_to_tt(int score, int ply) {

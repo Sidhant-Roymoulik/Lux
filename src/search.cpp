@@ -200,7 +200,7 @@ ab_move_loop:
 
     for (int i = 0; i < moves.size(); i++) {
         // Incremental Move Sorting
-        moves.sort(i);
+        sort_moves(moves, i);
         Move move = moves[i];
 
         if (!root) {
@@ -319,13 +319,13 @@ int q_search(SearchThread& st, SearchStack* ss, int alpha, int beta) {
 
     Movelist moves;
     if (st.board.inCheck())
-        movegen::legalmoves<MoveGenType::ALL>(moves, st.board);
+        movegen::legalmoves<movegen::MoveGenType::ALL>(moves, st.board);
     else
-        movegen::legalmoves<MoveGenType::CAPTURE>(moves, st.board);
+        movegen::legalmoves<movegen::MoveGenType::CAPTURE>(moves, st.board);
     score_moves(st, moves, tt_move);
 
     for (int i = 0; i < moves.size(); i++) {
-        moves.sort(i);
+        sort_moves(moves, i);
         Move move = moves[i];
 
         (ss + 1)->ply = ss->ply + 1;
