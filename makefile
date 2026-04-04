@@ -45,6 +45,14 @@ default:
 dev:
 	$(CXX) $(CXXFLAGS) $(SRC) $(LFLAGS) -o $(EXEDIR)/$(EXE)
 
+TESTDIR := tests
+TESTSRC := $(TESTDIR)/main.cpp $(TESTDIR)/test_types.cpp $(TESTDIR)/test_tt.cpp \
+           $(TESTDIR)/test_eval.cpp $(TESTDIR)/test_time_manager.cpp
+
+test:
+	$(CXX) $(CXXFLAGS) -I src $(TESTSRC) src/eval.cpp $(LFLAGS) -o $(TESTDIR)/test_runner
+	./$(TESTDIR)/test_runner
+
 release:
 ifeq ($(IS_ARM),1)
 	$(CXX) $(RFLAGS) $(SRC) -march=native $(LFLAGS) -o $(EXEDIR)/$(EXE)-native

@@ -28,6 +28,9 @@ jobs:
     - name: Default
       run: make dev
 
+    - name: Test
+      run: make test
+
     - name: Release
       run: make release
 
