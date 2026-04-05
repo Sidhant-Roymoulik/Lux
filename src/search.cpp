@@ -224,7 +224,7 @@ ab_move_loop:
 
         // Late Move Reductions
         if (!in_check && depth > 2 && ss->move_cnt > 1 + 2 * pv_node) {
-            int R = LMR_TABLE[depth][ss->move_cnt];
+            int R = LMR_TABLE[std::min(depth, MAX_PLY - 1)][std::min(ss->move_cnt, chess::constants::MAX_MOVES - 1)];
 
             R -= pv_node;
             R -= move.score() >= MoveGenStage::KILLER_2;

@@ -58,11 +58,14 @@ void uci_loop() {
             continue;
 
         } else if (token == "ucinewgame") {
+            st->stopped = true;
+            thread_handler.stop();  // join any running search before touching shared state
             table->Initialize(current_hash_size);
             st->tm.reset();
             st->time_set  = false;
             st->nodes_set = false;
             st->stopped   = false;
+            st->set_fen(chess::constants::STARTPOS);  // clear board/repetition history
             continue;
 
         } else if (token == "uci") {
