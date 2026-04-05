@@ -77,6 +77,8 @@ void iterative_deepening(SearchThread& st) {
     }
 
     if (print_info) {
+        // Fall back to st.bestmove if no depth completed cleanly (e.g. stopped mid-depth-1)
+        if (bestmove == Move::NO_MOVE) bestmove = st.bestmove;
         std::cout << "bestmove " << uci::moveToUci(bestmove) << std::endl;
     }
 }
@@ -91,6 +93,8 @@ int aspiration_window(int prev, int depth, SearchThread& st) {
     int score = 0;
     while (true) {
         score = negamax(st, ss, alpha, beta, depth, false);
+
+        if (st.stopped) break;
 
         if (score <= alpha) {
             beta  = (alpha + beta) / 2;
@@ -220,7 +224,7 @@ ab_move_loop:
 
         // Late Move Reductions
         if (!in_check && depth > 2 && ss->move_cnt > 1 + 2 * pv_node) {
-            int R = LMR_TABLE[depth][ss->move_cnt];
+            int R = LMR_TABLE[std::min(depth, MAX_PLY - 1)][std::min(ss->move_cnt, chess::constants::MAX_MOVES - 1)];
 
             R -= pv_node;
             R -= move.score() >= MoveGenStage::KILLER_2;

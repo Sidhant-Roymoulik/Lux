@@ -35,7 +35,7 @@ class TranspositionTable {
         this->entries.resize((MB * 1024 * 1024) / sizeof(TTEntry), TTEntry());
         std::fill(entries.begin(), entries.end(), TTEntry());
 
-        std::cout << "Transposition Table Initialized with " << entries.size() << " entries (" << MB << "MB)"
+        std::cerr << "Transposition Table Initialized with " << entries.size() << " entries (" << MB << "MB)"
                   << std::endl;
     }
 
