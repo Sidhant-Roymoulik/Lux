@@ -59,6 +59,10 @@ void uci_loop() {
 
         } else if (token == "ucinewgame") {
             table->Initialize(current_hash_size);
+            st->tm.reset();
+            st->time_set  = false;
+            st->nodes_set = false;
+            st->stopped   = false;
             continue;
 
         } else if (token == "uci") {
@@ -119,6 +123,11 @@ void uci_loop() {
         /* Handle UCI go command */
         else if (token == "go") {
             is >> std::skipws >> token;
+
+            // Reset search state before parsing new limits
+            st->tm.reset();
+            st->time_set  = false;
+            st->nodes_set = false;
 
             // Initialize variables
             int depth = -1;

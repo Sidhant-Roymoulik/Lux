@@ -77,6 +77,8 @@ void iterative_deepening(SearchThread& st) {
     }
 
     if (print_info) {
+        // Fall back to st.bestmove if no depth completed cleanly (e.g. stopped mid-depth-1)
+        if (bestmove == Move::NO_MOVE) bestmove = st.bestmove;
         std::cout << "bestmove " << uci::moveToUci(bestmove) << std::endl;
     }
 }
@@ -91,6 +93,8 @@ int aspiration_window(int prev, int depth, SearchThread& st) {
     int score = 0;
     while (true) {
         score = negamax(st, ss, alpha, beta, depth, false);
+
+        if (st.stopped) break;
 
         if (score <= alpha) {
             beta  = (alpha + beta) / 2;
