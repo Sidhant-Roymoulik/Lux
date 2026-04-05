@@ -7,6 +7,13 @@ CXX ?= g++
 
 EXEDIR := src/executables
 
+# Detect MSYS2/MinGW and fix temp dir for native g++ (cygpath is MSYS2-only, safe no-op elsewhere)
+WIN_TEMP := $(shell cygpath -m /tmp 2>/dev/null)
+ifneq ($(WIN_TEMP),)
+    export TMP  := $(WIN_TEMP)
+    export TEMP := $(WIN_TEMP)
+endif
+
 # Default flags
 LFLAGS := 
 WFLAGS := -Wall -Wextra -Werror
@@ -37,6 +44,11 @@ else
     else
         IS_ARM := 0
     endif
+endif
+
+# On MSYS2/MinGW, link statically to avoid runtime DLL search issues
+ifneq ($(WIN_TEMP),)
+    LFLAGS += -static
 endif
 
 default:
