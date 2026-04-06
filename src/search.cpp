@@ -10,7 +10,7 @@ int LMR_TABLE[MAX_PLY][constants::MAX_MOVES];
 void init_search_tables() {
     for (int depth = 1; depth < MAX_PLY; depth++) {
         for (int move = 1; move < chess::constants::MAX_MOVES; move++) {
-            LMR_TABLE[depth][move] = SP.lmr_base / 100.0 + log(depth) * log(move) / (SP.lmr_divisor / 100.0);
+            LMR_TABLE[depth][move] = SP.lmr_base + log(depth) * log(move) / SP.lmr_divisor;
         }
     }
 }
@@ -170,7 +170,7 @@ int negamax(SearchThread& st, SearchStack* ss, int alpha, int beta, int depth, b
 
     // Null Move Pruning
     if (depth > 1 && ss->static_eval >= beta && st.board.hasNonPawnMaterial(st.board.sideToMove())) {
-        int R = SP.nmp_base + depth / SP.nmp_divisor;
+        int R = static_cast<int>(SP.nmp_base + depth / SP.nmp_divisor);
 
         ss->move      = Move::NULL_MOVE;
         (ss + 1)->ply = ss->ply + 1;
@@ -258,7 +258,7 @@ ab_move_loop:
             if (alpha >= beta) {
                 flag = FLAG_BETA;
 
-                update_history(st, move, moves, depth * depth * SP.hist_bonus_mul / 100);
+                update_history(st, move, moves, static_cast<int>(std::round(depth * depth * SP.hist_bonus_mul)));
 
                 if (quiet) {
                     if (move != ss->killers[0]) {

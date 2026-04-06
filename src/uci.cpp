@@ -22,20 +22,154 @@ static void uci_send_id() {
     printf("option name Threads type spin default 1 min 1 max %d\n", MAX_THREADS);
 
     // SPSA-tunable search parameters
-    printf("option name AspWindow    type spin default %d min 1    max 50\n", SP.asp_window);
-    printf("option name AspDivisor   type spin default %d min 1000 max 50000\n", SP.asp_divisor);
-    printf("option name AspDeltaDiv  type spin default %d min 2    max 8\n", SP.asp_delta_div);
-    printf("option name RfpMargin    type spin default %d min 20   max 200\n", SP.rfp_margin);
-    printf("option name RfpDepth     type spin default %d min 4    max 14\n", SP.rfp_depth);
-    printf("option name NmpBase      type spin default %d min 1    max 6\n", SP.nmp_base);
-    printf("option name NmpDivisor   type spin default %d min 2    max 8\n", SP.nmp_divisor);
-    printf("option name LmrBase      type spin default %d min 50   max 400\n", SP.lmr_base);
-    printf("option name LmrDivisor   type spin default %d min 50   max 500\n", SP.lmr_divisor);
-    printf("option name LmrMoveMin   type spin default %d min 0    max 4\n", SP.lmr_move_min);
-    printf("option name HistPrune    type spin default %d min 500  max 10000\n", SP.hist_prune);
-    printf("option name HistBonusMul type spin default %d min 50   max 200\n", SP.hist_bonus_mul);
+    printf("option name AspWindow    type spin   default %d min 1    max 50\n", SP.asp_window);
+    printf("option name AspDivisor   type spin   default %d min 1000 max 50000\n", SP.asp_divisor);
+    printf("option name AspDeltaDiv  type spin   default %d min 2    max 8\n", SP.asp_delta_div);
+    printf("option name RfpMargin    type string default %.1f\n",                SP.rfp_margin);
+    printf("option name RfpDepth     type spin   default %d min 4    max 14\n", SP.rfp_depth);
+    printf("option name NmpBase      type string default %.1f\n", SP.nmp_base);
+    printf("option name NmpDivisor   type string default %.1f\n", SP.nmp_divisor);
+    printf("option name LmrBase      type string default %.2f\n", SP.lmr_base);
+    printf("option name LmrDivisor   type string default %.2f\n", SP.lmr_divisor);
+    printf("option name LmrMoveMin   type spin   default %d min 0    max 4\n", SP.lmr_move_min);
+    printf("option name HistPrune    type spin   default %d min 500  max 10000\n", SP.hist_prune);
+    printf("option name HistBonusMul type string default %.2f\n", SP.hist_bonus_mul);
 
     std::cout << "uciok" << std::endl;
+}
+
+static void handle_go(std::istringstream& is, SearchThread& st, ThreadHandler& thread_handler) {
+    std::string token;
+    is >> std::skipws >> token;
+
+    st.tm.reset();
+    st.time_set  = false;
+    st.nodes_set = false;
+
+    int depth     = -1;
+    int64_t nodes = -1;
+
+    while (token != "none") {
+        if (token == "infinite") {
+            depth = -1;
+            break;
+        }
+
+        if (token == "movestogo") {
+            is >> std::skipws >> token;
+            st.tm.movestogo = stoi(token);
+        } else if (token == "depth") {
+            is >> std::skipws >> token;
+            depth = std::stoi(token);
+        } else if (token == "wtime") {
+            is >> std::skipws >> token;
+            st.tm.wtime = std::stod(token);
+        } else if (token == "btime") {
+            is >> std::skipws >> token;
+            st.tm.btime = std::stod(token);
+        } else if (token == "winc") {
+            is >> std::skipws >> token;
+            st.tm.winc = std::stod(token);
+        } else if (token == "binc") {
+            is >> std::skipws >> token;
+            st.tm.binc = std::stod(token);
+        } else if (token == "movetime") {
+            is >> std::skipws >> token;
+            st.tm.movetime = std::stod(token);
+        } else if (token == "nodes") {
+            is >> std::skipws >> token;
+            nodes = stoi(token);
+        }
+
+        if (!(is >> std::skipws >> token)) break;
+    }
+
+    if (nodes != -1) {
+        st.node_limit = nodes;
+        st.nodes_set  = true;
+    }
+
+    st.depth    = (depth == -1) ? MAX_PLY : depth;
+    st.time_set = (st.tm.wtime != -1 || st.tm.btime != -1 || st.tm.movetime != -1);
+
+    st.stopped   = false;
+    st.print_uci = IsUci;
+
+    thread_handler.start(st);
+}
+
+static void handle_setoption(std::istringstream& is) {
+    std::string token, name, value;
+    is >> std::skipws >> token;  // "name"
+    if (token != "name") return;
+
+    is >> std::skipws >> name;
+    is >> std::skipws >> token;
+    if (token == "value")
+        is >> std::skipws >> value;
+    else
+        value.clear();
+
+    if (name == "Hash" && !value.empty()) {
+        try {
+            current_hash_size = std::stoi(value);
+        } catch (...) {
+        }
+        if (current_hash_size != prev_hash_size) {
+            current_hash_size = std::min(current_hash_size, MAX_HASH_SIZE);
+            prev_hash_size    = current_hash_size;
+            table->Initialize(current_hash_size);
+        }
+        return;
+    }
+
+    auto set_int = [&](int& field) {
+        if (!value.empty()) {
+            try {
+                field = std::stoi(value);
+            } catch (...) {
+            }
+        }
+    };
+    auto set_float = [&](float& field) {
+        if (!value.empty()) {
+            try {
+                field = std::stof(value);
+            } catch (...) {
+            }
+        }
+    };
+
+    bool lmr_changed = false;
+    if (name == "AspWindow") {
+        set_int(SP.asp_window);
+    } else if (name == "AspDivisor") {
+        set_int(SP.asp_divisor);
+    } else if (name == "AspDeltaDiv") {
+        set_int(SP.asp_delta_div);
+    } else if (name == "RfpMargin") {
+        set_float(SP.rfp_margin);
+    } else if (name == "RfpDepth") {
+        set_int(SP.rfp_depth);
+    } else if (name == "NmpBase") {
+        set_float(SP.nmp_base);
+    } else if (name == "NmpDivisor") {
+        set_float(SP.nmp_divisor);
+    } else if (name == "LmrBase") {
+        set_float(SP.lmr_base);
+        lmr_changed = true;
+    } else if (name == "LmrDivisor") {
+        set_float(SP.lmr_divisor);
+        lmr_changed = true;
+    } else if (name == "LmrMoveMin") {
+        set_int(SP.lmr_move_min);
+    } else if (name == "HistPrune") {
+        set_int(SP.hist_prune);
+    } else if (name == "HistBonusMul") {
+        set_float(SP.hist_bonus_mul);
+    }
+
+    if (lmr_changed) init_search_tables();
 }
 
 void uci_loop() {
@@ -69,240 +203,49 @@ void uci_loop() {
 
         } else if (token == "isready") {
             std::cout << "readyok" << std::endl;
-            continue;
 
         } else if (token == "ucinewgame") {
             st->stopped = true;
-            thread_handler.stop();  // join any running search before touching shared state
+            thread_handler.stop();
             table->Initialize(current_hash_size);
             st->tm.reset();
             st->time_set  = false;
             st->nodes_set = false;
             st->stopped   = false;
-            st->set_fen(chess::constants::STARTPOS);  // clear board/repetition history
-            continue;
+            st->set_fen(chess::constants::STARTPOS);
 
         } else if (token == "uci") {
             IsUci = true;
             uci_send_id();
-            continue;
-        }
 
-        /* Handle UCI position command */
-        else if (token == "position") {
+        } else if (token == "position") {
             std::string option;
             is >> std::skipws >> option;
             if (option == "startpos") {
                 st->set_fen(constants::STARTPOS);
             } else if (option == "fen") {
                 std::string final_fen;
-                is >> std::skipws >> option;
-                final_fen = option;
-
-                // Record side to move
-                final_fen.push_back(' ');
-                is >> std::skipws >> option;
-                final_fen += option;
-
-                // Record castling
-                final_fen.push_back(' ');
-                is >> std::skipws >> option;
-                final_fen += option;
-
-                // record enpassant square
-                final_fen.push_back(' ');
-                is >> std::skipws >> option;
-                final_fen += option;
-
-                // record fifty move conter
-                final_fen.push_back(' ');
-                is >> std::skipws >> option;
-                final_fen += option;
-
-                final_fen.push_back(' ');
-                is >> std::skipws >> option;
-                final_fen += option;
-
-                // Finally, apply the fen.
+                for (int i = 0; i < 6; i++) {
+                    is >> std::skipws >> option;
+                    if (i > 0) final_fen.push_back(' ');
+                    final_fen += option;
+                }
                 st->set_fen(final_fen);
             }
             is >> std::skipws >> option;
             if (option == "moves") {
                 std::string moveString;
-
-                while (is >> moveString) {
-                    st->make_move(moveString);
-                }
-            }
-            continue;
-        }
-
-        /* Handle UCI go command */
-        else if (token == "go") {
-            is >> std::skipws >> token;
-
-            // Reset search state before parsing new limits
-            st->tm.reset();
-            st->time_set  = false;
-            st->nodes_set = false;
-
-            // Initialize variables
-            int depth = -1;
-
-            int64_t nodes = -1;
-
-            while (token != "none") {
-                if (token == "infinite") {
-                    depth = -1;
-                    break;
-                }
-                if (token == "movestogo") {
-                    is >> std::skipws >> token;
-                    st->tm.movestogo = stoi(token);
-                    is >> std::skipws >> token;
-                    continue;
-                }
-
-                // Depth
-                if (token == "depth") {
-                    is >> std::skipws >> token;
-                    depth = std::stoi(token);
-                    is >> std::skipws >> token;
-                    continue;
-                }
-
-                // Time
-                if (token == "wtime") {
-                    is >> std::skipws >> token;
-                    st->tm.wtime = std::stod(token);
-                    is >> std::skipws >> token;
-                    continue;
-                }
-                if (token == "btime") {
-                    is >> std::skipws >> token;
-                    st->tm.btime = std::stod(token);
-                    is >> std::skipws >> token;
-                    continue;
-                }
-
-                // Increment
-                if (token == "winc") {
-                    is >> std::skipws >> token;
-                    st->tm.winc = std::stod(token);
-                    is >> std::skipws >> token;
-                    continue;
-                }
-                if (token == "binc") {
-                    is >> std::skipws >> token;
-                    st->tm.binc = std::stod(token);
-                    is >> std::skipws >> token;
-                    continue;
-                }
-
-                if (token == "movetime") {
-                    is >> std::skipws >> token;
-                    st->tm.movetime = stod(token);
-                    is >> std::skipws >> token;
-                    continue;
-                }
-                if (token == "nodes") {
-                    is >> std::skipws >> token;
-                    nodes = stoi(token);
-                    is >> std::skipws >> token;
-                }
-                token = "none";
+                while (is >> moveString) st->make_move(moveString);
             }
 
-            if (nodes != -1) {
-                st->node_limit = nodes;
-                st->nodes_set  = true;
-            }
+        } else if (token == "go") {
+            handle_go(is, *st, thread_handler);
 
-            st->depth = depth;
-            if (st->tm.wtime != -1 || st->tm.btime != -1 || st->tm.movetime != -1) {
-                st->time_set = true;
-            }
+        } else if (token == "setoption") {
+            handle_setoption(is);
 
-            if (depth == -1) {
-                st->depth = MAX_PLY;
-            }
-
-            st->stopped   = false;
-            st->print_uci = IsUci;
-
-            thread_handler.start(*st);
-        }
-
-        else if (token == "setoption") {
-            // Parse: setoption name <name> [value <value>]
-            std::string name, value;
-            is >> std::skipws >> token;  // should be "name"
-            if (token == "name") {
-                is >> std::skipws >> name;
-                // Optionally parse "value"
-                is >> std::skipws >> token;
-                if (token == "value") {
-                    is >> std::skipws >> value;
-                } else {
-                    value.clear();
-                }
-
-                if (name == "Hash" && !value.empty()) {
-                    try {
-                        current_hash_size = std::stoi(value);
-                    } catch (...) {
-                        // ignore invalid value
-                    }
-                    if (current_hash_size != prev_hash_size) {
-                        current_hash_size = std::min(current_hash_size, MAX_HASH_SIZE);
-                        prev_hash_size    = current_hash_size;
-                        table->Initialize(current_hash_size);
-                    }
-                }
-
-                // SPSA-tunable search parameters
-                auto set_int = [&](int& field) {
-                    if (!value.empty()) {
-                        try {
-                            field = std::stoi(value);
-                        } catch (...) {
-                        }
-                    }
-                };
-                bool lmr_changed = false;
-                if (name == "AspWindow") {
-                    set_int(SP.asp_window);
-                } else if (name == "AspDivisor") {
-                    set_int(SP.asp_divisor);
-                } else if (name == "AspDeltaDiv") {
-                    set_int(SP.asp_delta_div);
-                } else if (name == "RfpMargin") {
-                    set_int(SP.rfp_margin);
-                } else if (name == "RfpDepth") {
-                    set_int(SP.rfp_depth);
-                } else if (name == "NmpBase") {
-                    set_int(SP.nmp_base);
-                } else if (name == "NmpDivisor") {
-                    set_int(SP.nmp_divisor);
-                } else if (name == "LmrBase") {
-                    set_int(SP.lmr_base);
-                    lmr_changed = true;
-                } else if (name == "LmrDivisor") {
-                    set_int(SP.lmr_divisor);
-                    lmr_changed = true;
-                } else if (name == "LmrMoveMin") {
-                    set_int(SP.lmr_move_min);
-                } else if (name == "HistPrune") {
-                    set_int(SP.hist_prune);
-                } else if (name == "HistBonusMul") {
-                    set_int(SP.hist_bonus_mul);
-                }
-                if (lmr_changed) init_search_tables();
-            }
-        }
-
-        /* Debugging Commands */
-        else if (token == "print") {
+            /* Debugging Commands */
+        } else if (token == "print") {
             std::cout << st->board << std::endl;
         } else if (token == "eval") {
             std::cout << "Eval: " << evaluate(st->board) << std::endl;
@@ -314,7 +257,7 @@ void uci_loop() {
             StartEvalBenchmark(*st);
         }
     }
-    table->clear();
 
+    table->clear();
     std::cout << std::endl;
 }
