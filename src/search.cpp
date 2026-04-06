@@ -10,8 +10,7 @@ int LMR_TABLE[MAX_PLY][constants::MAX_MOVES];
 void init_search_tables() {
     for (int depth = 1; depth < MAX_PLY; depth++) {
         for (int move = 1; move < chess::constants::MAX_MOVES; move++) {
-            LMR_TABLE[depth][move] =
-                SP.lmr_base / 100.0 + log(depth) * log(move) / (SP.lmr_divisor / 100.0);
+            LMR_TABLE[depth][move] = SP.lmr_base / 100.0 + log(depth) * log(move) / (SP.lmr_divisor / 100.0);
         }
     }
 }
@@ -107,7 +106,7 @@ int aspiration_window(int prev, int depth, SearchThread& st) {
         } else
             break;
 
-        delta += delta / 3;
+        delta += delta / SP.asp_delta_div;
     }
 
     return score;
@@ -167,7 +166,7 @@ int negamax(SearchThread& st, SearchStack* ss, int alpha, int beta, int depth, b
     if (pv_node || in_check || (ss - 1)->move == Move::NULL_MOVE) goto ab_move_loop;
 
     // Reverse Futility Pruning
-    if (depth < 9 && ss->static_eval - SP.rfp_margin * (depth - improving) >= beta) return ss->static_eval;
+    if (depth < SP.rfp_depth && ss->static_eval - SP.rfp_margin * (depth - improving) >= beta) return ss->static_eval;
 
     // Null Move Pruning
     if (depth > 1 && ss->static_eval >= beta && st.board.hasNonPawnMaterial(st.board.sideToMove())) {
@@ -224,7 +223,7 @@ ab_move_loop:
         table->prefetch_tt(st.board.hash());
 
         // Late Move Reductions
-        if (!in_check && depth > 2 && ss->move_cnt > 1 + 2 * pv_node) {
+        if (!in_check && depth > 2 && ss->move_cnt > SP.lmr_move_min + 2 * pv_node) {
             int R = LMR_TABLE[std::min(depth, MAX_PLY - 1)][std::min(ss->move_cnt, chess::constants::MAX_MOVES - 1)];
 
             R -= pv_node;
@@ -259,7 +258,7 @@ ab_move_loop:
             if (alpha >= beta) {
                 flag = FLAG_BETA;
 
-                update_history(st, move, moves, depth * depth);
+                update_history(st, move, moves, depth * depth * SP.hist_bonus_mul / 100);
 
                 if (quiet) {
                     if (move != ss->killers[0]) {
@@ -271,7 +270,6 @@ ab_move_loop:
                 break;
             }
         }
-
     }
 
     if (moves.size() == 0) best_score = in_check ? -MATE + ss->ply : 0;
