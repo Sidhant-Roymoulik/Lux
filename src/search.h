@@ -1,5 +1,6 @@
 #pragma once
 
+#include "search_params.h"
 #include "time_manager.h"
 #include "tt.h"
 

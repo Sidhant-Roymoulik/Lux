@@ -3,9 +3,9 @@
 Ranked by logical dependency and impact.
 
 ## 1. SPSA tuning support (OpenBench integration)
-- [ ] Expose search constants as UCI options for SPSA (eval is tuned separately via texel-tuner)
-- [ ] Follow OpenBench SPSA parameter format (`name, dtype, value, min, max, c_end, r_end`)
-- [ ] Wire tunable search params through `uci.cpp` option handling
+- [x] Expose search constants as UCI options for SPSA (eval is tuned separately via texel-tuner)
+- [x] Follow OpenBench SPSA parameter format (`name, dtype, value, min, max, c_end, r_end`)
+- [x] Wire tunable search params through `uci.cpp` option handling
 - [ ] Verify OpenBench can pick up and vary the params correctly
 
 ## 2. Add unit tests

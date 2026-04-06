@@ -21,6 +21,16 @@ static void uci_send_id() {
     printf("option name Hash type spin default %d min %d max %d\n", DEFAULT_HASH_SIZE, MIN_HASH_SIZE, MAX_HASH_SIZE);
     printf("option name Threads type spin default 1 min 1 max %d\n", MAX_THREADS);
 
+    // SPSA-tunable search parameters
+    printf("option name AspWindow type spin default %d min 1 max 50\n", SP.asp_window);
+    printf("option name AspDivisor type spin default %d min 1000 max 50000\n", SP.asp_divisor);
+    printf("option name RfpMargin type spin default %d min 20 max 200\n", SP.rfp_margin);
+    printf("option name NmpBase type spin default %d min 1 max 6\n", SP.nmp_base);
+    printf("option name NmpDivisor type spin default %d min 2 max 8\n", SP.nmp_divisor);
+    printf("option name LmrBase type spin default %d min 50 max 400\n", SP.lmr_base);
+    printf("option name LmrDivisor type spin default %d min 50 max 500\n", SP.lmr_divisor);
+    printf("option name HistPrune type spin default %d min 500 max 10000\n", SP.hist_prune);
+
     std::cout << "uciok" << std::endl;
 }
 
@@ -245,6 +255,23 @@ void uci_loop() {
                         table->Initialize(current_hash_size);
                     }
                 }
+
+                // SPSA-tunable search parameters
+                auto set_int = [&](int& field) {
+                    if (!value.empty()) {
+                        try { field = std::stoi(value); } catch (...) {}
+                    }
+                };
+                bool lmr_changed = false;
+                if (name == "AspWindow")  { set_int(SP.asp_window); }
+                else if (name == "AspDivisor") { set_int(SP.asp_divisor); }
+                else if (name == "RfpMargin")  { set_int(SP.rfp_margin); }
+                else if (name == "NmpBase")    { set_int(SP.nmp_base); }
+                else if (name == "NmpDivisor") { set_int(SP.nmp_divisor); }
+                else if (name == "LmrBase")    { set_int(SP.lmr_base);    lmr_changed = true; }
+                else if (name == "LmrDivisor") { set_int(SP.lmr_divisor); lmr_changed = true; }
+                else if (name == "HistPrune")  { set_int(SP.hist_prune); }
+                if (lmr_changed) init_search_tables();
             }
         }
 

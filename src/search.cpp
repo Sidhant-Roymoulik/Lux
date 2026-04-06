@@ -10,7 +10,8 @@ int LMR_TABLE[MAX_PLY][constants::MAX_MOVES];
 void init_search_tables() {
     for (int depth = 1; depth < MAX_PLY; depth++) {
         for (int move = 1; move < chess::constants::MAX_MOVES; move++) {
-            LMR_TABLE[depth][move] = 2 + log(depth) * log(move) / 2.5;
+            LMR_TABLE[depth][move] =
+                SP.lmr_base / 100.0 + log(depth) * log(move) / (SP.lmr_divisor / 100.0);
         }
     }
 }
@@ -86,7 +87,7 @@ void iterative_deepening(SearchThread& st) {
 int aspiration_window(int prev, int depth, SearchThread& st) {
     SearchStack stack[MAX_PLY + 10], *ss = stack + 7;
 
-    int delta = 10 + prev * prev / 16000;
+    int delta = SP.asp_window + prev * prev / SP.asp_divisor;
     int alpha = std::max(prev - delta, -MATE);
     int beta  = std::min(prev + delta, static_cast<int>(MATE));
 
@@ -166,11 +167,11 @@ int negamax(SearchThread& st, SearchStack* ss, int alpha, int beta, int depth, b
     if (pv_node || in_check || (ss - 1)->move == Move::NULL_MOVE) goto ab_move_loop;
 
     // Reverse Futility Pruning
-    if (depth < 9 && ss->static_eval - 75 * (depth - improving) >= beta) return ss->static_eval;
+    if (depth < 9 && ss->static_eval - SP.rfp_margin * (depth - improving) >= beta) return ss->static_eval;
 
     // Null Move Pruning
     if (depth > 1 && ss->static_eval >= beta && st.board.hasNonPawnMaterial(st.board.sideToMove())) {
-        int R = 3 + depth / 4;
+        int R = SP.nmp_base + depth / SP.nmp_divisor;
 
         ss->move      = Move::NULL_MOVE;
         (ss + 1)->ply = ss->ply + 1;
@@ -207,7 +208,7 @@ ab_move_loop:
 
         if (!root) {
             // History Pruning
-            if (move.score() < -4000 * depth) break;
+            if (move.score() < -SP.hist_prune * depth) break;
 
         } else if (i == 0) {
             st.bestmove = moves[0];
