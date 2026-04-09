@@ -4,7 +4,7 @@
 
 using namespace chess;
 
-#define VERSION "4.3"
+#define VERSION "5.0"
 #define AUTHOR "Sidhant Roymoulik"
 
 #define DEFAULT_HASH_SIZE 64
