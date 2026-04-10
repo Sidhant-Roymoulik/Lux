@@ -265,18 +265,19 @@ void uci_loop() {
         } else if (token == "bencheval") {
             StartEvalBenchmark(*st);
         } else if (token == "spsa") {
-            // Ints: c_end = 0.5, r_end = 0.002
+            // Ints: c_end = max(value * 0.05, 0.5), r_end = 0.002
             // Floats: c_end = value * 0.05 (5%), r_end = 0.002
-            printf("AspWindow,    int,   %d,    %d,    %d,    0.5,    0.002\n", SP.asp_window,
-                   (int)(SP.asp_window * SP_LO), (int)(SP.asp_window * SP_HI));
-            printf("AspDivisor,   int,   %d, %d, %d, 0.5,    0.002\n", SP.asp_divisor, (int)(SP.asp_divisor * SP_LO),
-                   (int)(SP.asp_divisor * SP_HI));
-            printf("AspDeltaDiv,  int,   %d,    %d,    %d,    0.5,    0.002\n", SP.asp_delta_div,
-                   (int)(SP.asp_delta_div * SP_LO), (int)(SP.asp_delta_div * SP_HI));
+            auto int_c = [](int v) { return std::max(v * 0.05f, 0.5f); };
+            printf("AspWindow,    int,   %d,    %d,    %d,    %.4f,  0.002\n", SP.asp_window,
+                   (int)(SP.asp_window * SP_LO), (int)(SP.asp_window * SP_HI), int_c(SP.asp_window));
+            printf("AspDivisor,   int,   %d, %d, %d, %.4f,  0.002\n", SP.asp_divisor, (int)(SP.asp_divisor * SP_LO),
+                   (int)(SP.asp_divisor * SP_HI), int_c(SP.asp_divisor));
+            printf("AspDeltaDiv,  int,   %d,    %d,    %d,    %.4f,  0.002\n", SP.asp_delta_div,
+                   (int)(SP.asp_delta_div * SP_LO), (int)(SP.asp_delta_div * SP_HI), int_c(SP.asp_delta_div));
             printf("RfpMargin,    float, %.2f,  %.2f,  %.2f,  %.4f,  0.002\n", SP.rfp_margin, SP.rfp_margin * SP_LO,
                    SP.rfp_margin * SP_HI, SP.rfp_margin * 0.05f);
-            printf("RfpDepth,     int,   %d,    %d,    %d,    0.5,    0.002\n", SP.rfp_depth,
-                   (int)(SP.rfp_depth * SP_LO), (int)(SP.rfp_depth * SP_HI));
+            printf("RfpDepth,     int,   %d,    %d,    %d,    %.4f,  0.002\n", SP.rfp_depth,
+                   (int)(SP.rfp_depth * SP_LO), (int)(SP.rfp_depth * SP_HI), int_c(SP.rfp_depth));
             printf("NmpBase,      float, %.2f,  %.2f,  %.2f,  %.4f,  0.002\n", SP.nmp_base, SP.nmp_base * SP_LO,
                    SP.nmp_base * SP_HI, SP.nmp_base * 0.05f);
             printf("NmpDivisor,   float, %.2f,  %.2f,  %.2f,  %.4f,  0.002\n", SP.nmp_divisor, SP.nmp_divisor * SP_LO,
@@ -285,10 +286,10 @@ void uci_loop() {
                    SP.lmr_base * SP_HI, SP.lmr_base * 0.05f);
             printf("LmrDivisor,   float, %.2f,  %.2f,  %.2f,  %.4f,  0.002\n", SP.lmr_divisor, SP.lmr_divisor * SP_LO,
                    SP.lmr_divisor * SP_HI, SP.lmr_divisor * 0.05f);
-            printf("LmrMoveMin,   int,   %d,    %d,    %d,    0.5,    0.002\n", SP.lmr_move_min,
-                   (int)(SP.lmr_move_min * SP_LO), (int)(SP.lmr_move_min * SP_HI));
-            printf("HistPrune,    int,   %d, %d, %d, 0.5,    0.002\n", SP.hist_prune, (int)(SP.hist_prune * SP_LO),
-                   (int)(SP.hist_prune * SP_HI));
+            printf("LmrMoveMin,   int,   %d,    %d,    %d,    %.4f,  0.002\n", SP.lmr_move_min,
+                   (int)(SP.lmr_move_min * SP_LO), (int)(SP.lmr_move_min * SP_HI), int_c(SP.lmr_move_min));
+            printf("HistPrune,    int,   %d, %d, %d, %.4f,  0.002\n", SP.hist_prune, (int)(SP.hist_prune * SP_LO),
+                   (int)(SP.hist_prune * SP_HI), int_c(SP.hist_prune));
             printf("HistBonusMul, float, %.2f,  %.2f,  %.2f,  %.4f,  0.002\n", SP.hist_bonus_mul,
                    SP.hist_bonus_mul * SP_LO, SP.hist_bonus_mul * SP_HI, SP.hist_bonus_mul * 0.05f);
         }
