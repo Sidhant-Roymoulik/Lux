@@ -19,8 +19,8 @@ struct SearchStack {
 
 struct SearchThread {
     Board board;
-    Time_Manager tm;
-    int history[13][64];
+    TimeManager tm;
+    int history[13][64];  // [piece (0-12, chess.hpp Piece enum)][to_square]
 
     uint64_t nodes = 0;
     Move bestmove  = Move::NO_MOVE;
@@ -70,6 +70,14 @@ struct SearchThread {
     void check_time() {
         if ((time_set && tm.check_time()) || (nodes_set && nodes >= node_limit)) stopped = true;
     }
+
+    // Increments the node counter and checks time every 2048 nodes.
+    // Returns true if the search should terminate immediately.
+    [[nodiscard]] inline bool count_node() {
+        nodes++;
+        if ((nodes & 2047) == 0) check_time();
+        return stopped;
+    }
 };
 
 void init_search_tables();
@@ -77,6 +85,6 @@ void init_search_tables();
 template <bool print_info>
 void iterative_deepening(SearchThread& st);
 
-int aspiration_window(int prevEval, int depth, SearchThread& st);
+int aspiration_window(int prev_score, int depth, SearchThread& st);
 int negamax(SearchThread& st, SearchStack* ss, int alpha, int beta, int depth, bool cutnode);
 int q_search(SearchThread& st, SearchStack* ss, int alpha, int beta);

@@ -12,8 +12,7 @@ int prev_hash_size    = current_hash_size;
 static constexpr float SP_LO = 0.5f;  // min = value * SP_LO
 static constexpr float SP_HI = 2.0f;  // max = value * SP_HI
 
-bool IsUci  = false;
-bool TUNING = false;
+bool IsUci = false;
 
 TranspositionTable* table;
 

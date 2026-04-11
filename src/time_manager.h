@@ -14,7 +14,7 @@ inline Time now() {
         .count();
 }
 
-struct Time_Manager {
+struct TimeManager {
     Time wtime = -1;
     Time btime = -1;
     Time winc  = 0;
