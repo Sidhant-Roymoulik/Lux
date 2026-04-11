@@ -63,7 +63,7 @@ graph TD
         move_score["move_score.h\nmove ordering"]
         history["history.h\n[piece][to_sq]"]
         pv["pv.h\nPV tracking"]
-        tm["time_manager.h\nTime_Manager"]
+        tm["time_manager.h\nTimeManager"]
     end
 
     subgraph Eval
