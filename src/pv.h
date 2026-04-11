@@ -1,6 +1,6 @@
 #pragma once
 
-inline bool moveExists(Board& board, Move move) {
+inline bool moveExists(const Board& board, Move move) {
     Movelist list;
     movegen::legalmoves(list, board);
 

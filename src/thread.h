@@ -15,7 +15,6 @@ class ThreadHandler {
     using ThreadCount = uint8_t;
 
    private:
-    std::vector<Thread> searchers;
     std::vector<std::thread> threads;
 
     ThreadCount thread_count = 1;
@@ -39,7 +38,6 @@ class ThreadHandler {
             }
         }
 
-        searchers.clear();
         threads.clear();
     }
 };
