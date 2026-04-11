@@ -1,13 +1,13 @@
 #pragma once
 
-inline bool moveExists(Board& board, Move move) {
+inline bool moveExists(const Board& board, Move move) {
     Movelist list;
     movegen::legalmoves(list, board);
 
     return std::find(list.begin(), list.end(), move) != list.end();
 }
 
-inline void get_pv_hash(SearchThread& st, int ply) {
+inline void print_pv_from_tt(SearchThread& st, int ply) {
     if (ply >= MAX_PLY) return;
     if (st.board.isRepetition(1) || st.board.isHalfMoveDraw()) return;
 
@@ -17,7 +17,7 @@ inline void get_pv_hash(SearchThread& st, int ply) {
         std::cout << " " << uci::moveToUci(pv_move);
 
         st.make_move(pv_move);
-        get_pv_hash(st, ply + 1);
+        print_pv_from_tt(st, ply + 1);
         st.unmake_move(pv_move);
     }
 }
@@ -28,6 +28,6 @@ inline void get_pv(SearchThread& st, Move best_move) {
     std::cout << " " << uci::moveToUci(best_move);
 
     st.make_move(best_move);
-    get_pv_hash(st, 1);
+    print_pv_from_tt(st, 1);
     st.unmake_move(best_move);
 }

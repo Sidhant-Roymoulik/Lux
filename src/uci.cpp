@@ -12,8 +12,7 @@ int prev_hash_size    = current_hash_size;
 static constexpr float SP_LO = 0.5f;  // min = value * SP_LO
 static constexpr float SP_HI = 2.0f;  // max = value * SP_HI
 
-bool IsUci  = false;
-bool TUNING = false;
+bool is_uci = false;
 
 TranspositionTable* table;
 
@@ -66,7 +65,7 @@ static void handle_go(std::istringstream& is, SearchThread& st, ThreadHandler& t
 
         if (token == "movestogo") {
             is >> std::skipws >> token;
-            st.tm.movestogo = stoi(token);
+            st.tm.movestogo = std::stoi(token);
         } else if (token == "depth") {
             is >> std::skipws >> token;
             depth = std::stoi(token);
@@ -87,7 +86,7 @@ static void handle_go(std::istringstream& is, SearchThread& st, ThreadHandler& t
             st.tm.movetime = std::stod(token);
         } else if (token == "nodes") {
             is >> std::skipws >> token;
-            nodes = stoi(token);
+            nodes = std::stoi(token);
         }
 
         if (!(is >> std::skipws >> token)) break;
@@ -102,7 +101,7 @@ static void handle_go(std::istringstream& is, SearchThread& st, ThreadHandler& t
     st.time_set = (st.tm.wtime != -1 || st.tm.btime != -1 || st.tm.movetime != -1);
 
     st.stopped   = false;
-    st.print_uci = IsUci;
+    st.print_uci = is_uci;
 
     thread_handler.start(st);
 }
@@ -224,7 +223,7 @@ void uci_loop() {
             st->set_fen(chess::constants::STARTPOS);
 
         } else if (token == "uci") {
-            IsUci = true;
+            is_uci = true;
             uci_send_id();
 
         } else if (token == "position") {

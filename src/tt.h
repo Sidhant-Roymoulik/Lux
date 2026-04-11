@@ -17,11 +17,15 @@ class TranspositionTable {
    private:
     std::vector<TTEntry> entries;
 
-    static inline uint32_t reduce_hash(uint32_t x, uint32_t N) { return ((uint64_t)x * (uint64_t)N) >> 32; }
+    // Maps a 32-bit hash to a table index in [0, N) using the "fastrange" trick
+    // (Knuth multiplicative hashing): avoids the modulo division.
+    static inline uint32_t reduce_hash(uint32_t x, uint32_t N) {
+        return static_cast<uint32_t>((static_cast<uint64_t>(x) * static_cast<uint64_t>(N)) >> 32);
+    }
 
     static inline void prefetch(const void* addr) {
 #if defined(__INTEL_COMPILER) || defined(_MSC_VER)
-        _mm_prefetch((char*)addr, _MM_HINT_T0);
+        _mm_prefetch(reinterpret_cast<const char*>(addr), _MM_HINT_T0);
 #else
         __builtin_prefetch(addr);
 #endif
@@ -51,8 +55,8 @@ class TranspositionTable {
             entry.flag  = f;
             entry.move  = move;
             entry.depth = depth;
-            entry.score = (int16_t)score;
-            entry.eval  = (int16_t)eval;
+            entry.score = static_cast<int16_t>(score);
+            entry.eval  = static_cast<int16_t>(eval);
         }
     }
 

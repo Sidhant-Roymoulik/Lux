@@ -84,6 +84,7 @@ void iterative_deepening(SearchThread& st) {
 }
 
 int aspiration_window(int prev, int depth, SearchThread& st) {
+    // ss starts 7 slots into the stack so (ss-2) and (ss-1) are valid without bounds checks
     SearchStack stack[MAX_PLY + 10], *ss = stack + 7;
 
     int delta = SP.asp_window + prev * prev / SP.asp_divisor;
@@ -113,22 +114,13 @@ int aspiration_window(int prev, int depth, SearchThread& st) {
 }
 
 int negamax(SearchThread& st, SearchStack* ss, int alpha, int beta, int depth, bool cutnode) {
-    // Increment total nodes
-    st.nodes++;
-
-    // Check for time up every 2048 nodes
-    if ((st.nodes & 2047) == 0) st.check_time();
-    // Exit search if time over
-    if (st.stopped) return 0;
+    if (st.count_node()) return 0;
 
     bool root    = (ss->ply == 0);
     bool pv_node = beta - alpha > 1;
 
     if (!root) {
-        // Check for draw by repetition && draw by 50-move rule
         if (st.board.isRepetition(1) || st.board.isHalfMoveDraw()) return 0;
-
-        // Ply cap to prevent endless search
         if (ss->ply >= MAX_PLY) return evaluate(st.board);
 
         // Mate Distance Pruning
@@ -139,16 +131,13 @@ int negamax(SearchThread& st, SearchStack* ss, int alpha, int beta, int depth, b
 
     bool in_check = st.board.inCheck();
 
-    // Check Extensions
     if (in_check) depth++;
 
-    // If you reach 0-depth drop into q-search
     if (depth <= 0) {
         st.nodes--;
         return q_search(st, ss, alpha, beta);
     }
 
-    // Probe Transposition Table
     bool tt_hit  = false;
     TTEntry& tte = table->probe_entry(st.board.hash(), tt_hit);
     Move tt_move = Move::NO_MOVE;
@@ -162,13 +151,14 @@ int negamax(SearchThread& st, SearchStack* ss, int alpha, int beta, int depth, b
     ss->static_eval = tt_hit ? tte.eval : evaluate(st.board);
     bool improving  = !in_check && ss->static_eval > (ss - 2)->static_eval;
 
-    // Various Pruning Methods
+    // Skip static-eval pruning for PV nodes, in-check, and post-null-move positions.
+    // goto keeps the pruning blocks flat rather than nesting in a large if/else chain.
     if (pv_node || in_check || (ss - 1)->move == Move::NULL_MOVE) goto ab_move_loop;
 
     // Reverse Futility Pruning
     if (depth < SP.rfp_depth && ss->static_eval - SP.rfp_margin * (depth - improving) >= beta) return ss->static_eval;
 
-    // Null Move Pruning
+    // Null Move Pruning — guarded by non-pawn material to avoid zugzwang
     if (depth > 1 && ss->static_eval >= beta && st.board.hasNonPawnMaterial(st.board.sideToMove())) {
         int R = static_cast<int>(SP.nmp_base + depth / SP.nmp_divisor);
 
@@ -183,8 +173,7 @@ int negamax(SearchThread& st, SearchStack* ss, int alpha, int beta, int depth, b
         st.unmake_null_move();
 
         if (score >= beta)
-            // Don't return a mate score, could be a false mate
-            return score >= MATE_IN_MAX ? beta : score;
+            return score >= MATE_IN_MAX ? beta : score;  // don't return a false mate
     }
 
 ab_move_loop:
@@ -200,16 +189,13 @@ ab_move_loop:
     movegen::legalmoves(moves, st.board);
     score_moves(st, ss, moves, tt_move);
 
-    for (int i = 0; i < moves.size(); i++) {
-        // Incremental Move Sorting
-        sort_moves(moves, i);
-        Move move = moves[i];
+    for (int move_idx = 0; move_idx < moves.size(); move_idx++) {
+        sort_moves(moves, move_idx);
+        Move move = moves[move_idx];
 
         if (!root) {
-            // History Pruning
             if (move.score() < -SP.hist_prune * depth) break;
-
-        } else if (i == 0) {
+        } else if (move_idx == 0) {
             st.bestmove = moves[0];
         }
 
@@ -222,7 +208,7 @@ ab_move_loop:
         st.make_move(move);
         table->prefetch_tt(st.board.hash());
 
-        // Late Move Reductions
+        // Late Move Reductions — re-search at depth-1 if reduced score beats alpha
         if (!in_check && depth > 2 && ss->move_cnt > SP.lmr_move_min + 2 * pv_node) {
             int R = LMR_TABLE[std::min(depth, MAX_PLY - 1)][std::min(ss->move_cnt, chess::constants::MAX_MOVES - 1)];
 
@@ -282,21 +268,11 @@ ab_move_loop:
 }
 
 int q_search(SearchThread& st, SearchStack* ss, int alpha, int beta) {
-    // Increment total nodes
-    st.nodes++;
+    if (st.count_node()) return 0;
 
-    // Check for time up every 2048 nodes
-    if ((st.nodes & 2047) == 0) st.check_time();
-    // Exit search if time over
-    if (st.stopped) return 0;
-
-    // Check for draw by repetition && draw by 50-move rule
     if (st.board.isRepetition(1) || st.board.isHalfMoveDraw()) return 0;
-
-    // Ply cap to prevent endless search
     if (ss->ply >= MAX_PLY) return evaluate(st.board);
 
-    // Probe Transposition Table
     bool tt_hit  = false;
     TTEntry& tte = table->probe_entry(st.board.hash(), tt_hit);
     Move tt_move = Move::NO_MOVE;
@@ -323,11 +299,11 @@ int q_search(SearchThread& st, SearchStack* ss, int alpha, int beta) {
         movegen::legalmoves<movegen::MoveGenType::ALL>(moves, st.board);
     else
         movegen::legalmoves<movegen::MoveGenType::CAPTURE>(moves, st.board);
-    score_moves(st, moves, tt_move);
+    score_moves<true>(st, nullptr, moves, tt_move);
 
-    for (int i = 0; i < moves.size(); i++) {
-        sort_moves(moves, i);
-        Move move = moves[i];
+    for (int move_idx = 0; move_idx < moves.size(); move_idx++) {
+        sort_moves(moves, move_idx);
+        Move move = moves[move_idx];
 
         (ss + 1)->ply = ss->ply + 1;
 

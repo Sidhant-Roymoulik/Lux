@@ -84,7 +84,6 @@ inline void StartBenchmark(SearchThread& st) {
     printf("Finished: %llu nodes %d nps\n", static_cast<unsigned long long>(nodes),
            static_cast<int>(1000.0f * nodes / (time_elapsed + 1)));
 
-    std::cout << std::flush;
 }
 
 inline void StartEvalBenchmark(SearchThread& st) {
@@ -103,6 +102,6 @@ inline void StartEvalBenchmark(SearchThread& st) {
         }
     }
 
-    auto timeAvg = (double)timeSum / samples / num_fens;
+    auto timeAvg = static_cast<double>(timeSum) / samples / num_fens;
     std::cout << "Eval/s: " << 1000000000 * samples * num_fens / timeSum << " , Time: " << timeAvg << "ns" << std::endl;
 }

@@ -43,7 +43,7 @@ Lux uses `major.minor` versioning (e.g. `4.3`).
 
 The authoritative version string lives in `src/types.h`:
 ```cpp
-#define VERSION "4.3"
+inline constexpr const char* VERSION = "5.0";
 ```
 
 ## Release Process

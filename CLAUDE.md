@@ -63,7 +63,8 @@ graph TD
         move_score["move_score.h\nmove ordering"]
         history["history.h\n[piece][to_sq]"]
         pv["pv.h\nPV tracking"]
-        tm["time_manager.h\nTime_Manager"]
+        tm["time_manager.h\nTimeManager"]
+        sp["search_params.h\nSearchParams · global SP\nSPSA-tunable UCI options"]
     end
 
     subgraph Eval
@@ -74,7 +75,7 @@ graph TD
 
     main --> uci & search & eval
     uci --> search & tt & thread
-    search --> eval & tt & history & move_score & pv & tm
+    search --> eval & tt & history & move_score & pv & tm & sp
     move_score --> history
 ```
 
@@ -100,3 +101,13 @@ flowchart LR
 ## Code Style
 
 clang-format 17, Google style base, 4-space indent, 120-column limit (see `.clang-format`). CI format check is advisory (`continue-on-error: true`).
+
+## Versioning & Releases
+
+The authoritative version string is `VERSION` in `src/types.h`. Lux uses `major.minor` versioning — bump major for architecture overhauls or large ELO jumps, minor for features, tuning, or incremental improvements.
+
+Release process: bump `VERSION`, commit as `chore: bump version to X.Y`, merge to `main` via PR, then `git tag X.Y && git push origin X.Y`. GitHub Actions builds Linux/Windows binaries and publishes the release automatically.
+
+## Commit Conventions
+
+Use conventional commit prefixes: `feat:`, `fix:`, `refactor:`, `chore:`, `tune:` (eval/search parameter tuning). Subject line under 72 characters, no trailing period. Every commit that changes search behavior must include `Bench: <nodes>` in the message body (see workspace CLAUDE.md).

@@ -64,17 +64,20 @@ inline int pst[6][64] = {
 };
 
 // Pawn Eval
+// pawn_passed[protectors][rank]: protectors = 0/1/2 defending pawns; rank 0–7 (white-relative)
 const int pawn_passed[3][8] = {
     {S(0, 0), S(-1, 7), S(-9, 19), S(-9, 47), S(3, 72), S(-7, 142), S(39, 146), S(0, 0)},
     {S(0, 0), S(0, 0), S(1, 15), S(-2, 46), S(14, 84), S(42, 164), S(186, 155), S(0, 0)},
     {S(0, 0), S(0, 0), S(2, -14), S(11, 5), S(35, 54), S(85, 152), S(52, 164), S(0, 0)},
 };
 const int pawn_phalanx[8] = {S(0, 0), S(5, -1), S(13, 9), S(26, 21), S(51, 68), S(115, 236), S(-46, 435), S(0, 0)};
+// pawn_doubled[0]: pawn directly ahead (doubled); [1]: pawn two squares ahead (potential doubling)
 const int pawn_doubled[2] = {S(-5, -31), S(-2, -17)};
 const int pawn_isolated   = S(-6, -5);
 const int pawn_support    = S(15, 13);
 
 // Piece Eval
+// mobility[piece_index][move_count]: piece_index = PieceType - 1 (knight=0, bishop=1, rook=2, queen=3)
 const int mobility[4][28] = {
     // Knight (0-8)
     {S(-34, -61), S(-18, -24), S(-8, -3), S(-3, 7), S(1, 15), S(6, 23), S(13, 21), S(19, 17), S(24, 6)},
