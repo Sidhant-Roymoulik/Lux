@@ -14,6 +14,31 @@ defaults:
     working-directory: .
 
 jobs:
+  bench-check:
+    name: bench check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: make dev
+
+      - name: Validate bench count in commit message
+        run: |
+          ACTUAL=$(./src/executables/Lux bench 2>/dev/null | grep "^Finished" | grep -o '[0-9]* nodes' | grep -o '[0-9]*')
+          STATED=$(git log -1 --pretty=%B | grep -oP '(?<=Bench: )\d+')
+          echo "Actual bench: $ACTUAL"
+          echo "Stated bench: $STATED"
+          if [ -z "$STATED" ]; then
+            echo "ERROR: No 'Bench: <nodes>' found in commit message"
+            exit 1
+          fi
+          if [ "$ACTUAL" != "$STATED" ]; then
+            echo "ERROR: Bench mismatch — commit says $STATED, binary produces $ACTUAL"
+            exit 1
+          fi
+          echo "Bench OK: $ACTUAL"
+
   Lux:
     name: compile check
 

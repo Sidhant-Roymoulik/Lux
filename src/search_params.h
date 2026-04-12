@@ -24,6 +24,13 @@ struct SearchParams {
     // History
     int hist_prune       = 5201;
     float hist_bonus_mul = 0.73f;
+
+    // Time Management
+    float tm_soft_multiplier = 0.60f;
+    float tm_hard_multiplier = 2.00f;
+    float tm_pv_floor        = 0.50f;
+    float tm_pv_base         = 2.00f;
+    float tm_pv_decay        = 0.10f;
 };
 
 inline SearchParams SP;
