@@ -55,8 +55,7 @@ const std::vector<std::string> bench_fens = {
 };
 
 inline void StartBenchmark(SearchThread& st) {
-    st.depth    = 10;
-    st.time_set = false;
+    st.depth = 10;
 
     int num_fens          = 0;
     uint64_t nodes        = 0;
@@ -83,7 +82,6 @@ inline void StartBenchmark(SearchThread& st) {
 
     printf("Finished: %llu nodes %d nps\n", static_cast<unsigned long long>(nodes),
            static_cast<int>(1000.0f * nodes / (time_elapsed + 1)));
-
 }
 
 inline void StartEvalBenchmark(SearchThread& st) {

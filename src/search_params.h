@@ -10,7 +10,7 @@ struct SearchParams {
 
     // Reverse Futility Pruning
     float rfp_margin = 64.97f;
-    int   rfp_depth  = 14;
+    int rfp_depth    = 14;
 
     // Null Move Pruning
     float nmp_base    = 2.29f;
@@ -19,10 +19,10 @@ struct SearchParams {
     // Late Move Reductions
     float lmr_base    = 2.37f;
     float lmr_divisor = 1.92f;
-    int   lmr_move_min = 2;
+    int lmr_move_min  = 2;
 
     // History
-    int   hist_prune     = 5201;
+    int hist_prune       = 5201;
     float hist_bonus_mul = 0.73f;
 };
 
