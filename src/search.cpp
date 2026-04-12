@@ -36,9 +36,6 @@ void iterative_deepening(SearchThread& st) {
         bestmove = st.bestmove;  // depth fully completed — commit this result
         st.score = score;
 
-        st.tm.update_stability(bestmove);
-        if (st.tm.soft_limit_reached()) break;  // soft limit, stability-scaled
-
         if constexpr (print_info) {
             if (st.print_uci) {
                 std::cout << "info";
@@ -72,6 +69,9 @@ void iterative_deepening(SearchThread& st) {
                 std::cout << std::endl;
             }
         }
+
+        st.tm.update_stability(bestmove);
+        if (st.tm.soft_limit_reached()) break;  // soft limit, stability-scaled
     }
 
     if (print_info) {
