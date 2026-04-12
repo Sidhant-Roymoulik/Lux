@@ -22,25 +22,22 @@ template void iterative_deepening<true>(SearchThread& st);
 template <bool print_info>
 void iterative_deepening(SearchThread& st) {
     st.clear();
-    st.initialize();
+    st.tm.set_time(st.board.sideToMove());
 
     int score = 0;
 
-    auto start_time = st.start_time();
-    Move bestmove   = Move::NO_MOVE;
+    Move bestmove = Move::NO_MOVE;
 
     for (int current_depth = 1; current_depth <= st.depth; current_depth++) {
         score = aspiration_window(score, current_depth, st);
 
-        if (st.stopped || st.stop_early()) break;
+        if (st.stopped) break;  // mid-search hard stop — don't take incomplete result
 
-        bestmove = st.bestmove;
+        bestmove = st.bestmove;  // depth fully completed — commit this result
         st.score = score;
 
         if constexpr (print_info) {
             if (st.print_uci) {
-                auto time_elapsed = now() - start_time;
-
                 std::cout << "info";
 
                 std::cout << " depth " << current_depth;
@@ -55,25 +52,26 @@ void iterative_deepening(SearchThread& st) {
                 }
 
                 std::cout << " nodes " << st.nodes;
-                std::cout << " nps " << static_cast<int>(1000.0f * st.nodes / (time_elapsed + 1));
-                std::cout << " time " << static_cast<uint64_t>(time_elapsed);
+                std::cout << " nps " << static_cast<int>(1000.0f * st.nodes / (st.tm.elapsed() + 1));
+                std::cout << " time " << static_cast<uint64_t>(st.tm.elapsed());
                 std::cout << " pv";
 
                 get_pv(st, bestmove);
 
                 std::cout << std::endl;
             } else {
-                auto time_elapsed = now() - start_time;
-
                 printf("[%2d/%2d] > eval: %-4.2f nodes: %6.2fM speed: %-5.2f MNPS", current_depth, st.depth,
                        static_cast<float>(score / 100.0f), static_cast<float>(st.nodes / 1000000.0f),
-                       static_cast<float>(1000.0f * st.nodes / (time_elapsed + 1)) / 1000000.0f);
+                       static_cast<float>(1000.0f * st.nodes / (st.tm.elapsed() + 1)) / 1000000.0f);
 
                 get_pv(st, bestmove);
 
                 std::cout << std::endl;
             }
         }
+
+        st.tm.update_stability(bestmove);
+        if (st.tm.soft_limit_reached()) break;  // soft limit, stability-scaled
     }
 
     if (print_info) {
@@ -172,8 +170,7 @@ int negamax(SearchThread& st, SearchStack* ss, int alpha, int beta, int depth, b
 
         st.unmake_null_move();
 
-        if (score >= beta)
-            return score >= MATE_IN_MAX ? beta : score;  // don't return a false mate
+        if (score >= beta) return score >= MATE_IN_MAX ? beta : score;  // don't return a false mate
     }
 
 ab_move_loop:

@@ -25,14 +25,11 @@ struct SearchThread {
     uint64_t nodes = 0;
     Move bestmove  = Move::NO_MOVE;
 
-    int score           = 0;
-    int16_t depth       = 0;
-    uint64_t node_limit = 0;
+    int score     = 0;
+    int16_t depth = 0;
 
     bool stopped   = false;
     bool print_uci = false;
-    bool time_set  = false;
-    bool nodes_set = false;
 
     SearchThread() {
         board = Board(constants::STARTPOS);
@@ -48,15 +45,6 @@ struct SearchThread {
             }
         }
     }
-    void initialize() {
-        tm.start_time = now();
-        if (time_set) {
-            tm.set_time(board.sideToMove());
-        }
-    }
-
-    Time start_time() { return tm.start_time; }
-
     void make_move(Move& move) { board.makeMove(move); }
     void make_move(std::string move_uci) { board.makeMove(uci::uciToMove(board, move_uci)); }
     void unmake_move(Move& move) { board.unmakeMove(move); }
@@ -66,16 +54,11 @@ struct SearchThread {
 
     void set_fen(std::string fen) { board.setFen(fen); }
 
-    bool stop_early() { return stopped || (time_set && tm.check_time()); }
-    void check_time() {
-        if ((time_set && tm.check_time()) || (nodes_set && nodes >= node_limit)) stopped = true;
-    }
-
-    // Increments the node counter and checks time every 2048 nodes.
+    // Increments the node counter and checks limits every 2048 nodes.
     // Returns true if the search should terminate immediately.
     [[nodiscard]] inline bool count_node() {
         nodes++;
-        if ((nodes & 2047) == 0) check_time();
+        if ((nodes & 2047) == 0 && tm.hard_limit_reached(nodes)) stopped = true;
         return stopped;
     }
 };

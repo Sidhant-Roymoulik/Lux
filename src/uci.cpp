@@ -41,7 +41,7 @@ static void uci_send_id() {
            (int)(SP.lmr_move_min * SP_LO), (int)(SP.lmr_move_min * SP_HI));
     printf("option name HistPrune    type spin   default %d min %d max %d\n", SP.hist_prune,
            (int)(SP.hist_prune * SP_LO), (int)(SP.hist_prune * SP_HI));
-    printf("option name HistBonusMul type string default %.2f\n", SP.hist_bonus_mul);
+    printf("option name HistBonusMul        type string default %.2f\n", SP.hist_bonus_mul);
 
     std::cout << "uciok" << std::endl;
 }
@@ -51,11 +51,8 @@ static void handle_go(std::istringstream& is, SearchThread& st, ThreadHandler& t
     is >> std::skipws >> token;
 
     st.tm.reset();
-    st.time_set  = false;
-    st.nodes_set = false;
 
-    int depth     = -1;
-    int64_t nodes = -1;
+    int depth = -1;
 
     while (token != "none") {
         if (token == "infinite") {
@@ -86,19 +83,13 @@ static void handle_go(std::istringstream& is, SearchThread& st, ThreadHandler& t
             st.tm.movetime = std::stod(token);
         } else if (token == "nodes") {
             is >> std::skipws >> token;
-            nodes = std::stoi(token);
+            st.tm.node_limit = std::stoi(token);
         }
 
         if (!(is >> std::skipws >> token)) break;
     }
 
-    if (nodes != -1) {
-        st.node_limit = nodes;
-        st.nodes_set  = true;
-    }
-
-    st.depth    = (depth == -1) ? MAX_PLY : depth;
-    st.time_set = (st.tm.wtime != -1 || st.tm.btime != -1 || st.tm.movetime != -1);
+    st.depth = (depth == -1) ? MAX_PLY : depth;
 
     st.stopped   = false;
     st.print_uci = is_uci;
@@ -217,9 +208,7 @@ void uci_loop() {
             thread_handler.stop();
             table->Initialize(current_hash_size);
             st->tm.reset();
-            st->time_set  = false;
-            st->nodes_set = false;
-            st->stopped   = false;
+            st->stopped = false;
             st->set_fen(chess::constants::STARTPOS);
 
         } else if (token == "uci") {
