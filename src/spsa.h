@@ -87,9 +87,9 @@ inline void print_spsa_csv() {
         float hi = p.default_val * SP_HI;
         float c  = (p.type == TunableParam::INT) ? std::max(p.default_val * 0.05f, 0.5f) : p.default_val * 0.05f;
         if (p.type == TunableParam::INT) {
-            printf("%-16s int,   %d, %d, %d, %.4f, 0.002\n", p.name, (int)p.default_val, (int)lo, (int)hi, c);
+            printf("%s, int, %d, %d, %d, %.4f, 0.002\n", p.name, (int)p.default_val, (int)lo, (int)hi, c);
         } else {
-            printf("%-16s float, %.2f, %.2f, %.2f, %.4f, 0.002\n", p.name, p.default_val, lo, hi, c);
+            printf("%s, float, %.2f, %.2f, %.2f, %.4f, 0.002\n", p.name, p.default_val, lo, hi, c);
         }
     }
 }
