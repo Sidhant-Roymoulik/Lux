@@ -3,6 +3,7 @@
 #include <chrono>
 #include <cmath>
 
+#include "search_params.h"
 #include "types.h"
 
 using namespace chess;
@@ -68,8 +69,8 @@ struct TimeManager {
 
         int64_t moves   = movestogo > 0 ? movestogo : 30;
         Time base       = (remaining_time + (increment * moves) - safety_overhead) / moves;
-        soft_time_limit = 0.60 * base;
-        hard_time_limit = 2.00 * base;
+        soft_time_limit = SP.tm_soft_multiplier * base;
+        hard_time_limit = SP.tm_hard_multiplier * base;
 
         soft_time_limit = std::min(soft_time_limit, remaining_time - safety_overhead);
         hard_time_limit = std::min(hard_time_limit, remaining_time - safety_overhead);
@@ -87,7 +88,7 @@ struct TimeManager {
     bool soft_limit_reached() {
         if (!time_is_set()) return false;
 
-        float pv_factor = std::max(0.50, 2.00 - 0.10 * best_move_stability);
+        float pv_factor = std::max(SP.tm_pv_floor, SP.tm_pv_base - SP.tm_pv_decay * best_move_stability);
         return elapsed() > static_cast<Time>(soft_time_limit * pv_factor);
     }
 

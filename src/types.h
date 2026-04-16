@@ -4,7 +4,7 @@
 
 using namespace chess;
 
-inline constexpr const char* VERSION = "5.0";
+inline constexpr const char* VERSION = "5.1";
 inline constexpr const char* AUTHOR  = "Sidhant Roymoulik";
 
 inline constexpr int DEFAULT_HASH_SIZE = 64;
