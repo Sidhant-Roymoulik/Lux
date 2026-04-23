@@ -15,18 +15,32 @@ defaults:
 
 jobs:
   bench-check:
-    name: bench check
-    runs-on: ubuntu-latest
+    name: bench check (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: Build
         run: make dev
 
       - name: Validate bench count in commit message
+        shell: bash
         run: |
-          ACTUAL=$(./src/executables/Lux bench 2>/dev/null | grep "^Finished" | grep -o '[0-9]* nodes' | grep -o '[0-9]*')
-          STATED=$(git log -1 --pretty=%B | grep -oP '(?<=Bench: )\d+')
+          EXE=$([ "$RUNNER_OS" = "Windows" ] && echo "./src/executables/Lux.exe" || echo "./src/executables/Lux")
+          ACTUAL=$($EXE bench 2>/dev/null | grep "^Finished" | grep -o '[0-9]* nodes' | grep -o '[0-9]*')
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            # HEAD is GitHub's synthetic test-merge commit; HEAD^2 is the PR branch head
+            STATED=$(git log -1 --pretty=%B HEAD^2 | grep -oP '(?<=Bench: )\d+' | tail -1)
+          else
+            # tail -1 handles squash merges where the body lists multiple commits,
+            # each with their own Bench: line (oldest first, newest last)
+            STATED=$(git log -1 --pretty=%B | grep -oP '(?<=Bench: )\d+' | tail -1)
+          fi
           echo "Actual bench: $ACTUAL"
           echo "Stated bench: $STATED"
           if [ -z "$STATED" ]; then
