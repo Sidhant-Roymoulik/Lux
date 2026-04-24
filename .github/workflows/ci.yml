@@ -1,25 +1,18 @@
-name: Compile Check
+name: CI
 
 on:
-    push:
-      branches: [ 'main' ]
-    pull_request:
-      branches: [ 'main' ]
+  push:
+    branches: [ 'main' ]
+  pull_request:
+    branches: [ 'main' ]
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
-defaults:
-  run:
-    working-directory: .
-
 jobs:
   bench-check:
-    name: bench check (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [windows-latest]
+    name: bench check
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
         with:
@@ -31,14 +24,10 @@ jobs:
       - name: Validate bench count in commit message
         shell: bash
         run: |
-          EXE=$([ "$RUNNER_OS" = "Windows" ] && echo "./src/executables/Lux.exe" || echo "./src/executables/Lux")
-          ACTUAL=$($EXE bench 2>/dev/null | grep "^Finished" | grep -o '[0-9]* nodes' | grep -o '[0-9]*')
+          ACTUAL=$(./src/executables/Lux.exe bench 2>/dev/null | grep "^Finished" | grep -o '[0-9]* nodes' | grep -o '[0-9]*')
           if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
-            # HEAD is GitHub's synthetic test-merge commit; HEAD^2 is the PR branch head
             STATED=$(git log -1 --pretty=%B HEAD^2 | grep -o 'Bench: [0-9]*' | grep -o '[0-9]*' | tail -1)
           else
-            # tail -1 handles squash merges where the body lists multiple commits,
-            # each with their own Bench: line (oldest first, newest last)
             STATED=$(git log -1 --pretty=%B | grep -o 'Bench: [0-9]*' | grep -o '[0-9]*' | tail -1)
           fi
           echo "Actual bench: $ACTUAL"
@@ -53,22 +42,32 @@ jobs:
           fi
           echo "Bench OK: $ACTUAL"
 
-  Lux:
-    name: compile check
-
+  compile:
+    name: compile (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Default
-      run: make dev
+      - name: Dev build
+        run: make dev
 
-    - name: Release
-      run: make release
+      - name: Release build
+        run: make release
 
-    - name: Build (OpenBench)
-      run: make EXE=Lux-openbench
+      - name: OpenBench build
+        run: make EXE=Lux-openbench
+
+  format:
+    name: format check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run clang-format style check
+        uses: jidicula/clang-format-action@f62da5e3d3a2d88ff364771d9d938773a618ab5e  # @v4.11.0
+        continue-on-error: true
+        with:
+          clang-format-version: '17'
