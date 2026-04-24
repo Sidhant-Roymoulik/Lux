@@ -106,7 +106,7 @@ static void handle_setoption(std::istringstream& is) {
 }
 
 void uci_loop() {
-    printf("Lux %s Copyright (C) 2025 %s\n", VERSION, AUTHOR);
+    printf("Lux %s Copyright (C) 2026 %s\n", VERSION, AUTHOR);
 
     ThreadHandler thread_handler;
 
