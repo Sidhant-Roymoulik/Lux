@@ -61,7 +61,7 @@ release:
 ifeq ($(IS_ARM),1)
 	$(CXX) $(RFLAGS) $(SRC) -march=native $(LFLAGS) -o $(EXEDIR)/$(EXE)-native
 else
-	$(CXX) $(RFLAGS) $(SRC) -mbmi2 -mavx2 -mpopcnt $(LFLAGS) -o $(EXEDIR)/$(EXE)-bmi2
+	$(CXX) $(RFLAGS) $(SRC) -mbmi2 -mavx2 -mpopcnt -DCHESS_USE_PEXT $(LFLAGS) -o $(EXEDIR)/$(EXE)-bmi2
 	$(CXX) $(RFLAGS) $(SRC) -msse4.2 -msse4.1 -mssse3 -mpopcnt $(LFLAGS) -o $(EXEDIR)/$(EXE)-modern
 	$(CXX) $(RFLAGS) $(SRC) -mssse3 -mno-popcnt $(LFLAGS) -o $(EXEDIR)/$(EXE)-ssse3
 endif
