@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+
+COMMIT_MSG_FILE="$1"
+COMMIT_SOURCE="$2"
+
+# Skip merge and squash commits
+if [ "$COMMIT_SOURCE" = "merge" ] || [ "$COMMIT_SOURCE" = "squash" ]; then
+    exit 0
+fi
+
+# Skip if Bench: already present (handles --amend and manual inclusion)
+if grep -v '^#' "$COMMIT_MSG_FILE" | grep -qE '^Bench:[[:space:]]*[0-9]+'; then
+    exit 0
+fi
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+EXE=""
+
+if [ -x "$REPO_ROOT/src/executables/Lux.exe" ]; then
+    EXE="$REPO_ROOT/src/executables/Lux.exe"
+elif [ -x "$REPO_ROOT/src/executables/Lux" ]; then
+    EXE="$REPO_ROOT/src/executables/Lux"
+fi
+
+if [ -z "$EXE" ]; then
+    echo "WARNING (prepare-commit-msg): Binary not found. Run 'make dev' then 'git commit --amend'." >&2
+    exit 0
+fi
+
+NODES=$("$EXE" bench 2>/dev/null | grep "^Finished" | grep -o '[0-9]* nodes' | grep -o '[0-9]*')
+
+if [ -z "$NODES" ]; then
+    echo "WARNING (prepare-commit-msg): Could not extract node count from bench output." >&2
+    exit 0
+fi
+
+# Insert before first comment line, or append at EOF — works for both -m and interactive editor
+TMPFILE="$(mktemp)"
+awk -v nodes="$NODES" '
+    /^#/ && !inserted {
+        print ""
+        print "Bench: " nodes
+        inserted = 1
+    }
+    { print }
+    END { if (!inserted) { print ""; print "Bench: " nodes } }
+' "$COMMIT_MSG_FILE" > "$TMPFILE" && mv "$TMPFILE" "$COMMIT_MSG_FILE"
+
+exit 0

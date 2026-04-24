@@ -66,4 +66,11 @@ else
 	$(CXX) $(RFLAGS) $(SRC) -mssse3 -mno-popcnt $(LFLAGS) -o $(EXEDIR)/$(EXE)-ssse3
 endif
 
+.PHONY: hooks
+
+hooks:
+	git config core.hooksPath .githooks
+	chmod +x .githooks/* 2>/dev/null || true
+	@echo "Git hooks installed from .githooks/"
+
 $(shell mkdir -p $(EXEDIR))

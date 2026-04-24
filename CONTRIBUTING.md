@@ -25,6 +25,8 @@ Use conventional commit prefixes:
 
 Keep the subject line under 72 characters. No period at the end.
 
+Every commit that changes search behavior must include `Bench: <nodes>` in the message body. Run `make hooks` once after cloning — the `prepare-commit-msg` hook appends it automatically by running `src/executables/Lux[.exe] bench`.
+
 ## Pull Request Workflow
 
 1. Branch off `main`, do your work, push the branch.

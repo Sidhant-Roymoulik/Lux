@@ -111,3 +111,7 @@ Release process: bump `VERSION`, commit as `chore: bump version to X.Y`, merge t
 ## Commit Conventions
 
 Use conventional commit prefixes: `feat:`, `fix:`, `refactor:`, `chore:`, `tune:` (eval/search parameter tuning). Subject line under 72 characters, no trailing period. Every commit that changes search behavior must include `Bench: <nodes>` in the message body (see workspace CLAUDE.md).
+
+## Git Hooks
+
+Run `make hooks` once after cloning to install the `prepare-commit-msg` hook from `.githooks/`. It automatically appends `Bench: <nodes>` to every commit message by running the dev binary. If the binary doesn't exist, it warns and skips — run `make dev` then `git commit --amend` to add the bench count retroactively.
