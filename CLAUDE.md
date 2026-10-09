@@ -23,6 +23,7 @@ make EXE=Lux   # OpenBench-compatible build (default target)
 ## Running / Debugging
 
 Run the binary and type UCI commands:
+
 ```
 uci
 isready
@@ -31,6 +32,7 @@ go depth 10
 ```
 
 Non-UCI debug commands:
+
 - `print` — print the current board
 - `eval` — print static evaluation
 - `bench` — benchmark 50 positions at depth 10
@@ -110,7 +112,7 @@ Release process: bump `VERSION`, commit as `chore: bump version to X.Y`, merge t
 
 ## Commit Conventions
 
-Use conventional commit prefixes: `feat:`, `fix:`, `refactor:`, `chore:`, `tune:` (eval/search parameter tuning). Subject line under 72 characters, no trailing period. Every commit that changes search behavior must include `Bench: <nodes>` in the message body (see workspace CLAUDE.md).
+Use conventional commit prefixes: `feat:`, `fix:`, `refactor:`, `chore:`, `tune:` (eval/search parameter tuning). Subject line under 72 characters, no trailing period. Every commit includes `Bench: <nodes>` in the message body; CI's bench check fails a commit whose count doesn't match the binary (see Git Hooks below).
 
 ## Git Hooks
 
